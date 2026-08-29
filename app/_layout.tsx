@@ -20,6 +20,9 @@ function RootNavigator() {
   return (
     <ThemeProvider value={theme}>
       <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Protected guard={verdict === 'plataforma-nao-suportada'}>
+          <Stack.Screen name="(unsupported)" />
+        </Stack.Protected>
         <Stack.Protected guard={verdict === 'onboarding-incompleto'}>
           <Stack.Screen name="(onboarding)" />
         </Stack.Protected>
