@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "AceleraLock",
+    "slug": "aceleralock",
+    "scheme": "aceleralock",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "platforms": ["ios", "android"],
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "bundleIdentifier": "com.aceleralock.app",
+      "supportsTablet": false,
+      "entitlements": {
+        "com.apple.developer.family-controls": true
+      }
+    },
+    "android": {
+      "package": "com.aceleralock.app",
+      "softwareKeyboardLayoutMode": "resize",
+      "adaptiveIcon": {
+        "backgroundColor": "#04141c"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff",
+          "dark": {
+            "backgroundColor": "#04141c"
+          }
+        }
+      ],
+      "./native/plugins/withAceleralockBlocker"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

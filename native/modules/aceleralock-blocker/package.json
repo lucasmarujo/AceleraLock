@@ -1,0 +1,8 @@
+{
+  "name": "aceleralock-blocker",
+  "version": "0.1.0",
+  "description": "Modulo nativo Android/iOS do bloqueador AceleraLock — ponte fina para o core Kotlin testado e para o TokenStore, dono unico do refresh token.",
+  "main": "index.ts",
+  "types": "index.ts",
+  "license": "MIT"
+}

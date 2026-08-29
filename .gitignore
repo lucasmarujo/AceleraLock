@@ -3,3 +3,11 @@ node_modules/
 .DS_Store
 build/
 .gradle/
+.kotlin/
+
+# Expo — gerado por `expo prebuild`; toda customizacao nativa vive nos config
+# plugins (native/plugins/), nao em edicao manual destas pastas.
+.expo/
+/android/
+/ios/
+expo-env.d.ts

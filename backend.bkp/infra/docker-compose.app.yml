@@ -1,0 +1,35 @@
+name: aceleralock-app
+
+# As duas cores sao identicas em tudo menos no nome e na porta de management.
+# A porta 8080 da aplicacao NAO e publicada: so o Caddy alcanca, pela rede interna.
+# A 8081 (actuator) sai em loopback do host, para o deploy.sh sondar sem expor nada.
+x-color: &color
+  image: ${IMAGE:?defina IMAGE=ghcr.io/<owner>/aceleralock-backend:<sha>}
+  restart: unless-stopped
+  env_file: /srv/aceleralock/.env
+  environment:
+    SPRING_PROFILES_ACTIVE: prod
+    ACELERALOCK_SIGNING_KEY_PATH: /run/secrets/jwt-signing-key.pem
+    DB_URL: jdbc:postgresql://aceleralock-postgres:5432/aceleralock
+  volumes:
+    - /srv/aceleralock/secrets/jwt-signing-key.pem:/run/secrets/jwt-signing-key.pem:ro
+  mem_limit: 1200m
+  networks:
+    - aceleralock
+
+services:
+  app-blue:
+    <<: *color
+    container_name: aceleralock-blue
+    ports:
+      - "127.0.0.1:18080:8081"
+
+  app-green:
+    <<: *color
+    container_name: aceleralock-green
+    ports:
+      - "127.0.0.1:18081:8081"
+
+networks:
+  aceleralock:
+    external: true

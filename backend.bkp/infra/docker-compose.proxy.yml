@@ -1,0 +1,28 @@
+name: aceleralock-proxy
+
+# Tambem fora do ciclo de deploy: o deploy.sh nunca recria o Caddy, so reescreve
+# upstream.caddy e manda `caddy reload`. O proxy nao decide saude de cor nenhuma —
+# ele aponta para onde o upstream.caddy mandar. Quem decide e o deploy.sh.
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: aceleralock-caddy
+    restart: unless-stopped
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?defina SITE_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL:?defina ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /srv/aceleralock/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - /srv/aceleralock/caddy/upstream.caddy:/etc/caddy/upstream.caddy:ro
+      - /srv/aceleralock/caddy/data:/data
+      - /srv/aceleralock/caddy/config:/config
+    mem_limit: 256m
+    networks:
+      - aceleralock
+
+networks:
+  aceleralock:
+    external: true
