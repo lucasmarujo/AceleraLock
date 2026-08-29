@@ -319,16 +319,19 @@ Projetar dentro da caixa:
 
 Consequência de produto: **no iOS a espera inteira (cronômetro, cancelar) vive dentro do app AceleraLock**, não na tela de bloqueio. A `BlockScreen` do iOS é só a porta.
 
-#### Android — overlay nosso, controle total
+#### Android — overlay nosso, código nativo (não é React Native)
 
-Overlay React Native por cima do app-alvo. Aqui a `BlockScreen` é a tela cheia descrita abaixo, com todos os estados:
+`WindowManager` por cima do app-alvo (`OverlayPresenter`) — código Android, não RN. Mesma restrição de fundo que o iOS, por um motivo diferente: **esta tela não tem botão de desbloquear**. Não existe caminho de desbloqueio direto daqui — só abrindo o AceleraLock e pedindo, com a espera (`WaitingScreen`, §3.5). Por isso o Android também vira "só a porta", como o iOS (§5): o overlay informa e direciona, a espera ao vivo mora no app.
 
-- **Estados:**
-  - `intro` — "Você bloqueou o Instagram." + por quê (frase do próprio usuário, se houver) + primária **"Voltar"** / secundária **"Quero desbloquear"**.
-  - `cooldownActive` — `Countdown` (`running`/`nearingEnd`) + primária "Voltar".
-  - `readyToUnlock` — espera terminou → primária "Desbloquear por [janela]".
-  - `error` — `Countdown` em `error` (o nativo não respondeu); "Tentar de novo".
-- **Regras anti-dark-pattern (as duas plataformas):** a saída sem fricção ("Voltar" / "Fechar") está sempre presente, no mesmo lugar, com o mesmo peso visual da ação de desbloqueio. Nada irreversível sem confirmação. Nenhum texto culpa o usuário. Passo atual e pendência sempre visíveis.
+- **Fundo:** `bg.canvas` do tema do sistema no aparelho (claro `#F6F7F8` / escuro `#04141c`), opaco — tela cheia, nunca transparente. É o oposto do que existe hoje (overlay vazio deixando o app-alvo visível "atrás de vidro", que lê como celular quebrado, não como bloqueio).
+- **Hierarquia (topo → base, centralizada):**
+  1. Ícone do escudo (mesmo mark do `ProtectedCard`/`icon.brand`), ~64–80dp.
+  2. Título: "[App] está bloqueado." — `title2`, `text.primary`. Sem nome de app disponível nesta superfície: "Este app está bloqueado."
+  3. Se a pessoa registrou motivo próprio: a frase dela, `body`/`text.secondary`, sem edição.
+  4. Corpo — dois casos: **sem espera em andamento**, "Abra o AceleraLock para pedir para desbloquear."; **com espera já em andamento** pra este app, "Espera em andamento — faltam ~18 min." (lido do `WaitingPeriod` nativo quando o overlay desenha; atualizar a cada ~30 s é suficiente — isto é contexto, não o `Countdown` do app, não precisa de tick por segundo).
+  5. Dois botões, mesmo peso: **primário "Voltar"** (saída sem fricção, não fecha nem penaliza o app-alvo) · **secundário "Abrir AceleraLock"** (abre o app; se já há espera, direto nela).
+- **O que não existe aqui, de propósito:** botão "Desbloquear", contagem de tentativas, qualquer texto que culpe ("você tentou X vezes"), vermelho, alarme, animação de urgência. Mesmo escudo calmo do `ProtectedCard`, não um símbolo de punição.
+- **Regras anti-dark-pattern (as duas plataformas):** a saída sem fricção ("Voltar"/"Fechar") sempre no mesmo lugar, mesmo peso visual da outra ação. Nada irreversível sem confirmação. Passo atual e pendência sempre visíveis, nunca um número inventado.
 
 #### O que mantém a identidade única
 
