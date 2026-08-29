@@ -1,4 +1,4 @@
-import { Pressable, Text, View } from 'react-native';
+import { BackHandler, Platform, Pressable, Text, View } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 
 type Props = {
@@ -35,6 +35,22 @@ export function OnboardingStepScreen({ title, nextHref, ctaLabel = 'Continuar', 
       >
         <Text style={{ color: '#04141c', fontWeight: '600' }}>{ctaLabel}</Text>
       </Pressable>
+      {/*
+        Unica porta pra fora do onboarding, valida em toda tela do grupo —
+        o voltar fisico so navega entre passos (app/(onboarding)/index.tsx),
+        nunca fecha o app sozinho. So Android: nao existe API publica de
+        auto-encerramento no iOS (nem convencao HIG pra isso), e o grupo
+        ainda nem monta la (verdict 'plataforma-nao-suportada' intercepta
+        antes). Rotulo e placeholder do uxui como o resto do componente —
+        "Sair" em vez de algo como "sem configurar": desistir aqui nao
+        apaga nada, a pessoa volta pro mesmo passo no proximo lancamento,
+        e um rotulo mais especifico prometeria isso por acidente.
+      */}
+      {Platform.OS === 'android' && (
+        <Pressable accessibilityRole="button" onPress={() => BackHandler.exitApp()}>
+          <Text style={{ opacity: 0.6, textDecorationLine: 'underline' }}>Sair</Text>
+        </Pressable>
+      )}
     </View>
   );
 }
