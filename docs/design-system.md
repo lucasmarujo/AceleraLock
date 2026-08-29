@@ -5,6 +5,7 @@
 > Autor: sessão `uxui`. Solicitado por: `supervisor`.
 > Rev. 2 — contraste do botão primário escuro fechado; incorporadas as respostas às 5 dúvidas bloqueantes (cooldown congelado no servidor, `BlockScreen` em dois designs, parceiro único, sem desbloqueio offline, duas válvulas de emergência) e o novo componente `PartnerInvite`.
 > Rev. 3 — prazos são configuração de servidor (layout não crava dígitos) e push é só aviso (estado sempre do sync), ambos em §2.1; dúvidas #1/#2 parqueadas (dependem de código nativo).
+> Rev. 4 — arquitetura virou 100% local (sem servidor, sem conta, sem parceiro; ver `backend.bkp/`). Removidos: prazo duplo (§2.6 antigo), estado `unknown` do `Countdown` (§2.3 antigo), `PartnerApprovalStatus`/`PartnerInvite` (§3.6/§3.21 antigos), válvula local de 7 dias/`LocalValveNotice` (§2.7/§3.22 antigos — a premissa era servidor podendo cair, não existe mais servidor). Conteúdo original em `git log` desta rev. e em `backend.bkp/`. Consolidação completa (renumerar, fechar `UnlockCeremony`/`BlockScreen` pra espera local) fica pra quando a leva 2 fechar — esta rodada só remove o que descreve arquitetura que não existe mais.
 
 ---
 
@@ -19,7 +20,7 @@ Regras que decorrem disso:
 
 - **Uma ação primária por tela.** Na tela de bloqueio, a primária é quase sempre "Voltar / Fechar", não "Desbloquear".
 - **A fricção é explícita.** Tempo restante, etapa atual e condição pendente ficam sempre visíveis. Se o tempo é desconhecido, dizemos que é desconhecido — não mostramos número inventado.
-- **Ninguém fica preso.** Todo pedido tem uma saída automática (30 min com parceiro, 48 h sem). A fricção vem da lentidão honesta, não de trancar o usuário. A UI comunica isso com calma, nunca como ameaça.
+- **Ninguém fica preso.** Toda espera é cronometrada e termina sozinha (padrão 30 min, configurável pelo usuário). A fricção vem da lentidão honesta, não de trancar o usuário. A UI comunica isso com calma, nunca como ameaça.
 - **Nada comunicado só por cor.** Todo estado tem rótulo textual e/ou ícone.
 - **Vermelho é só erro.** Nunca é "atrito" nem "bloqueado". Atrito usa âmbar; bloqueado usa a marca.
 
@@ -48,21 +49,18 @@ Neutros:
 | `neutral.900` | `#14181D` |
 | `neutral.950` | `#0D1014` |
 
-Marca — verde-petróleo (estado "protegido", ação primária):
+Marca — turquesa + quase-preto (decisão do usuário, 2026-08-29). Não é uma escala de luminância como as outras: são dois valores-âncora, mais alguns tons derivados só onde a matemática de contraste exige (ver §1.2). O par se comporta como **um par**, não como dois tokens independentes — `surfaces.brand` (§1.2) é quem garante isso no código, não a lista abaixo:
 
-| Token | Hex |
-|---|---|
-| `brand.50` | `#E4F3EF` |
-| `brand.100` | `#BFE2DA` |
-| `brand.200` | `#8FCcBF` |
-| `brand.300` | `#5DB3A2` |
-| `brand.400` | `#2F9784` |
-| `brand.500` | `#0E7A66` |
-| `brand.600` | `#0A6252` |
-| `brand.700` | `#084C40` |
-| `brand.800` | `#06392F` |
+| Token | Hex | Uso |
+|---|---|---|
+| `brand.turquesa` | `#03c3bf` | cor principal — fill do primário no escuro, rótulo do primário no claro, acento nos dois temas |
+| `brand.tema` | `#04141c` | quase-preto azulado — fill do primário no claro, rótulo do primário no escuro, `bg.canvas`/`bg.surface` do tema escuro |
+| `brand.turquesaTextLight` | `#037476` | link/texto de marca no claro — turquesa cru falha o piso de texto (4.5:1) sobre canvas claro |
+| `brand.turquesaIconLight` | `#039796` | ícone/borda de marca no claro — elemento gráfico, piso 3:1 (não 4.5:1) |
+| `brand.turquesaPressedDark` | `#03a09e` | pressed do primário no escuro |
+| `brand.temaPressedLight` | `#042e34` | pressed do primário no claro |
 
-Âmbar — atrito / atenção (cooldown ativo, aguardando parceiro, aviso):
+Âmbar — atrito / atenção (cooldown ativo, aviso):
 
 | Token | Hex |
 |---|---|
@@ -70,8 +68,11 @@ Marca — verde-petróleo (estado "protegido", ação primária):
 | `amber.100` | `#F5DEBC` |
 | `amber.300` | `#E7B369` |
 | `amber.500` | `#C9871F` |
+| `amber.550` | `#b37718` |
 | `amber.600` | `#A56C13` |
 | `amber.700` | `#7C4F0C` |
+
+`amber.550` não é enfeite de escala: é o fill claro de `surfaces.amber` (badge/preenchimento âmbar), calculado pra fechar duas relações ao mesmo tempo — `amber.500` sozinho reprova contraste não-texto contra o canvas claro (2.81:1, piso 3:1), `amber.600` sozinho reprova o texto por cima (4.04:1, piso 4.5:1). Não "corrigir" de volta pro 500 nem pro 600 sem refazer as duas contas.
 
 Erro — vermelho (só falha real):
 
@@ -97,44 +98,56 @@ Informação — azul (neutro, links, dicas):
 
 | Semântico | Claro | Escuro | Uso |
 |---|---|---|---|
-| `bg.canvas` | `neutral.50` | `neutral.950` | fundo da tela |
+| `bg.canvas` | `neutral.50` | `brand.tema` | fundo da tela |
 | `bg.surface` | `neutral.0` | `neutral.900` | card, sheet, lista |
 | `bg.surfaceRaised` | `neutral.0` | `neutral.800` | sheet sobre sheet, menu |
 | `bg.sunken` | `neutral.100` | `neutral.950` | trilha de progresso, input |
-| `bg.brandSubtle` | `brand.50` | `brand.800` | fundo do estado "protegido" |
+| `bg.brandSubtle` | `#E6F9F9` | `#04262C` | fundo do estado "protegido" — turquesa a 10% sobre branco/`brand.tema`, não um primitivo da escala antiga |
 | `bg.amberSubtle` | `amber.50` | `#3A2A0E` | fundo do estado "cooldown" |
 | `bg.redSubtle` | `red.50` | `#3A1815` | fundo de erro inline |
 | `bg.scrim` | `rgba(20,24,29,0.55)` | `rgba(0,0,0,0.65)` | backdrop de modal/sheet |
 | `text.primary` | `neutral.900` | `neutral.50` | corpo, títulos |
 | `text.secondary` | `neutral.600` | `neutral.300` | apoio, legendas |
 | `text.tertiary` | `neutral.500` | `neutral.400` | placeholder, timestamp |
-| `text.onBrand` | `neutral.0` | `neutral.950` | texto sobre `bg.brand` (ver nota de contraste) |
-| `text.onAmber` | `neutral.900` | `neutral.900` | texto sobre `bg.amber` |
-| `text.brand` | `brand.600` | `brand.300` | link, ênfase de marca |
+| `text.brand` | `brand.turquesaTextLight` | `brand.turquesa` | link, ênfase de marca (**não** é o fill do botão — ver `surfaces.brand` abaixo) |
 | `text.danger` | `red.600` | `red.300` | mensagem de erro |
-| `bg.brand` | `brand.500` | `brand.400` | preenchimento de botão primário |
-| `bg.brandPressed` | `brand.600` | `brand.500` | botão primário pressionado |
-| `bg.amber` | `amber.500` | `amber.300` | preenchimento âmbar (raro; usar subtle antes) |
-| `bg.danger` | `red.500` | `red.400` | botão destrutivo |
 | `border.default` | `neutral.200` | `neutral.700` | borda de card, divisória |
 | `border.strong` | `neutral.300` | `neutral.600` | borda de input, contorno |
-| `border.brand` | `brand.400` | `brand.300` | input focado, chip selecionado |
-| `focus.ring` | `brand.500` | `brand.300` | anel de foco (2px + offset 2px) |
+| `border.brand` | `brand.turquesaIconLight` | `brand.turquesa` | input focado, chip selecionado |
+| `focus.ring` | `brand.turquesaIconLight` | `brand.turquesa` | anel de foco (2px + offset 2px) |
 | `icon.default` | `neutral.600` | `neutral.300` | ícone neutro |
-| `icon.brand` | `brand.500` | `brand.300` | ícone de estado protegido |
+| `icon.brand` | `brand.turquesaIconLight` | `brand.turquesa` | ícone de estado protegido |
 | `icon.amber` | `amber.600` | `amber.300` | ícone de cooldown |
 
-Contraste — pares já verificados (WCAG 2.1, alvo AA):
+`bg.brand`/`bg.brandPressed`/`text.onBrand` **não existem mais como tokens soltos.** Botão preenchido de marca é sempre par único:
+
+| `surfaces.*` | Claro | Escuro |
+|---|---|---|
+| `brand.fill` | `brand.tema` (`#04141c`) | `brand.turquesa` (`#03c3bf`) |
+| `brand.onFill` | `brand.turquesa` | `brand.tema` |
+| `brand.pressedFill` | `brand.temaPressedLight` | `brand.turquesaPressedDark` |
+| `danger.fill` | `red.500` | `red.500` |
+| `danger.onFill` | `neutral.0` | `neutral.0` |
+| `danger.pressedFill` | `red.600` | `red.600` |
+| `amber.fill` (badge/preenchimento raro) | `amber.550` | `amber.300` |
+| `amber.onFill` | `neutral.900` | `neutral.900` |
+
+**Regra do sistema, não coincidência de hex:** o `fill` do primário é sempre a cor que contrasta com o `bg.canvas` do tema; o `onFill` é sempre a oposta. É por isso que claro e escuro trocam quem é fundo e quem é rótulo em vez de repetir o mesmo par — turquesa como texto sobre canvas claro reprova contraste (2.20:1), então no claro ela vira acento/rótulo, não superfície.
+
+Contraste — pares verificados (WCAG 2.1, dois eixos por par: texto-sobre-fill **e** fill-sobre-canvas quando o token é um preenchimento):
 
 - `text.primary` claro sobre `bg.surface` claro: ~15:1 ✅
-- `text.secondary` claro (`neutral.600` `#4C535E`) sobre `bg.surface` claro: ~7.4:1 ✅
-- `text.onBrand` (`#FFFFFF`) sobre `bg.brand` claro (`#0E7A66`): ~5.2:1 ✅ (AA corpo)
-- `text.onAmber` (`neutral.900`) sobre `bg.amber` claro (`#C9871F`): ~7.1:1 ✅
-- `text.primary` escuro (`neutral.50`) sobre `bg.surface` escuro (`neutral.900`): ~14:1 ✅
-- `text.secondary` escuro (`neutral.300`) sobre `bg.surface` escuro: ~8:1 ✅
-- `text.onBrand` escuro (`neutral.950` `#0D1014`) sobre `bg.brand` escuro (`brand.400` `#2F9784`): **~5.3:1 ✅ (AA corpo)** — **decisão fechada:** no tema escuro o rótulo do botão primário é quase-preto, não branco. Branco sobre `brand.400` dava só ~3.4:1 (reprovado para texto normal) e foi descartado. O preenchimento continua `brand.400` (mais claro que `brand.500`, lê melhor sobre superfície escura).
+- `text.secondary` claro sobre `bg.surface` claro: ~7.4:1 ✅
+- `text.primary` escuro sobre `bg.surface` escuro: ~14:1 ✅
+- `text.secondary` escuro sobre `bg.surface` escuro: ~8:1 ✅
+- `surfaces.brand` escuro — `onFill` (`#04141c`) sobre `fill` (`#03c3bf`): **8.52:1** ✅; `fill` sobre `bg.canvas` escuro (mesmo valor, `#04141c`≈canvas): contraste máximo, sobra.
+- `surfaces.brand` claro — `onFill` (`#03c3bf`) sobre `fill` (`#04141c`): **8.52:1** ✅ (mesmo par, invertido); `fill` sobre `bg.canvas` claro (`neutral.50`): **17.45:1** ✅.
+- `surfaces.brand.pressedFill` claro (`#042e34`) sobre `onFill`: **6.61:1** ✅ · escuro (`#03a09e`) sobre `onFill`: **5.82:1** ✅.
+- `text.brand`/`icon.brand` claro — turquesa cru sobre `bg.canvas` claro reprova (2.20:1 como texto). `turquesaTextLight` (`#037476`) resolve o piso de texto: **5.58:1** ✅. `turquesaIconLight` (`#039796`, elemento gráfico, piso 3:1): **3.58:1** ✅. No escuro, turquesa cru já passa nos dois: **8.12–8.52:1** ✅, sem precisar de tom derivado.
+- `surfaces.amber` claro — `amber.500` sozinho reprova fill-sobre-canvas (2.81:1); `amber.600` sozinho reprova texto-sobre-fill (4.04:1). `amber.550` fecha os dois: **3.52:1** (canvas) e **4.73:1** (texto) ✅. Escuro (`amber.300`) passa nos dois sem ajuste: **9.85:1** / **9.38:1** ✅.
+- `surfaces.danger` — `red.500` reaproveitado nos dois temas (não existe `red.400` nos primitivos, e não criei um só pra isto): fill-sobre-canvas **4.93:1** (claro) / **3.54:1** (escuro), texto (`neutral.0`) sobre fill **5.29:1** (os dois temas) ✅.
 
-> Todo par novo de cor deve ser validado em ferramenta de contraste antes de virar token final. A tabela acima é o ponto de partida, não a autoridade.
+> Todo par novo de cor deve ser validado nas duas relações (texto-sobre-fill **e** fill-sobre-canvas) antes de virar token final — validar só uma já causou dois furos nesta rodada (`amber.500` e o primário claro). A tabela acima é o ponto de partida, não a autoridade.
 
 ### 1.3 Tipografia
 
@@ -229,45 +242,30 @@ Aparece em quase toda tela do fluxo de desbloqueio. É o componente mais sensív
 
 ### 2.1 Fonte da verdade
 
-- O payload traz **`serverTime` + `...EndsAt`**, ambos do servidor. O cliente calcula `restante = EndsAt − serverTime − (agora_local − momento_da_resposta)`. Nunca subtrai do relógio do aparelho: mexer na hora do celular não pode acelerar nada.
-- Recalcular a cada tick e a cada retorno ao primeiro plano (`AppState` → `active`).
-- O prazo é **congelado no servidor no instante em que o pedido é criado** e corre independente do app: aberto, fechado, desinstalado ou celular desligado. **Fechar o app não pausa nem reseta nem penaliza.** Não existe estado `paused`. O `Countdown` só desenha o que o servidor já decidiu.
-- Nunca persistir "segundos restantes" localmente — só o instante de término e o offset servidor↔cliente da última resposta autenticada.
-- **Os prazos (30 min / 48 h / 7 dias) vivem na configuração do servidor e chegam no payload de sync — mudam sem release de app.** Nenhum número cravado em layout: `timerHero` e afins dimensionam para "45 h 59 min" ou "120 min", não para o valor de hoje. Toda cópia que cita um prazo lê do sync, nunca de constante local.
-- **Notificação push é só aviso, nunca autoridade.** O push carrega tipo + identificador do pedido, nada mais — sem decisão, sem prazo. Nenhuma tela renderiza estado a partir do conteúdo da notificação; sempre a partir do sync. Ao abrir por um push, a tela entra em `loading` até o sync responder.
+- **O tempo restante vem do nativo** (Android: `native/modules/aceleralock-blocker`), que conta em **tempo monotônico acumulado** — nunca do relógio de parede. Adiantar o relógio não adianta a espera; reboot também não zera (mesma disciplina que o `BlockDecider` já documenta no próprio código-fonte).
+- O `Countdown` **nunca chama `Date.now()`**. Entre leituras do nativo, interpola com um clock monotônico local; cada leitura nova reancora, e recalcula a cada tick e a cada retorno ao primeiro plano (`AppState` → `active`). Um restart do app só perde a interpolação entre ticks, nunca o valor de verdade — que sempre vem de novo da leitura.
+- A espera é local ao aparelho e à ação (desbloquear um app específico, ou desligar a proteção) — não é um "pedido" que mora num servidor. Fechar o app **não pausa, não reseta, não penaliza**: a contagem nativa segue rodando.
+- **Padrão de 30 minutos, configurável pelo usuário.** Nenhum número cravado em layout: `timerHero` e afins dimensionam pro texto mais longo plausível, não pro valor configurado hoje.
+- O `Countdown` recebe o tempo restante por uma função injetada, nunca chama o nativo direto e não assume o formato do contrato — quem monta a tela é quem decide de onde a leitura vem.
 
 ### 2.2 Estados
 
 | Estado | Quando | Visual | Leitor de tela |
 |---|---|---|---|
-| `loading` | ainda não sabemos o término (primeira carga) | skeleton no lugar do número, nunca `00:00` | "Carregando tempo restante" |
-| `running` | término conhecido, no futuro | número tabular + anel/barra de progresso + rótulo "Faltam X" | rótulo textual atualizado a cada ~15 s |
+| `loading` | ainda não lemos o tempo restante (primeira carga) | skeleton no lugar do número, nunca `00:00` | "Carregando tempo restante" |
+| `running` | término conhecido, no futuro | número tabular + rótulo "Faltam X" | rótulo textual atualizado em bucket de 15 s, não a cada tick |
 | `nearingEnd` | ≤ 60 s restantes | mesmo layout; peso/tamanho sobem um degrau; **sem** vermelho, **sem** piscar | anúncio em 60 s, 10 s |
 | `complete` | restante ≤ 0 | número some, vira o próximo passo ("Espera concluída") + CTA da próxima etapa | anúncio "Espera concluída" |
-| `unknown` | sem contato com o servidor e término não confiável | ver §2.3 | ver §2.3 |
-| `error` | término inválido / sessão expirada | mensagem + "Tentar de novo" | mensagem de erro |
+| `error` | leitura do tempo restante falhou (nativo não respondeu) | mensagem + "Tentar de novo" | mensagem de erro |
 
-Um mesmo pedido carrega **dois prazos** (aprovação do parceiro em 30 min · liberação automática em 48 h): ver §2.6. `running` e `nearingEnd` referem-se sempre ao **prazo ativo no momento**.
-
-### 2.3 Estado `unknown` / offline — regra dura
-
-**Este é caminho principal, não caso de erro.** O desbloqueio só nasce numa transação no servidor (não há liberação offline), então toda vez que o usuário ficar sem rede no meio de uma cerimônia ele cai aqui. A tela tem que ser calma e informativa, não um alerta de falha.
-
-Quando o app **não consegue falar com o servidor** e o tempo restante não é confiável:
-
-- **Não** mostrar número. **Não** mostrar spinner infinito. **Não** contar a partir de um palpite.
-- Mostrar texto explícito: **"Tempo restante indisponível — sem conexão com o servidor."**
-- Se houver uma última estimativa conhecida, mostrá-la **claramente marcada como estimativa e desatualizada**: "Estimativa da última sincronização: ~7 min (às 14:32)", em `text.tertiary`, riscada ou com ícone de "desatualizado".
-- Ação primária: **"Tentar de novo"** (re-sincronizar). Enquanto tenta: estado de loading no botão.
-- Ao reconectar: reconciliar com o servidor. O tempo pode **aumentar** (ex.: servidor detectou manipulação de relógio) — a UI aceita isso sem drama, com uma linha explicando ("O tempo foi ajustado pelo servidor.").
-- A cerimônia de desbloqueio **não avança** no estado `unknown`. O usuário entende que a espera é validada no servidor, não no aparelho.
+Não existe mais estado `unknown`: a fonte do tempo é local (tempo monotônico acumulado no nativo, não servidor), então não há "sem contato com o servidor" — o que pode falhar é o nativo não responder, e isso é `error`.
 
 ### 2.4 Anatomia visual
 
 - Número: `timerHero` (cerimônia) ou `display` (card), tabular, `text.primary`.
 - Progresso: anel (`radius.full`, traço 4px, `bg.sunken` de trilha + `icon.amber` de preenchimento) OU barra linear. **O anel nunca é o único indicador** — número + rótulo textual sempre presentes.
 - Rótulo: "Faltam 6 min 20 s" em `callout`, `text.secondary`.
-- Cor de acento do cooldown: âmbar. Ao completar: marca (verde).
+- Cor de acento do cooldown: âmbar. Ao completar: a marca (turquesa).
 
 ### 2.5 Acessibilidade do `Countdown`
 
@@ -275,30 +273,6 @@ Quando o app **não consegue falar com o servidor** e o tempo restante não é c
 - O nó do número: `accessibilityRole="timer"` (iOS), `accessibilityLiveRegion="polite"` (Android), `accessibilityLabel` reescrito a cada ~15–30 s como "Faltam 6 minutos e 20 segundos" (não "06:20").
 - `timerHero` trava escala de fonte em 1.3× para não quebrar layout; o rótulo textual abaixo escala livre.
 - Sob reduce-motion: anel estático (só o texto muda).
-
-### 2.6 Prazo duplo — um número em destaque, o outro como contexto
-
-Todo pedido tem dois desfechos possíveis, com prazos diferentes:
-
-- **`partnerEndsAt`** — ~30 min após a criação. Passado esse tempo, **a aprovação do parceiro libera na hora**.
-- **`autoEndsAt`** — ~48 h após a criação. Sem nenhuma aprovação, o pedido se resolve sozinho (válvula unilateral). Sem parceiro na conta, este é o único prazo.
-
-A fricção continua de pé porque o caminho sem parceiro é ~96× mais lento — mas ninguém fica preso.
-
-**Regra visual: nunca dois números grandes ao mesmo tempo.** Um prazo é o `timerHero`/`display`; o outro é **uma linha** de contexto em `callout` / `text.secondary`. Qual fica em destaque depende do momento:
-
-| Momento | Destaque (número grande) | Linha de contexto |
-|---|---|---|
-| Primeiros 30 min, **com** parceiro | `partnerEndsAt` — "Faltam 24 min para desbloquear com a aprovação de [nome]" | "Sem aprovação, libera sozinho em ~47 h" |
-| Primeiros 30 min, **sem** parceiro | `autoEndsAt` — "Libera automaticamente em ~47 h" | "Com um parceiro de confiança, a espera cai para 30 min" |
-| Após 30 min, parceiro ainda não aprovou (`awaitingPartner`) | `autoEndsAt` — "Libera automaticamente em ~46 h" | "Assim que [nome] aprovar, libera na hora" + `PartnerApprovalStatus` |
-| Parceiro aprovou | — (vai para `complete`) | — |
-
-O `Countdown` recebe uma prop `dualDeadline` com os dois instantes e escolhe sozinho qual promover, pela regra acima.
-
-### 2.7 Válvula local de 7 dias
-
-Se o app passar **7 dias sem conseguir falar com o servidor**, ele libera o bloqueio sozinho (proteção contra o backend cair). Isso **não pode ser silencioso**: ver o componente `LocalValveNotice` (§3.22). Enquanto a contagem de 7 dias corre em segundo plano, o estado `unknown` do `Countdown` ganha uma linha discreta: "Sem conexão há N dias. Após 7 dias sem servidor, o bloqueio é liberado automaticamente."
 
 ---
 
@@ -308,7 +282,7 @@ Cada um com seus estados. `mobile` monta fluxos em cima destes sem inventar visu
 
 ### 3.1 `Button`
 
-- **Variantes:** `primary` (preenchido `bg.brand`, rótulo `text.onBrand` — branco no claro, quase-preto no escuro), `secondary` (borda `border.strong`, fundo transparente), `ghost` (só texto, `text.brand`), `destructive` (preenchido, `bg.danger`).
+- **Variantes:** `primary` (`surfaces.brand`: preenchido com `fill`, rótulo em `onFill` — **invertido por tema**, não dois valores fixos: no claro é fundo quase-preto (`#04141c`) com rótulo turquesa, no escuro é fundo turquesa com rótulo quase-preto; regra do sistema em §1.2, não coincidência), `secondary` (borda `border.strong`, fundo transparente, rótulo `text.primary`), `ghost` (só texto, `text.brand`), `destructive` (`surfaces.danger`: preenchido `fill`, rótulo `onFill`).
 - **Tamanhos:** `lg` (altura 52, full-width — ação primária de tela), `md` (altura 44).
 - **Estados:** `default`, `pressed` (cor -1 degrau + opacidade 0.92), `disabled` (opacidade 0.4, sem toque), `loading` (spinner substitui o rótulo, **largura preservada**), `focusVisible` (anel `focus.ring` 2px + offset 2px).
 - Alvo de toque mínimo **48×48** mesmo no `md` (área de toque estendida via `hitSlop`).
@@ -343,7 +317,7 @@ Projetar dentro da caixa:
 - **Botão secundário:** "Abrir AceleraLock" (leva o cronômetro e a cerimônia para dentro do nosso app, onde temos controle total).
 - Cor do título/botão: derivada dos tokens de marca, dentro do que o `ShieldConfiguration` aceita.
 
-Consequência de produto: **no iOS a cerimônia inteira (cronômetro, prazo duplo, status do parceiro, estado offline) vive dentro do app AceleraLock**, não na tela de bloqueio. A `BlockScreen` do iOS é só a porta.
+Consequência de produto: **no iOS a espera inteira (cronômetro, cancelar) vive dentro do app AceleraLock**, não na tela de bloqueio. A `BlockScreen` do iOS é só a porta.
 
 #### Android — overlay nosso, controle total
 
@@ -351,32 +325,25 @@ Overlay React Native por cima do app-alvo. Aqui a `BlockScreen` é a tela cheia 
 
 - **Estados:**
   - `intro` — "Você bloqueou o Instagram." + por quê (frase do próprio usuário, se houver) + primária **"Voltar"** / secundária **"Quero desbloquear"**.
-  - `cooldownActive` — `Countdown` (`running`, prazo duplo §2.6) + `PartnerApprovalStatus` + primária "Voltar".
-  - `awaitingPartner` — espera de 30 min concluída, aguardando aprovação. `Countdown` mostrando `autoEndsAt` + parceiro `pending`.
-  - `readyToUnlock` — condições ok → primária "Desbloquear por [janela]".
-  - `unknownOffline` — `Countdown` em `unknown` (caminho principal, §2.3); explica que a validação é no servidor.
+  - `cooldownActive` — `Countdown` (`running`/`nearingEnd`) + primária "Voltar".
+  - `readyToUnlock` — espera terminou → primária "Desbloquear por [janela]".
+  - `error` — `Countdown` em `error` (o nativo não respondeu); "Tentar de novo".
 - **Regras anti-dark-pattern (as duas plataformas):** a saída sem fricção ("Voltar" / "Fechar") está sempre presente, no mesmo lugar, com o mesmo peso visual da ação de desbloqueio. Nada irreversível sem confirmação. Nenhum texto culpa o usuário. Passo atual e pendência sempre visíveis.
 
 #### O que mantém a identidade única
 
 Mesmo escudo, mesma paleta, mesma voz de texto, mesmos rótulos-verbo, mesmo tom sem-culpa. O usuário reconhece o AceleraLock nas duas — a diferença é só quanta tela o SO nos deixa desenhar.
 
-### 3.5 `UnlockCeremony` (cerimônia de desbloqueio)
+### 3.5 Tela de espera (ex-`UnlockCeremony`)
 
-- Container: `radius.xl`, `elevation.3`, sobre `bg.scrim`.
-- Usa `Stepper` (§3.7): passo 1 espera cronometrada → passo 2 aprovação do parceiro → passo 3 desbloqueado. Sem parceiro pareado, o passo 2 some e o passo 1 usa só `autoEndsAt`.
-- `timerHero` no passo 1, com o prazo duplo de §2.6 (um número + uma linha de contexto).
-- Cada passo tem: estado do passo (pendente / ativo / concluído / falhou), o que falta, e saída ("Cancelar" — volta ao estado protegido sem punição).
-- **Estados globais:** `active`, `offline` (não avança, ver §2.3 — caminho principal, não erro), `partnerDenied` (ver §3.6), `localValveReleased` (ver §3.22), `sessionExpired`.
+Sem parceiro nem passo de aprovação, a cerimônia de múltiplas etapas caiu: sobra uma espera cronometrada única (`Countdown`, padrão 30 min, configurável) antes de desbloquear um app ou desligar a proteção. `Stepper` (§3.7) não é mais usado aqui.
 
-### 3.6 `PartnerApprovalStatus`
+Duas coisas que o `supervisor` marcou como não-negociáveis pra quando esta tela for montada, e que já vão condicionando `Countdown`/`Button`:
 
-Aprovação **por-pedido de desbloqueio**. Há **um único parceiro por conta** (escolha do usuário) — sem quórum, sem lista.
+- **Cancelar é fácil, não escondido.** Desistir da espera é o resultado que o produto quer — botão de saída no mesmo peso visual da ação de esperar, sempre visível, nunca atrás de confirmação extra.
+- **O contador não é hostil.** Sem vermelho, sem piscar, sem contagem regressiva dramática — mesma regra do `Countdown` em `nearingEnd` (§2.2), aqui é o produto inteiro, não só o componente.
 
-- Mostra: avatar + nome do parceiro, o que se pede, quando foi pedido.
-- **Estados:** `notRequested`, `pending` ("Pedido enviado — aguardando [nome]"), `approved` (verde, "Aprovado por [nome] às 14:40"), `denied` (âmbar, não vermelho — negar é escolha legítima do parceiro; "[nome] não aprovou agora"), `expired` ("O pedido expirou"), `partnerUnreachable` ("Não foi possível avisar [nome]" + "Tentar de novo").
-- `denied` não é erro: tom neutro. Oferece "Pedir de novo mais tarde" e lembra que a liberação automática de 48 h (§2.6) segue de pé de qualquer forma.
-- Sem parceiro pareado ainda: este componente não aparece; a cerimônia usa só `autoEndsAt`. Parear é feito via `PartnerInvite` (§3.21).
+Layout final (container, exato texto, o que acontece em `error`) é trabalho de leva 2 — este parágrafo registra a restrição, não fecha o desenho.
 
 ### 3.7 `Stepper`
 
@@ -404,9 +371,9 @@ Aprovação **por-pedido de desbloqueio**. Há **um único parceiro por conta** 
 
 ### 3.11 `InlineAlert` / `Banner`
 
-- Variantes: `info` (azul), `warning` (âmbar), `error` (vermelho), `success` (verde).
+- Variantes: `info` (azul), `warning` (âmbar), `error` (vermelho), `success` (a marca, turquesa).
 - Ícone + texto + ação opcional. Fundo `*.Subtle`.
-- Usado para: offline, parceiro negou, sessão expirada. **Nunca toast para informação crítica que exige ação.**
+- Usado para: falha ao ler o tempo restante, permissão do sistema revogada. **Nunca toast para informação crítica que exige ação.**
 
 ### 3.12 `Toast`
 
@@ -423,14 +390,14 @@ Aprovação **por-pedido de desbloqueio**. Há **um único parceiro por conta** 
 
 ### 3.14 `Dialog`
 
-- Confirmação bloqueante ("Remover [parceiro]?"). Título + corpo + no máximo 2 ações.
+- Confirmação bloqueante ("Remover [app] da lista de bloqueio?"). Título + corpo + no máximo 2 ações.
 - Ação destrutiva à direita, em `destructive`; cancelar à esquerda.
 - `accessibilityViewIsModal`, foco preso, primeiro foco no título.
 
 ### 3.15 `EmptyState`
 
 - Ícone/ilustração + título + 1 frase + CTA opcional.
-- Para: nenhum app bloqueado ainda, nenhum parceiro adicionado, sem histórico.
+- Para: nenhum app bloqueado ainda, sem histórico.
 - Tom convidativo, não neutro-vazio ("Adicione o primeiro app que rouba seu tempo").
 
 ### 3.16 `Skeleton`
@@ -459,29 +426,6 @@ Aprovação **por-pedido de desbloqueio**. Há **um único parceiro por conta** 
 - **`Header`:** título da tela + ação de voltar (seta iOS / seta Android) + ações à direita. Large-title permitido no iOS, top app bar padrão no Android — **mesmo texto, mesmas ações**.
 - **`TabBar`:** 3–4 destinos, ícone + rótulo, na base. Tab bar iOS / navigation bar Android. Item ativo em `icon.brand` + rótulo `bodyStrong`.
 
-### 3.21 `PartnerInvite` (pareamento do parceiro — assíncrono)
-
-O parceiro é **obrigatório no onboarding** e o aceite depende de outra pessoa abrir o app dela. Entre enviar o convite e ele ser aceito pode passar **horas** — esse intervalo precisa de UI própria, não de um spinner.
-
-- **Estados:**
-  - `none` — sem convite. CTA "Convidar parceiro" (compartilha link / código).
-  - `pending` — convite enviado, aguardando aceite. Mostra para quem foi (nome/contato), quando, e um "Reenviar" / "Cancelar convite". Copy: "Convite enviado para [nome]. Você pode continuar usando o AceleraLock — o parceiro entra em ação no próximo desbloqueio." Não bloqueia o resto do app.
-  - `accepted` — pareado. Vira `PartnerApprovalStatus` daqui pra frente.
-  - `declined` — recusado. Tom neutro, CTA "Convidar outra pessoa".
-  - `expired` — convite caducou. CTA "Enviar de novo".
-- Enquanto `pending`, a cerimônia de desbloqueio funciona só com `autoEndsAt` (48 h) e diz o porquê.
-- `accessibilityLiveRegion="polite"` quando o estado muda para `accepted`/`declined` com o app aberto.
-
-### 3.22 `LocalValveNotice` (válvula local de 7 dias)
-
-Estado **visível**, nunca silencioso, para a liberação automática por falta de servidor (§2.7).
-
-- **Estados:**
-  - `hidden` — servidor acessível nas últimas 24 h (nada a mostrar).
-  - `counting` — sem servidor há ≥ 1 dia. `InlineAlert` `warning`: "Sem conexão com o servidor há N dias. Após 7 dias, seus bloqueios são liberados automaticamente." Atualiza a cada dia.
-  - `released` — passou de 7 dias, bloqueios liberados pela válvula. `InlineAlert` `info` persistente: "Seus bloqueios foram liberados porque o app ficou 7 dias sem servidor. Eles voltam assim que a conexão for restabelecida." Não é falha do usuário — tom neutro.
-- Aparece no topo da tela principal e dentro da `UnlockCeremony`/`BlockScreen` (Android).
-
 ### 3.23 Estados obrigatórios por tela
 
 Toda tela declara: `loading`, `empty`, `error`, `success`/conteúdo. Tela sem estado vazio é tela incompleta. Toda ação assíncrona dá feedback visual em < 100 ms (mesmo que seja só o botão em `loading`).
@@ -490,7 +434,7 @@ Toda tela declara: `loading`, `empty`, `error`, `success`/conteúdo. Tela sem es
 
 ## 4. Acessibilidade — decisões explícitas
 
-- **Contraste:** WCAG 2.1 AA. 4.5:1 texto normal, 3:1 texto grande (≥ 24 pt, ou ≥ 18.66 pt bold) e elementos de interface / gráficos. Tabela de pares verificados em §1.2 — **todos os pares de texto do sistema passam em AA para corpo**, incluindo o botão primário no tema escuro (rótulo quase-preto sobre `brand.400`, ~5.3:1).
+- **Contraste:** WCAG 2.1 AA. 4.5:1 texto normal, 3:1 texto grande (≥ 24 pt, ou ≥ 18.66 pt bold) e elementos de interface / gráficos. Tabela de pares verificados em §1.2, nas duas relações (texto-sobre-fill e fill-sobre-canvas) — **todos os pares do sistema passam**, incluindo o botão primário nos dois temas (par turquesa/`#04141c`, 8.52:1, invertido entre claro e escuro).
 - **Alvo de toque:** mínimo **48×48 dp** (cobre iOS 44 e Android 48). Espaçamento ≥ 8 entre alvos adjacentes. `hitSlop` para ícones pequenos.
 - **Fonte ampliada do sistema:** `allowFontScaling` ligado em tudo, exceto `timerHero` (travado em 1.3×). Layouts em flex, sem altura fixa em container de texto. Testar a 200%.
 - **Leitor de tela (VoiceOver / TalkBack):** todo elemento interativo tem `accessibilityLabel` + `accessibilityRole` + `accessibilityState` (`disabled`, `checked`, `busy`, `invalid`). Ícone decorativo: `accessibilityElementsHidden` (iOS) / `importantForAccessibility="no-hide-descendants"` (Android). Ordem de foco segue a ordem visual. Modais prendem foco.
@@ -545,9 +489,9 @@ Toda tela declara: `loading`, `empty`, `error`, `success`/conteúdo. Tela sem es
 
 ## 7. Dúvidas em aberto
 
-Fechadas nesta rodada (registradas no corpo): cooldown não pausa/reseta (§2.1) · `BlockScreen` são dois designs (§3.4) · um parceiro por conta (§3.6) · sem desbloqueio offline (§2.3) · dois bypasses: válvula 48 h (§2.6) e válvula local 7 dias (§2.7/§3.22) · parceiro obrigatório com pareamento assíncrono (§3.21) · contraste do botão primário escuro (§1.2) · prazos são config de servidor, layout não crava dígitos (§2.1) · push é só aviso, estado vem sempre do sync (§2.1).
+Fechadas nesta rodada: cooldown não pausa/reseta (§2.1) · `BlockScreen` são dois designs (§3.4) · contraste do botão primário — nas duas direções, escuro e claro invertido (§1.2) · prazo é config local, layout não crava dígitos (§2.1). A arquitetura de parceiro/servidor que motivou boa parte das dúvidas antigas (offline, dois bypasses, pareamento assíncrono) não existe mais — ver Rev. 4 no topo.
 
-Parqueadas (só se respondem com código nativo na mão; `dev` está no backend):
+Parqueadas (só se respondem com código nativo na mão; `dev` está no módulo nativo):
 
 - **Campos exatos do `ShieldConfiguration` (iOS)** — lista real de campos, se aceita mais de um botão, se reconfigura em background. O design da §3.4 assume o pior caso (estático, campos mínimos) até haver resposta.
 - **Overlay do Android (`SYSTEM_ALERT_WINDOW`)** — confiabilidade em OEMs restritivos; pode exigir plano B para a `BlockScreen` Android. `qa` já catalogou no grupo C da matriz de burla — ler antes de assumir que o overlay sempre sobe.
@@ -555,7 +499,8 @@ Parqueadas (só se respondem com código nativo na mão; `dev` está no backend)
 Ainda abertas (produto):
 
 1. **Gamificação / streak** — existe recompensa para o polo "orgulho" (sequência, conquistas) ou só calma neutra? Define se `ProtectedCard` ganha componentes de progresso.
-2. **Fonte custom** — ficamos em fonte de sistema. Se a marca (quando existir) pedir fonte própria, a escala de §1.3 é reaproveitável, mas entrelinhas precisam de reteste.
+2. **Fonte custom** — ficamos em fonte de sistema. Se a marca pedir fonte própria, a escala de §1.3 é reaproveitável, mas entrelinhas precisam de reteste.
 3. **Escopo de localização** — só pt-BR ou também en? Afeta folga de layout e teste de fonte ampliada.
 4. **Versões mínimas de OS** (iOS / Android) — afeta APIs disponíveis (Family Controls, `SYSTEM_ALERT_WINDOW`, `accessibilityLanguage`).
-5. **Alinhar registro emocional do onboarding com `mobile`** — o tom da primeira sessão precisa casar com o polo "calma e orgulho", e o onboarding agora inclui o `PartnerInvite`.
+5. **Alinhar registro emocional do onboarding com `mobile`** — o tom da primeira sessão precisa casar com o polo "calma e orgulho".
+6. **Layout final da tela de espera** (§3.5) — cancelar fácil e contador calmo são restrição fechada; container, cópia exata e o que `error` mostra ali ainda não.
