@@ -10,19 +10,27 @@ enum class BlockOutcome {
 enum class AllowReason {
     NOT_A_TARGET,
     CRITICAL_APP,
-    ACTIVE_GRANT,
-    OUTSIDE_WINDOW
+    ACTIVE_GRANT
 }
 
 data class BlockVerdict(
     val outcome: BlockOutcome,
-    val allowReason: AllowReason? = null,
-    val unanchored: Boolean = false
+    val allowReason: AllowReason? = null
 ) {
     val shouldDrawOverlay: Boolean get() = outcome == BlockOutcome.BLOCK
 }
 
-class BlockDecider(private val correctedClock: CorrectedClock) {
+fun interface Clock {
+    fun now(): Instant
+}
+
+/**
+ * Decisao de bloqueio. Sem ancora de servidor: o tempo e o do aparelho, e o user
+ * que adianta o relogio tambem fura o bloqueio. Sem servidor, nao ha defesa melhor
+ * (a CorrectedClock original ancorava em serverTime — sem server, nao ha o que
+ * ancorar). Quando voltar a ter backend, reintroduzir defesa aqui.
+ */
+class BlockDecider(private val clock: Clock) {
 
     fun decide(
         packageName: String,
@@ -32,30 +40,15 @@ class BlockDecider(private val correctedClock: CorrectedClock) {
         if (packageName in criticalPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.CRITICAL_APP)
         }
-        if (packageName !in policy.allTargetPackages()) {
+        if (packageName !in policy.blockedPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.NOT_A_TARGET)
         }
-
-        return when (val now = correctedClock.now()) {
-            is CorrectedTime.Unanchored ->
-                BlockVerdict(BlockOutcome.BLOCK, unanchored = true)
-
-            is CorrectedTime.Anchored -> decideAnchored(packageName, policy, now.instant)
-        }
-    }
-
-    private fun decideAnchored(packageName: String, policy: BlockPolicy, now: Instant): BlockVerdict {
-        val granted = policy.grants.any { it.packageName == packageName && !now.isAfter(it.grantEndsAt) }
-        if (granted) {
-            return BlockVerdict(BlockOutcome.ALLOW, AllowReason.ACTIVE_GRANT)
-        }
-        val insideWindow = policy.profiles.any { profile ->
-            packageName in profile.targetPackages && profile.isActiveAt(now)
-        }
-        return if (insideWindow) {
-            BlockVerdict(BlockOutcome.BLOCK)
+        val now = clock.now()
+        val granted = policy.grants.any { it.packageName == packageName && now.isBefore(it.grantEndsAt) }
+        return if (granted) {
+            BlockVerdict(BlockOutcome.ALLOW, AllowReason.ACTIVE_GRANT)
         } else {
-            BlockVerdict(BlockOutcome.ALLOW, AllowReason.OUTSIDE_WINDOW)
+            BlockVerdict(BlockOutcome.BLOCK)
         }
     }
 }
