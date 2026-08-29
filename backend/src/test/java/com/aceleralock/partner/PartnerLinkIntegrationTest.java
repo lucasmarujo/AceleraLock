@@ -143,6 +143,47 @@ class PartnerLinkIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    @DisplayName("regressao: parceiro apaga a conta e o dono e notificado na trilha")
+    void ownerIsNotifiedWhenPartnerDeletesAccount() throws Exception {
+        Account owner = owner();
+        Account partner = partner();
+        partnerService.accept(partner.getId(), partnerService.createInvite(owner.getId()).code());
+        com.aceleralock.auth.AuthService.DeviceSession partnerSession = authService.issueDeviceSession(
+                deviceRepository.findByAccountId(partner.getId()).get(0));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete("/v1/accounts/me")
+                        .header(org.springframework.http.HttpHeaders.AUTHORIZATION, freshBearer(partnerSession)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .status().isNoContent());
+
+        assertThat(auditEventRepository.findByAccountIdAndTypeOrderByReceivedAtDesc(
+                owner.getId(), AuditEventType.ACCOUNT_DELETED)).isNotEmpty();
+        assertThat(accountRepository.findById(partner.getId())).isEmpty();
+        assertThat(accountRepository.findById(owner.getId())).isPresent();
+    }
+
+    @Test
+    @DisplayName("regressao: dono apaga a conta e o parceiro e notificado na trilha")
+    void partnerIsNotifiedWhenOwnerDeletesAccount() throws Exception {
+        Account owner = owner();
+        Account partner = partner();
+        partnerService.accept(partner.getId(), partnerService.createInvite(owner.getId()).code());
+        com.aceleralock.auth.AuthService.DeviceSession ownerSession = authService.issueDeviceSession(
+                deviceRepository.findByAccountId(owner.getId()).get(0));
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .delete("/v1/accounts/me")
+                        .header(org.springframework.http.HttpHeaders.AUTHORIZATION, freshBearer(ownerSession)))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                        .status().isNoContent());
+
+        assertThat(auditEventRepository.findByAccountIdAndTypeOrderByReceivedAtDesc(
+                partner.getId(), AuditEventType.ACCOUNT_DELETED)).isNotEmpty();
+        assertThat(accountRepository.findById(owner.getId())).isEmpty();
+    }
+
+    @Test
     @DisplayName("erro: dono com parceiro ativo nao cria segundo convite")
     void ownerCannotHaveTwoActivePartners() {
         Account owner = owner();

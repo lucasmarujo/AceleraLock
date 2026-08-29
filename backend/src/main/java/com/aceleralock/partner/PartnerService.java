@@ -122,6 +122,11 @@ public class PartnerService {
         auditService.recordServerEvent(link.getOwnerAccount(), null, AuditEventType.PARTNER_REVOKED, null);
     }
 
+    @Transactional
+    public void removeAllLinksOf(UUID accountId) {
+        partnerLinkRepository.deleteAllTouchingAccount(accountId);
+    }
+
     @Transactional(readOnly = true)
     public Optional<PartnerLink> findActiveLinkOwnedBy(UUID ownerAccountId) {
         return partnerLinkRepository.findByOwnerAccountIdAndStatus(ownerAccountId, PartnerLinkStatus.ACTIVE);

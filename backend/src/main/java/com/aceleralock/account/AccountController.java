@@ -15,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -42,13 +45,26 @@ public class AccountController {
     @Transactional
     public void delete(@AuthenticationPrincipal Jwt jwt) {
         UUID accountId = AuthenticatedCaller.from(jwt).accountId();
-        Account account = accountService.require(accountId);
+        accountService.require(accountId);
 
-        partnerService.findActiveLinkOwnedBy(accountId).ifPresent(link -> {
-            pushDispatcher.notifyAccount(link.getPartnerAccount(), PushNotificationType.ACCOUNT_DELETED, null);
-            auditService.recordServerEvent(account, null, AuditEventType.ACCOUNT_DELETED, null);
-        });
+        List<UUID> counterpartIds = new ArrayList<>();
+        partnerService.findActiveLinkOwnedBy(accountId)
+                .map(link -> link.getPartnerAccount())
+                .filter(Objects::nonNull)
+                .ifPresent(counterpart -> counterpartIds.add(counterpart.getId()));
+        partnerService.findActiveLinksWhereCallerIsPartner(accountId).stream()
+                .map(link -> link.getOwnerAccount())
+                .filter(Objects::nonNull)
+                .forEach(counterpart -> counterpartIds.add(counterpart.getId()));
 
-        accountRepository.delete(account);
+        partnerService.removeAllLinksOf(accountId);
+
+        for (UUID counterpartId : counterpartIds) {
+            Account counterpart = accountService.require(counterpartId);
+            auditService.recordServerEvent(counterpart, null, AuditEventType.ACCOUNT_DELETED, null);
+            pushDispatcher.notifyAccount(counterpart, PushNotificationType.ACCOUNT_DELETED, null);
+        }
+
+        accountRepository.deleteById(accountId);
     }
 }

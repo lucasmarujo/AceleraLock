@@ -16,4 +16,9 @@ public interface PartnerLinkRepository extends JpaRepository<PartnerLink, UUID> 
 
     boolean existsByOwnerAccountIdAndPartnerAccountIdAndStatus(UUID ownerAccountId, UUID partnerAccountId,
                                                               PartnerLinkStatus status);
+
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true, flushAutomatically = true)
+    @org.springframework.data.jpa.repository.Query(
+            "delete from PartnerLink l where l.ownerAccount.id = :accountId or l.partnerAccount.id = :accountId")
+    void deleteAllTouchingAccount(@org.springframework.data.repository.query.Param("accountId") UUID accountId);
 }

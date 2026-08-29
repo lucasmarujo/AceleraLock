@@ -62,8 +62,8 @@ public class DeviceController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updatePushToken(@AuthenticationPrincipal Jwt jwt, @PathVariable UUID deviceId,
                                 @Valid @RequestBody PushTokenRequest request) {
-        Device device = deviceAccessGuard.require(AuthenticatedCaller.from(jwt), deviceId);
-        deviceService.updatePushToken(device, request.token(), request.provider());
+        deviceAccessGuard.require(AuthenticatedCaller.from(jwt), deviceId);
+        deviceService.updatePushToken(deviceId, request.token(), request.provider());
     }
 
     public record RegisterDeviceRequest(

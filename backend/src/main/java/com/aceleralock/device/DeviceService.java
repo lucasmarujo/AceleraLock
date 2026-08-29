@@ -62,7 +62,9 @@ public class DeviceService {
     }
 
     @Transactional
-    public void updatePushToken(Device device, String token, PushProvider provider) {
-        device.updatePushToken(token, provider);
+    public void updatePushToken(UUID deviceId, String token, PushProvider provider) {
+        deviceRepository.findById(deviceId)
+                .orElseThrow(() -> new NotFoundException("device nao encontrado"))
+                .updatePushToken(token, provider);
     }
 }

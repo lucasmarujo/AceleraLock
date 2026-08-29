@@ -22,6 +22,15 @@
 > grupo H / **D-lat** — no Android há de 0,5 a 2 s de conteúdo do alvo visível
 > antes de o overlay subir; tratado em §4.9. Primitiva **P7** (break-glass) e
 > cenários J1–J3 embasam a regra das 48 h.
+>
+> **Rev. 3 (2026-08-29)** — requisito de segurança física: nenhuma lista de
+> apps bloqueáveis pode incluir discador, emergência, Ajustes ou o próprio
+> app — ver §4.1.1–4.1.4 (Android: seletor + runtime; **iOS: corrigido no
+> mesmo dia** — a extensão de shield não é ponto de decisão e o app id chega
+> opaco, então a única proteção real é um **2º seletor obrigatório de
+> exceção**, §5.5.a). Também: idade mínima de 48 h no vínculo do parceiro
+> antes do 1º atalho (§4.2.b′); o prazo de expiração deixou de ser texto
+> fixo e virou dado do servidor (D11).
 
 ---
 
@@ -214,12 +223,12 @@ nativo, antes de o alvo virar opaco**, e reforçada em runtime.
 
 | Categoria | Android — como resolver | iOS |
 |-----------|-------------------------|-----|
-| Discador padrão | `RoleManager` `ROLE_DIALER` + resolver de `Intent.ACTION_DIAL` | Ver 4.1.3 |
-| Emergência / SOS | `RoleManager` `ROLE_EMERGENCY` (API 29+) + pacotes conhecidos (`com.android.emergency`) | Chamada de emergência é garantida pelo iOS abaixo da camada de apps — sempre funciona |
-| Ajustes do sistema | resolver de `Settings.ACTION_SETTINGS` (normalmente `com.android.settings`) | `com.apple.Preferences` — ver 4.1.3 |
+| Discador padrão | `RoleManager` `ROLE_DIALER` + resolver de `Intent.ACTION_DIAL` | **Sem cobertura automática — exige o 2º seletor, §4.1.3** |
+| Emergência / SOS | `RoleManager` `ROLE_EMERGENCY` (API 29+) + pacotes conhecidos (`com.android.emergency`) | Chamada de emergência é garantida pelo iOS abaixo da camada de apps — sempre funciona, mesmo se o Telefone acabar sombreado |
+| Ajustes do sistema | resolver de `Settings.ACTION_SETTINGS` (normalmente `com.android.settings`) | Sem cobertura automática confirmada — mesmo tratamento do Telefone, §4.1.3 |
 | Launcher padrão | resolver de `Intent.CATEGORY_HOME` | N/A (não aplicável) |
-| O próprio AceleraLock | `context.packageName` | próprio `bundleIdentifier` |
-| SMS/mensagens padrão, autenticador, banco | **aviso forte**, não bloqueio duro (matriz de QA, J6) — usuário confirma | idem, na medida do possível |
+| O próprio AceleraLock | `context.packageName` | Não selecionável no `FamilyActivityPicker` na prática (app não aparece na própria lista) — sem ação necessária |
+| SMS/mensagens padrão, autenticador, banco | **aviso forte**, não bloqueio duro (matriz de QA, J6) — usuário confirma | mesmo tratamento: sugeridos no 2º seletor, não impostos |
 
 O conjunto é recalculado a cada início do serviço e nos broadcasts de
 `ACTION_PACKAGE_CHANGED` / mudança de app padrão — o discador padrão pode
@@ -241,35 +250,70 @@ mudar *depois* de o usuário configurar os bloqueios.
 Uma barreira só quebra quando a lista muda entre versões. As duas juntas
 degradam com segurança.
 
-#### 4.1.3 — iOS: confirmar cobertura da Apple, tratar o resto
+#### 4.1.3 — iOS: não existe rede de segurança automática; existe um 2º seletor
 
-O `FamilyActivityPicker` é da Apple e **parte** dos apps críticos já é
-protegida pelo sistema (chamada de emergência sempre funciona; o app Ajustes
-e o Telefone provavelmente não são *shieldáveis* — **confirmar empiricamente
-antes de assumir**, era pedido do `supervisor`). O que não está coberto:
+**Revisão (investigação do `dev`, 2026-08-29): a barreira 3 da rev. anterior
+não funciona e foi removida.** A extensão de *shield* do Family Controls
+devolve só aparência (título, cor, botão) — não é um ponto de decisão, não
+tem como "deixar passar" um app. E o identificador do app chega **nulo por
+design** nas seleções do picker, mesma restrição de privacidade que gerou o
+alvo opaco. Não existe gancho técnico para inspecionar ou filtrar depois da
+seleção.
 
-- **Barreira 1 — antes do picker:** tela recomendando escolher **app por
-  app** e desencorajando categorias inteiras (uma categoria pode varrer um
-  app essencial junto).
-- **Barreira 2 — após a seleção:** inspecionar o `FamilyActivitySelection` —
-  não dá para ver identidades (tokens opacos), mas dá para ver se
-  `categoryTokens` não está vazio → **aviso duro**: "você bloqueou categorias
-  inteiras; apps essenciais podem estar dentro — recomendamos rever e
-  escolher um a um".
-- **Barreira 3 — na extensão de *shield* (iOS 16+):** ali `Application.bundleIdentifier`
-  fica legível. Se bater com a denylist crítica → remover esse token de
-  `ManagedSettingsStore.shield.applications` e não apresentar ação de
-  bloqueio. É a rede de segurança que funciona apesar da opacidade. (Depende
-  de `dev` para o módulo nativo — sinalizar.)
+**O mecanismo real: exceção dentro de uma categoria.** O Family Controls
+permite bloquear uma categoria inteira *exceto* apps específicos. Isso
+resolve o problema — mas a exceção só existe para tokens, e **token só nasce
+de o usuário selecionar o app no picker**. Não dá para o AceleraLock
+sintetizar o token do Telefone sem o usuário apontar para ele.
+
+**Consequência: no onboarding iOS, depois de escolher o que bloquear (§5.5),
+existe um segundo seletor — obrigatório — onde o próprio usuário marca os
+apps que nunca podem ser bloqueados.** Não é uma opção de produto; é a única
+forma de proteger o discador no iOS que existe hoje. A alternativa seria não
+proteger o discador — inaceitável.
+
+**Isso não é rotina, é o caso comum.** A `react-native-device-activity`
+(biblioteca de referência mapeada em D2) tem uma *issue* aberta documentando
+que o iOS **promove seleção individual para a categoria inteira**: o usuário
+marca "Instagram" e o sistema entende "categoria Social" — é assim que o
+discador entra no bloqueio sem ninguém pedir, mesmo sem o usuário tentar
+bloquear o Telefone diretamente. O segundo seletor não é defesa contra um
+caso raro; é defesa contra o comportamento normal do picker.
+
+**O risco de UX que isso cria:** dois seletores do mesmo tipo de tela do
+sistema, em sequência, com propósitos opostos — um bloqueia, o outro protege.
+Se parecerem a mesma coisa, o usuário erra o seletor errado no piloto
+automático, e errar aqui significa desproteger o próprio discador. Este doc
+não resolve a camada visual (é `uxui`), mas fixa a estrutura que a torna
+inconfundível:
+
+- **Título e enquadramento opostos, nunca "mais uma tela de apps".** O
+  primeiro seletor pergunta "o que trancar"; o segundo pergunta "o que nunca
+  pode ficar trancado" — o texto tem de dizer a palavra "nunca" e "proteger",
+  não repetir o padrão do primeiro.
+- **Conteúdo sugerido, confirmação do usuário.** O app pré-marca ou destaca
+  os candidatos óbvios — discador, Telefone, Ajustes, o app de autenticação
+  de dois fatores e o banco, se identificáveis — mas quem confirma a seleção
+  final no picker é o usuário; o sistema não permite pré-selecionar por nós.
+- **Um passo intermediário de confirmação explícita**, fora do picker do
+  sistema, resumindo o que ficou protegido antes de seguir — para o usuário
+  ver a lista fora do contexto confuso da tela nativa.
+- **Ordem fixa: bloquear primeiro, proteger depois**, sempre nessa sequência,
+  nunca invertida nem intercalada — inverter aumenta a chance de o usuário
+  "misturar" as duas intenções.
+
+Sem cobertura automática confirmada para nenhum app crítico no iOS — nem
+Telefone, nem Ajustes — o 2º seletor é obrigatório, não condicional a
+detectar risco.
 
 #### 4.1.4 — O que o usuário vê ao tentar selecionar um app proibido
 
-Nem erro seco, nem falha silenciosa. Linha na lista (Android):
+**Android** — nem erro seco, nem falha silenciosa. Linha na lista:
 
 > 🔒 Telefone · Ligações
 > *Sempre liberado — você precisa poder ligar para a emergência.*
 
-Se tocar na linha (ou, no iOS, no aviso pós-seleção):
+Se tocar na linha:
 
 > **Esse app fica sempre liberado**
 >
@@ -277,6 +321,12 @@ Se tocar na linha (ou, no iOS, no aviso pós-seleção):
 > sistema e ele mesmo. É uma trava de segurança — não dá para desativar.
 >
 > `[ Entendi ]`
+
+**iOS** — não existe essa checagem no momento da seleção (identificador vem
+opaco; ver §4.1.3). A prevenção acontece antes, no fluxo (§5.5.a): o usuário
+não "tenta selecionar um app proibido" porque a tela de proteção pede
+explicitamente os apps essenciais, em vez de bloquear a tentativa de
+selecioná-los na tela de bloqueio.
 
 ### 4.2 — Convidar o parceiro de confiança (obrigatório)
 
@@ -623,7 +673,8 @@ de foco está pedindo *Screen Time*.
 Iguais a 4.0–4.2, **incluindo a lista de apps não-bloqueáveis (§4.1.1), o
 parceiro obrigatório, a expiração automática do pedido, a idade mínima do
 vínculo e o consentimento do alerta de queda** (§4.1.1, §4.2.a–d) — idênticos
-entre plataformas. No iOS, a barreira 1/2/3 de apps críticos é a de §4.1.3.
+entre plataformas. No iOS, a proteção de apps críticos é o **2º seletor
+obrigatório** de §4.1.3, entre 5.5 e 5.6 — ver 5.5.a abaixo.
 Na tela 5.1 ("escolher apps"), como o `FamilyActivityPicker` exige autorização
 antes, a ordem é: **autorizar (5.4) primeiro, escolher apps (5.5) depois**. A
 tela 5.1 aqui só coleta a *intenção* ("quais tipos de app? redes sociais,
@@ -689,7 +740,7 @@ não consegue reapresentar o diálogo — aí "Tentar de novo" tem de levar dire
 a Ajustes. O texto e os botões se adaptam ao `authorizationStatus` real
 (confirmar na versão-alvo — era D7).
 
-### 5.5 — Seleção de apps (`FamilyActivityPicker`)
+### 5.5 — Seleção de apps a bloquear (`FamilyActivityPicker`)
 
 > **Escolha o que trancar**
 >
@@ -698,8 +749,55 @@ a Ajustes. O texto e os botões se adaptam ao `authorizationStatus` real
 >
 > `[ Abrir seleção ]`
 
-Apresenta o `FamilyActivityPicker`. A `Selection` (tokens) é persistida e
-aplicada via `ManagedSettingsStore.shield`.
+Apresenta o `FamilyActivityPicker`. A `Selection` (tokens) é persistida.
+**Ainda não aplica o shield** — antes disso vem 5.5.a, obrigatório.
+
+### 5.5.a — Seleção de apps a proteger (2º seletor, obrigatório — §4.1.3)
+
+**Sem cobertura automática confirmada para nenhum app crítico no iOS.** Este
+passo não é condicional: sempre aparece, mesmo que a seleção de 5.5 pareça
+inofensiva — a promoção de app individual para categoria inteira (nota de
+§4.1.3) pode ter varrido o Telefone junto sem o usuário perceber.
+
+**5.5.a.i — Priming, com enquadramento deliberadamente oposto ao de 5.5:**
+
+> **Agora o oposto: o que NUNCA pode ficar trancado**
+>
+> Você acabou de escolher o que bloquear. Esta tela é para escolher o
+> contrário: os apps que **têm de continuar acessíveis sempre** — mesmo que
+> tenham entrado sem querer na lista anterior (o iOS às vezes agrupa um app
+> que você marcou junto com toda a categoria dele).
+>
+> Marque pelo menos: **Telefone**, e se usar, o app do seu banco e o
+> autenticador de dois fatores.
+>
+> `[ Abrir seleção de proteção ]`
+
+**5.5.a.ii — Handoff:** `FamilyActivityPicker` de novo, mas com título e
+contexto de tela distintos do de 5.5 (trabalho visual de `uxui`, mas a
+diferença estrutural — telas separadas, textos opostos, ordem fixa — é
+definida aqui). O app **não pode pré-marcar** o Telefone por nós — o sistema
+não permite; só pode sugerir no texto e destacar visualmente os candidatos
+prováveis, se estiverem na lista.
+
+**5.5.a.iii — Confirmação fora do picker**, resumindo o que ficou protegido
+antes de seguir (o picker do sistema é ruim para revisar uma escolha):
+
+> **Protegidos, sempre acessíveis:**
+> ✓ Telefone
+> ✓ [banco selecionado]
+> ✓ [autenticador selecionado]
+>
+> `[ Confirmar ]`
+> `[ Voltar e ajustar ]`
+
+**5.5.a.iv — Aplicação técnica:** os tokens de 5.5.a viram a lista de exceção
+dentro da(s) categoria(s) shieldada(s) — Family Controls bloqueia a categoria
+inteira *exceto* esses tokens. Só depois disso o shield de fato aplica
+(`ManagedSettingsStore.shield` com a exceção configurada).
+
+Sem esse passo o app não avança para 5.6 — mesma lógica de "sem pular" do
+princípio 8, aplicada aqui porque a alternativa é desproteger o discador.
 
 ### 5.6 — Teste real
 
@@ -898,7 +996,7 @@ A tela inicial do app é decidida sempre pelo health check, nunca assumida.
 | Permissões *core* do onboarding são inescapáveis (sem "pular") | Desvio **deliberado** de `ui-ux-pro-max` ux-guidelines — *Onboarding › User Freedom*, por decisão de produto do usuário (rev. 2, princípio 8). "Voltar" e "pular" seguem nos passos não essenciais (bateria, autostart, notificação). A saída sempre disponível é desinstalar — não é dark pattern enquanto o caminho às Configurações fica livre. |
 | Parceiro obrigatório + válvula de expiração automática do pedido | Decisão de produto do usuário. Alinhado à primitiva **P7** (break-glass) da matriz de QA (`docs/qa/matriz-cenarios-burla.md`) e aos cenários J1–J3 ("parceiro sumiu"): ninguém pode ficar preso para sempre. |
 | Assumir a latência do overlay no texto do teste real (Android) | Matriz de QA — grupo H / **D-lat**: 0,5–2 s de conteúdo visível medidos; polling mais rápido reduz, não elimina, e custa bateria. Nota transversal D: iOS é materialmente mais forte (shield pré-render). |
-| Discador / emergência / Ajustes / o próprio app nunca são bloqueáveis, aplicado no seletor nativo + runtime | Segurança física. Matriz de QA — J6. Android: `RoleManager.ROLE_DIALER` / `ROLE_EMERGENCY` (API 29+), resolver de `ACTION_SETTINGS` / `CATEGORY_HOME`. iOS: chamada de emergência é garantida pelo SO; `Application.bundleIdentifier` legível na extensão de shield (iOS 16+) para a rede de segurança. |
+| Discador / emergência / Ajustes / o próprio app nunca são bloqueáveis, aplicado no seletor nativo + runtime | Segurança física. Matriz de QA — J6. Android: `RoleManager.ROLE_DIALER` / `ROLE_EMERGENCY` (API 29+), resolver de `ACTION_SETTINGS` / `CATEGORY_HOME`. iOS: chamada de emergência é garantida pelo SO; para o resto, a extensão de shield não decide nada e o identificador do app chega opaco — a única cobertura real é o 2º seletor de exceção obrigatório (§4.1.3), confirmado com `dev` em 2026-08-29. |
 | Vínculo do parceiro tem idade mínima antes de poder aprovar | Decisão do `supervisor` (fecha o roteiro "cúmplice de última hora", matriz de QA — F1/F10). Interface tem de mostrar a data a partir da qual o atalho existe. |
 | Skeleton/estado de carregamento em vez de tela branca; feedback de toque em 80–150ms; micro-interações 150–300ms | `ui-ux-pro-max` pro-rules — *Interaction (App)*. |
 | Dynamic Type / font scale sem quebrar layout; reduzir movimento respeitado | `ui-ux-pro-max` app-interface — *Dynamic Type Support*, severidade High; pro-rules checklist. |
@@ -995,9 +1093,14 @@ separadas.
 - Idade mínima do vínculo (§4.2.b′): o 1º pedido dentro da janela de 48 h
   não tem atalho de parceiro; a tela precisa dizer isso e a data em que passa
   a ter.
-- `ShieldConfiguration` (iOS 16+) expõe `Application.bundleIdentifier` — é o
-  gancho da barreira 3 de segurança de apps críticos (§4.1.3); depende de
-  `dev` para o módulo nativo.
+- **Correção 2026-08-29 (investigação do `dev`):** a extensão de shield do
+  iOS **não** é um ponto de decisão — não devolve autorização, só aparência,
+  e o identificador do app chega opaco. Não há gancho ali para nada
+  relacionado a apps críticos. A proteção real já foi resolvida no onboarding
+  (2º seletor de exceção, §4.1.3/§5.5.a) — a cerimônia da próxima rodada
+  **herda apps já protegidos**, não precisa resolver isso de novo. Se algo na
+  cerimônia mexer nos tokens do `ManagedSettingsStore` (trocar apps
+  bloqueados, por exemplo), tem de preservar a lista de exceção.
 
 **Item da rodada de publicação (D10):** notas de revisão no console da App
 Store e do Google Play explicando que acesso de uso / sobreposição / Family

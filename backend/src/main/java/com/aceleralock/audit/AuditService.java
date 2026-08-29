@@ -1,10 +1,13 @@
 package com.aceleralock.audit;
 
 import com.aceleralock.account.Account;
+import com.aceleralock.account.AccountRepository;
 import com.aceleralock.device.BlockTarget;
 import com.aceleralock.device.Device;
+import com.aceleralock.device.DeviceRepository;
 import com.aceleralock.time.TimeAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -14,11 +17,27 @@ import java.util.UUID;
 public class AuditService {
 
     private final AuditEventRepository auditEventRepository;
+    private final AccountRepository accountRepository;
+    private final DeviceRepository deviceRepository;
     private final TimeAuthority timeAuthority;
 
-    public AuditService(AuditEventRepository auditEventRepository, TimeAuthority timeAuthority) {
+    public AuditService(AuditEventRepository auditEventRepository, AccountRepository accountRepository,
+                        DeviceRepository deviceRepository, TimeAuthority timeAuthority) {
         this.auditEventRepository = auditEventRepository;
+        this.accountRepository = accountRepository;
+        this.deviceRepository = deviceRepository;
         this.timeAuthority = timeAuthority;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void recordTamperEvidence(UUID accountId, UUID deviceId, AuditEventType type, String details) {
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account == null) {
+            return;
+        }
+        Device device = deviceId == null ? null : deviceRepository.findById(deviceId).orElse(null);
+        auditEventRepository.save(new AuditEvent(account, device, null, AuditEventSource.SERVER, type,
+                null, timeAuthority.now(), null, details));
     }
 
     @Transactional

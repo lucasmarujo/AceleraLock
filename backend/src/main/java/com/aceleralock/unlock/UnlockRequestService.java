@@ -89,7 +89,8 @@ public class UnlockRequestService {
     public UnlockRequest approve(UUID partnerAccountId, UUID requestId) {
         UnlockRequest request = requirePartnerRequest(partnerAccountId, requestId);
         PartnerLink link = request.getPartnerLink();
-        if (!link.isMatureAt(timeAuthority.now(), properties.partnerMinAge())) {
+        if (request.getStatus() == UnlockRequestStatus.PENDING
+                && !link.isMatureAt(timeAuthority.now(), properties.partnerMinAge())) {
             throw new ConflictException("vinculo de parceiro ainda nao maduro para aprovar");
         }
         request.approve(accountService.require(partnerAccountId), timeAuthority.now());

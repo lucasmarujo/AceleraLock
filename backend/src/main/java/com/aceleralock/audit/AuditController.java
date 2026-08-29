@@ -98,7 +98,8 @@ public class AuditController {
         });
 
         if (!plausible) {
-            auditService.recordServerEvent(device.getAccount(), device, AuditEventType.PROTECTION_INTERRUPTED, null,
+            auditService.recordTamperEvidence(device.getAccount().getId(), device.getId(),
+                    AuditEventType.PROTECTION_INTERRUPTED,
                     "{\"reason\":\"failsafe_gap_implausible\",\"observedGapSeconds\":" + observedGap.getSeconds()
                             + ",\"requiredGapSeconds\":" + requiredGap.getSeconds() + "}");
         }

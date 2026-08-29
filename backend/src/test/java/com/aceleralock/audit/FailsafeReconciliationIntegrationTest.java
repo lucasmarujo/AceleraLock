@@ -25,6 +25,12 @@ class FailsafeReconciliationIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private AuditEventRepository auditEventRepository;
 
+    @Autowired
+    private AuditService auditService;
+
+    @Autowired
+    private org.springframework.transaction.PlatformTransactionManager transactionManager;
+
     private record Scene(AuthService.DeviceSession session, Account account) {
     }
 
@@ -71,6 +77,41 @@ class FailsafeReconciliationIntegrationTest extends AbstractIntegrationTest {
         assertThat(interrupted).isNotEmpty();
         assertThat(interrupted.get(0).getDetails()).contains("failsafe_gap_implausible");
         assertThat(interrupted.get(0).getSource()).isEqualTo(AuditEventSource.SERVER);
+    }
+
+    @Test
+    @DisplayName("regressao: evidencia de adulteracao sobrevive ao rollback da transacao externa")
+    void tamperEvidenceSurvivesOuterRollback() {
+        Scene scene = scene();
+        org.springframework.transaction.support.TransactionTemplate template =
+                new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+
+        template.executeWithoutResult(status -> {
+            auditService.recordTamperEvidence(scene.account().getId(), scene.session().deviceId(),
+                    AuditEventType.PROTECTION_INTERRUPTED, "{\"reason\":\"failsafe_gap_implausible\"}");
+            status.setRollbackOnly();
+        });
+
+        assertThat(auditEventRepository.findByAccountIdAndTypeOrderByReceivedAtDesc(
+                scene.account().getId(), AuditEventType.PROTECTION_INTERRUPTED)).isNotEmpty();
+    }
+
+    @Test
+    @DisplayName("controle: evento comum nao sobrevive ao rollback, provando que o teste acima mede algo")
+    void ordinaryEventDoesNotSurviveOuterRollback() {
+        Scene scene = scene();
+        org.springframework.transaction.support.TransactionTemplate template =
+                new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+
+        template.executeWithoutResult(status -> {
+            auditService.recordServerEvent(
+                    accountRepository.findById(scene.account().getId()).orElseThrow(),
+                    null, AuditEventType.BYPASS_ATTEMPT, null);
+            status.setRollbackOnly();
+        });
+
+        assertThat(auditEventRepository.findByAccountIdAndTypeOrderByReceivedAtDesc(
+                scene.account().getId(), AuditEventType.BYPASS_ATTEMPT)).isEmpty();
     }
 
     @Test
