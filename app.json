@@ -8,6 +8,7 @@
     "platforms": ["ios", "android"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "ios": {
       "bundleIdentifier": "com.aceleralock.app",
       "supportsTablet": false,
@@ -20,7 +21,8 @@
       "allowBackup": true,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
-        "backgroundColor": "#04141c"
+        "backgroundColor": "#04141c",
+        "foregroundImage": "./assets/adaptive-icon-foreground.png"
       }
     },
     "plugins": [
@@ -28,9 +30,12 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#F6F7F8",
+          "image": "./assets/splash-icon-light.png",
+          "imageWidth": 160,
           "dark": {
-            "backgroundColor": "#04141c"
+            "backgroundColor": "#04141c",
+            "image": "./assets/splash-icon-dark.png"
           }
         }
       ],
