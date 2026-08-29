@@ -4,6 +4,7 @@ import com.aceleralock.blocker.core.ActiveGrant
 import com.aceleralock.blocker.core.BlockProfile
 import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.BlockWindow
+import com.aceleralock.blocker.core.TargetRegistry
 import com.aceleralock.blocker.core.TokenPair
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -28,7 +29,7 @@ data class SyncResult(
  * Cliente HTTP do backend. Quem chama e o servico nativo, nao o JavaScript — o JS
  * esta morto enquanto o app esta fechado, que e o estado normal deste produto.
  */
-class BackendClient(private val baseUrl: String) {
+class BackendClient(private val baseUrl: String, private val targets: TargetRegistry) {
 
     private val http = OkHttpClient.Builder()
         .callTimeout(Duration.ofSeconds(20))
@@ -120,7 +121,7 @@ class BackendClient(private val baseUrl: String) {
             for (index in 0 until grantsJson.length()) {
                 val grant = grantsJson.getJSONObject(index)
                 grants += ActiveGrant(
-                    packageName = LocalTargetMap.packageFor(grant.getString("targetId")),
+                    packageName = targets.packageFor(grant.getString("targetId")),
                     grantEndsAt = Instant.parse(grant.getString("grantEndsAt"))
                 )
             }
@@ -146,7 +147,7 @@ class BackendClient(private val baseUrl: String) {
         val packages = mutableSetOf<String>()
         val array = profile.optJSONArray("targetIds") ?: return packages
         for (index in 0 until array.length()) {
-            packages += LocalTargetMap.packageFor(array.getString(index))
+            packages += targets.packageFor(array.getString(index))
         }
         return packages
     }

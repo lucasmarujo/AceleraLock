@@ -7,7 +7,7 @@ por conta própria e desenha o overlay de bloqueio.
 
 | Parte | Estado |
 |---|---|
-| `core/` — Kotlin puro, toda a decisão de bloqueio | **compila e roda: 27 testes verdes** |
+| `core/` — Kotlin puro, toda a decisão de bloqueio | **compila e roda: 34 testes verdes** |
 | `android/` — adaptadores Android + ponte Expo | **escrito, nunca compilado** |
 
 O `android/` depende de `expo-modules-core`, que vem de `node_modules`, e **o app
@@ -21,7 +21,7 @@ depende de Android**, e é justamente a parte que pode ser testada hoje, sem
 emulador e sem aparelho.
 
 ```bash
-gradle :core:test     # 27 testes, JVM pura, segundos
+gradle :core:test     # 34 testes, JVM pura, segundos
 ```
 
 ## Onde está o risco, e por que ele está no core
@@ -54,7 +54,19 @@ monotônicos e persiste a cada tick: **reboot é checkpoint, não reset**. Zera 
 quando um sync completa — e `304` conta como completo, porque significa que
 falamos com o servidor e o relógio veio no header.
 
-**4. Só o nativo rotaciona refresh token.** Dois rotacionadores são
+**4. O `clientRef` é aleatório, nunca derivado do pacote.** O servidor conhece só
+referências opacas; o mapa `targetId → packageName` vive apenas aqui
+(`TargetRegistry`), e é o análogo Android do mapa de `ApplicationToken` do iOS.
+
+Derivar o `clientRef` por hash do `packageName` **não esconderia nada**: o conjunto
+de pacotes Android é pequeno, público e enumerável, então qualquer um com a lista
+monta a tabela reversa. Truncar piora — aumenta colisão sem aumentar segredo. Hash
+de valor com pouca entropia só *parece* opaco, e acreditar nele é pior do que não
+ter garantia nenhuma. O ref é 128 bits de aleatório, gerado no aparelho, guardado
+ao lado do pacote e persistido para que a idempotência do servidor continue
+valendo entre reinícios.
+
+**5. Só o nativo rotaciona refresh token.** Dois rotacionadores são
 indistinguíveis de um token roubado: o backend veria um token consumido cujo
 sucessor já foi usado, concluiria reuso e **revogaria a família inteira**,
 deslogando o usuário e derrubando o bloqueio junto. A regra do servidor está

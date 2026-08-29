@@ -29,7 +29,9 @@ class SyncCoordinator(
     private var lastSyncElapsed: Long = 0L
 
     private val store = EncryptedKeyValueStore(context)
-    private val backend by lazy { BackendClient(store.getString(KEY_BASE_URL).orEmpty()) }
+    private val backend by lazy {
+        BackendClient(store.getString(KEY_BASE_URL).orEmpty(), TargetRegistryHolder.of(context))
+    }
     private val tokens by lazy { TokenStore(context, backend) }
 
     fun requestNow() {

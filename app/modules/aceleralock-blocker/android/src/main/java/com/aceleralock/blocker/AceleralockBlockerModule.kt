@@ -35,11 +35,14 @@ class AceleralockBlockerModule : Module() {
         }
 
         Function("clientRefFor") { packageName: String ->
-            LocalTargetMap.clientRefFor(packageName)
+            val ref = TargetRegistryHolder.of(context).clientRefFor(packageName)
+            TargetRegistryHolder.persist(context)
+            ref
         }
 
         Function("rememberTarget") { targetId: String, packageName: String ->
-            LocalTargetMap.remember(targetId, packageName)
+            TargetRegistryHolder.of(context).rememberTarget(targetId, packageName)
+            TargetRegistryHolder.persist(context)
         }
 
         Function("adoptSession") { baseUrl: String, deviceId: String, accessToken: String,
@@ -47,7 +50,7 @@ class AceleralockBlockerModule : Module() {
             val store = EncryptedKeyValueStore(context)
             store.putString(SyncCoordinator.KEY_BASE_URL, baseUrl)
             store.putString(SyncCoordinator.KEY_DEVICE_ID, deviceId)
-            TokenStore(context, BackendClient(baseUrl)).adopt(
+            TokenStore(context, BackendClient(baseUrl, TargetRegistryHolder.of(context))).adopt(
                 TokenPair(
                     accessToken = accessToken,
                     accessExpiresAt = Instant.now().plusSeconds(expiresInSeconds.toLong()),
