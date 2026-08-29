@@ -18,12 +18,14 @@ export function useProtectionVerdict() {
 
       const platformSupported = Platform.OS === 'android';
       let coreGranted = false;
+      let protectionActive = true;
       if (platformSupported) {
         const state = AceleralockBlocker.probePermissions();
         coreGranted = state.coreGranted;
+        protectionActive = AceleralockBlocker.protectionState().protectionActive;
       }
 
-      const next = computeVerdict({ platformSupported, coreGranted, onboardingComplete });
+      const next = computeVerdict({ platformSupported, coreGranted, onboardingComplete, protectionActive });
       previousVerdict.current = next;
       setVerdict(next);
     } catch (error) {

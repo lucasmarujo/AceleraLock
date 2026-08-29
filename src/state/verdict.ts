@@ -1,6 +1,7 @@
 export type ProtectionVerdict =
   | 'loading'
   | 'onboarding-incompleto'
+  | 'pausado'
   | 'protegido'
   | 'plataforma-nao-suportada';
 
@@ -16,10 +17,20 @@ export type Snapshot = {
   platformSupported: boolean;
   coreGranted: boolean;
   onboardingComplete: boolean;
+  /**
+   * false quando a pessoa desligou a protecao de proposito (pedido de
+   * STOP_PROTECTION cumprido) — nao e "nunca configurado"
+   * (onboarding-incompleto) nem "protegido" com o servico parado, que seria
+   * a mesma mentira do loop do iOS por outro caminho. Precisa ser flag
+   * persistida do lado nativo, nunca consulta de servico rodando: servico
+   * morto por falta de memoria nao e a mesma coisa que desligado de
+   * proposito (decisao do supervisor, rodada das telas de espera).
+   */
+  protectionActive: boolean;
 };
 
 export function computeVerdict(snapshot: Snapshot): ProtectionVerdict {
-  const { platformSupported, coreGranted, onboardingComplete } = snapshot;
+  const { platformSupported, coreGranted, onboardingComplete, protectionActive } = snapshot;
 
   if (!platformSupported) {
     return 'plataforma-nao-suportada';
@@ -27,6 +38,10 @@ export function computeVerdict(snapshot: Snapshot): ProtectionVerdict {
 
   if (!onboardingComplete || !coreGranted) {
     return 'onboarding-incompleto';
+  }
+
+  if (!protectionActive) {
+    return 'pausado';
   }
 
   return 'protegido';

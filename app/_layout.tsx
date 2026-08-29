@@ -26,6 +26,9 @@ function RootNavigator() {
         <Stack.Protected guard={verdict === 'onboarding-incompleto'}>
           <Stack.Screen name="(onboarding)" />
         </Stack.Protected>
+        <Stack.Protected guard={verdict === 'pausado'}>
+          <Stack.Screen name="(paused)" />
+        </Stack.Protected>
         <Stack.Protected guard={verdict === 'protegido'}>
           <Stack.Screen name="(protected)" />
         </Stack.Protected>
