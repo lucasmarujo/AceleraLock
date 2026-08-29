@@ -1,0 +1,4 @@
+<!-- Variante cor fixa de shield-mark.svg — sobre fundo escuro (#04141c ou bg.canvas escuro). Ver shield-mark.svg para a fonte/licença do path. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#03c3bf">
+  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+</svg>
