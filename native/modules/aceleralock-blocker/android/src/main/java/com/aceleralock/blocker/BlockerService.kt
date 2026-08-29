@@ -14,7 +14,6 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.util.Log
-import android.widget.FrameLayout
 import com.aceleralock.blocker.core.BlockDecider
 import com.aceleralock.blocker.core.BlockOutcome
 import com.aceleralock.blocker.core.BlockPolicy
@@ -104,7 +103,13 @@ class BlockerService : Service() {
         waiting.onServiceStart()
         when (intent?.action) {
             ACTION_REFRESH_CRITICAL -> criticalPackages = criticalApps.resolve()
-            ACTION_REFRESH_POLICY -> applyPolicy(readPolicy(prefs()))
+            ACTION_REFRESH_POLICY -> {
+                applyPolicy(readPolicy(prefs()))
+                // Redesenha ja: sem isto o overlay fica ate um tick sobre um app que
+                // acabou de sair da lista. Mesmo idiom do receiver de tela ligando.
+                handler.removeCallbacks(pollLoop)
+                handler.post(pollLoop)
+            }
         }
         return START_STICKY
     }
@@ -166,7 +171,9 @@ class BlockerService : Service() {
         val verdict = decider.decide(foreground, policy, criticalPackages, grants.activePackage())
 
         if (verdict.outcome == BlockOutcome.BLOCK) {
-            overlay.show(foreground) { context -> FrameLayout(context) }
+            overlay.show(foreground) { context ->
+                BlockScreenView(context, foreground, waiting::pendingUnlockFor)
+            }
         } else {
             overlay.hide()
         }

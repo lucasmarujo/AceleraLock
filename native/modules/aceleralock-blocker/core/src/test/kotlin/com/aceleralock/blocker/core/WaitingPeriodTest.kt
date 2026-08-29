@@ -100,6 +100,42 @@ class WaitingPeriodTest {
     }
 
     @Test
+    @DisplayName("tela de bloqueio: espera deste pacote devolve o tempo que falta")
+    fun pendingUnlockForReturnsRemainingOfThisPackage() {
+        waiting.request(WaitTarget.UnlockApp(instagram))
+        elapse(Duration.ofMinutes(12))
+
+        assertEquals(Duration.ofMinutes(18), waiting.pendingUnlockFor(instagram))
+    }
+
+    @Test
+    @DisplayName("tela de bloqueio: espera de outro pacote nao vaza para este")
+    fun pendingUnlockForDoesNotLeakAcrossPackages() {
+        waiting.request(WaitTarget.UnlockApp(instagram))
+        elapse(Duration.ofMinutes(12))
+
+        assertNull(waiting.pendingUnlockFor("com.zhiliaoapp.musically"))
+    }
+
+    @Test
+    @DisplayName("tela de bloqueio: pedido que nao e de desbloqueio nao conta como espera do app")
+    fun pendingUnlockForIgnoresOtherTargets() {
+        waiting.request(WaitTarget.StopProtection)
+        elapse(Duration.ofMinutes(12))
+        assertNull(waiting.pendingUnlockFor(instagram))
+
+        waiting.request(WaitTarget.ChangeDurations(Duration.ofMinutes(45), Duration.ofMinutes(10)))
+        elapse(Duration.ofMinutes(12))
+        assertNull(waiting.pendingUnlockFor(instagram))
+    }
+
+    @Test
+    @DisplayName("tela de bloqueio: sem pedido nenhum, nao ha espera para mostrar")
+    fun pendingUnlockForWithoutRequest() {
+        assertNull(waiting.pendingUnlockFor(instagram))
+    }
+
+    @Test
     @DisplayName("borda: sem pedido pendente, tick nao acumula nada")
     fun tickWithoutRequestAccumulatesNothing() {
         elapse(Duration.ofMinutes(30))

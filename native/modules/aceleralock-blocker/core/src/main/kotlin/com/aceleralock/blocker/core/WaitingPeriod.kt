@@ -130,6 +130,22 @@ class WaitingPeriod(
     }
 
     /**
+     * Tempo restante da espera **deste** pacote, ou null se nao ha espera para ele.
+     *
+     * Existe para que a tela de bloqueio nao vaze contexto de um alvo para outro: espera
+     * pendente do Instagram nao pode dizer "faltam 18 min" sobre o TikTok. Fica aqui, e
+     * nao na view, porque view nao tem teste e esta decisao tem.
+     */
+    fun pendingUnlockFor(packageName: String): Duration? {
+        val current = pending() ?: return null
+        val target = current.target
+        if (target !is WaitTarget.UnlockApp || target.packageName != packageName) {
+            return null
+        }
+        return current.remaining
+    }
+
+    /**
      * Entrega o alvo so quando a espera esta cumprida, e consome o pedido. As novas
      * duracoes se aplicam aqui dentro: nao existe setter direto, senao bastaria pedir
      * espera de zero e desbloquear na hora.

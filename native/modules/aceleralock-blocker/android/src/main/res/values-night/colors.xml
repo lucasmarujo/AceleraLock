@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tema escuro. Ver o aviso completo em values/colors.xml: estes valores sao copia
+  manual de src/theme/tokens.ts, e o primario inverte entre os dois arquivos.
+-->
+<resources>
+    <color name="aceleralock_canvas">#04141C</color>
+    <color name="aceleralock_text_primary">#F6F7F8</color>
+    <color name="aceleralock_text_secondary">#C2C8D0</color>
+    <color name="aceleralock_primary_fill">#03C3BF</color>
+    <color name="aceleralock_primary_on_fill">#04141C</color>
+    <color name="aceleralock_text_brand">#03C3BF</color>
+</resources>

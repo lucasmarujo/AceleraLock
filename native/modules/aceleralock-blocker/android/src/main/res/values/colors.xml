@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FONTE DA VERDADE: src/theme/tokens.ts. Estes valores sao COPIA MANUAL.
+
+  Nao e evitavel: codigo Android nao le TypeScript. Entao token de marca alterado
+  la exige tocar este arquivo na mesma passada, senao o overlay diverge do resto do
+  produto em silencio — nao quebra, nao avisa, so fica errado.
+
+  Duas regras estruturais que qualquer mudanca aqui tem de preservar:
+
+  1. O PRIMARIO INVERTE ENTRE TEMAS. No claro o fill e o quase-preto e o rotulo e
+     turquesa; no escuro e o contrario. O primario e sempre a cor que contrasta com
+     o canvas, e o rotulo e sempre a oposta. Ver values-night/colors.xml.
+
+  2. O PAR TURQUESA / #04141c E O QUE SUSTENTA O CONTRASTE: 8,52:1. Branco sobre a
+     turquesa da 2,20:1 e reprova. Trocar um dos dois sem medir o outro quebra
+     acessibilidade sem nenhum teste apontar.
+-->
+<resources>
+    <color name="aceleralock_canvas">#F6F7F8</color>
+    <color name="aceleralock_text_primary">#14181D</color>
+    <color name="aceleralock_text_secondary">#4C535E</color>
+    <color name="aceleralock_primary_fill">#04141C</color>
+    <color name="aceleralock_primary_on_fill">#03C3BF</color>
+    <color name="aceleralock_text_brand">#037476</color>
+</resources>

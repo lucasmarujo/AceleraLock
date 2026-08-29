@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Voz do produto: verbo, nao substantivo abstrato ("esta bloqueado", nunca "acesso
+  negado"). A tela esta do lado da pessoa. Nada que culpe, nada que conte tentativas.
+-->
+<resources>
+    <string name="aceleralock_block_title">%1$s está bloqueado.</string>
+    <string name="aceleralock_block_title_unknown">Este app está bloqueado.</string>
+    <string name="aceleralock_block_body_no_request">Abra o AceleraLock para pedir para desbloquear.</string>
+    <string name="aceleralock_block_close">Fechar</string>
+    <string name="aceleralock_block_open_app">Abrir AceleraLock</string>
+    <plurals name="aceleralock_block_body_waiting">
+        <item quantity="one">Espera em andamento — falta ~%1$d min.</item>
+        <item quantity="other">Espera em andamento — faltam ~%1$d min.</item>
+    </plurals>
+</resources>
