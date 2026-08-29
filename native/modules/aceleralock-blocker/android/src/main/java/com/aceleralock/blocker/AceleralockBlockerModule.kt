@@ -1,6 +1,7 @@
 package com.aceleralock.blocker
 
 import com.aceleralock.blocker.core.BlockPolicy
+import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.TemporaryGrant
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -33,7 +34,7 @@ class AceleralockBlockerModule : Module() {
         }
 
         Function("setBlockedPackages") { packages: Array<String> ->
-            val current = BlockerService.readPolicy(context)
+            val current = currentPolicy()
             BlockerService.writePolicy(
                 context,
                 current.copy(blockedPackages = packages.toSet())
@@ -41,7 +42,7 @@ class AceleralockBlockerModule : Module() {
         }
 
         Function("addGrant") { packageName: String, grantEndsAtIso: String ->
-            val current = BlockerService.readPolicy(context)
+            val current = currentPolicy()
             val without = current.grants.filter { it.packageName != packageName }
             val updated = current.copy(
                 grants = without + TemporaryGrant(packageName, Instant.parse(grantEndsAtIso))
@@ -50,7 +51,7 @@ class AceleralockBlockerModule : Module() {
         }
 
         Function("clearGrant") { packageName: String ->
-            val current = BlockerService.readPolicy(context)
+            val current = currentPolicy()
             BlockerService.writePolicy(
                 context,
                 current.copy(grants = current.grants.filter { it.packageName != packageName })
@@ -60,6 +61,19 @@ class AceleralockBlockerModule : Module() {
         Function("start") { BlockerService.start(context) }
 
         Function("stop") { BlockerService.stop(context) }
+    }
+
+    /**
+     * Toda escrita aqui e read-modify-write. Com a leitura antiga, politica ilegivel
+     * virava BlockPolicy() vazia e a gravacao seguinte apagava os bloqueios de vez —
+     * corromper o arquivo e chamar qualquer uma destas funcoes era o suficiente.
+     * Agora a escrita e recusada em vez de persistir o apagamento.
+     */
+    private fun currentPolicy(): BlockPolicy = when (val read = BlockerService.readPolicy(context)) {
+        is PolicyRead.Absent -> BlockPolicy()
+        is PolicyRead.Loaded -> read.policy
+        is PolicyRead.Unreadable ->
+            throw IllegalStateException("politica ilegivel: gravar agora apagaria os bloqueios")
     }
 
     private val context

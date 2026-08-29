@@ -19,7 +19,10 @@ import com.aceleralock.blocker.core.BlockDecider
 import com.aceleralock.blocker.core.BlockOutcome
 import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.Clock
-import com.aceleralock.blocker.core.TemporaryGrant
+import com.aceleralock.blocker.core.PolicyRead
+import com.aceleralock.blocker.core.PolicyReader
+import com.aceleralock.blocker.core.RawGrant
+import com.aceleralock.blocker.core.RawPolicy
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.Instant
@@ -70,7 +73,7 @@ class BlockerService : Service() {
         criticalApps = CriticalAppResolver(this)
         decider = BlockDecider(Clock { Instant.now() })
 
-        policy = readPolicy(prefs())
+        applyPolicy(readPolicy(prefs()))
         criticalPackages = criticalApps.resolve()
         startForeground(BlockerTuning.NOTIFICATION_ID, buildNotification())
         registerReceiver(screenReceiver, IntentFilter().apply {
@@ -85,7 +88,7 @@ class BlockerService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_REFRESH_CRITICAL -> criticalPackages = criticalApps.resolve()
-            ACTION_REFRESH_POLICY -> policy = readPolicy(prefs())
+            ACTION_REFRESH_POLICY -> applyPolicy(readPolicy(prefs()))
         }
         return START_STICKY
     }
@@ -98,6 +101,23 @@ class BlockerService : Service() {
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
+
+    private fun applyPolicy(read: PolicyRead) {
+        when (read) {
+            is PolicyRead.Absent -> policy = BlockPolicy()
+            is PolicyRead.Loaded -> {
+                if (read.discardedGrants > 0) {
+                    Log.w(TAG, "descartados ${read.discardedGrants} grants ilegiveis; alvos preservados")
+                }
+                policy = read.policy
+            }
+
+            is PolicyRead.Unreadable -> Log.e(
+                TAG,
+                "politica ilegivel: mantendo a ultima conhecida (${policy.blockedPackages.size} alvos)"
+            )
+        }
+    }
 
     private fun tick() {
         if (!screenOn) {
@@ -199,29 +219,27 @@ class BlockerService : Service() {
             refreshPolicy(context)
         }
 
-        fun readPolicy(context: Context): BlockPolicy =
+        fun readPolicy(context: Context): PolicyRead =
             readPolicy(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))
 
-        private fun readPolicy(prefs: SharedPreferences): BlockPolicy {
-            val raw = prefs.getString(KEY_POLICY, null) ?: return BlockPolicy()
-            return runCatching {
+        private fun readPolicy(prefs: SharedPreferences): PolicyRead =
+            PolicyReader.read(prefs.getString(KEY_POLICY, null)) { raw ->
                 val json = JSONObject(raw)
-                val blocked = mutableSetOf<String>()
+                val blocked = mutableListOf<String>()
                 json.optJSONArray("blockedPackages")?.let { arr ->
                     for (i in 0 until arr.length()) blocked += arr.getString(i)
                 }
-                val grants = mutableListOf<TemporaryGrant>()
+                val grants = mutableListOf<RawGrant>()
                 json.optJSONArray("grants")?.let { arr ->
                     for (i in 0 until arr.length()) {
-                        val g = arr.getJSONObject(i)
-                        grants += TemporaryGrant(
-                            packageName = g.getString("packageName"),
-                            grantEndsAt = Instant.parse(g.getString("grantEndsAt"))
+                        val g = arr.optJSONObject(i)
+                        grants += RawGrant(
+                            packageName = g?.optString("packageName", null),
+                            grantEndsAt = g?.optString("grantEndsAt", null)
                         )
                     }
                 }
-                BlockPolicy(blockedPackages = blocked, grants = grants)
-            }.getOrDefault(BlockPolicy())
-        }
+                RawPolicy(blocked, grants)
+            }
     }
 }

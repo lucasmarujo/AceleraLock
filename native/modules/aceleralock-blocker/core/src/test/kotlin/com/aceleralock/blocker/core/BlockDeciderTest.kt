@@ -60,14 +60,15 @@ class BlockDeciderTest {
     }
 
     @Test
-    @DisplayName("borda: grant que comeca no futuro ainda nao vale agora")
-    fun grantInTheFutureDoesNotYetAllow() {
+    @DisplayName("borda: no instante exato do fim o grant ja nao vale")
+    fun grantExpiresAtItsEndInstant() {
+        val ends = t0.plus(Duration.ofMinutes(15))
         val policy = BlockPolicy(
             blockedPackages = setOf(instagram),
-            grants = listOf(TemporaryGrant(instagram, t0.plus(Duration.ofMinutes(1))))
+            grants = listOf(TemporaryGrant(instagram, ends))
         )
 
-        val verdict = decider.decide(instagram, policy, emptySet())
+        val verdict = BlockDecider(Clock { ends }).decide(instagram, policy, emptySet())
 
         assertEquals(BlockOutcome.BLOCK, verdict.outcome)
     }
