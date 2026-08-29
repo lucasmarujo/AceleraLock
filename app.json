@@ -12,6 +12,11 @@
     "ios": {
       "bundleIdentifier": "com.aceleralock.app",
       "supportsTablet": false,
+      "icon": {
+        "light": "./assets/icon.png",
+        "dark": "./assets/icon-ios-dark.png",
+        "tinted": "./assets/icon-ios-tinted.png"
+      },
       "entitlements": {
         "com.apple.developer.family-controls": true
       }
@@ -22,7 +27,8 @@
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#04141c",
-        "foregroundImage": "./assets/adaptive-icon-foreground.png"
+        "foregroundImage": "./assets/adaptive-icon-foreground.png",
+        "monochromeImage": "./assets/adaptive-icon-monochrome.png"
       }
     },
     "plugins": [
