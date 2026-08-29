@@ -40,7 +40,7 @@ backend.bkp/               Histórico: backend Spring Boot, infra Docker/blue-
 
 `app/_layout.tsx` mapeia cada veredito num grupo de rotas via `Stack.Protected`.
 
-## Módulo nativo
+## Ponte nativa
 
 `native/modules/aceleralock-blocker/` é o que efetivamente bloqueia. O
 `src/native/blocker.ts` é a única ponte TS e expõe:
@@ -48,31 +48,44 @@ backend.bkp/               Histórico: backend Spring Boot, infra Docker/blue-
 - `probePermissions()` — estado das permissões essenciais (Android).
 - `criticalPackages()` — apps que nunca podem ser bloqueados (discador,
   emergências, ajustes, launcher, o próprio app).
+- `setBlockedPackages(packages)` — lista de apps a trancar (vai pra
+  `SharedPreferences` do módulo; o serviço lê no `onCreate`).
+- `addGrant(packageName, endsAtIso)` / `clearGrant(packageName)` — desbloqueio
+  temporário (decisão 16-a, cooldown local).
 - `start()` / `stop()` — liga/desliga o serviço de poll.
 
-O `core/` (Kotlin puro, dentro do módulo) concentra a decisão de bloqueio e
-foi escrito para rodar com `gradle :core:test` sem emulador. Peças desse core
-referenciam um servidor que não existe mais — é dívida conhecida, registrada
-em `decisoes.md` quando for reescrito.
+O `core/` (Kotlin puro, dentro do módulo) é a `BlockDecider`: dado um pacote
+em foreground, decide BLOCK ou ALLOW com base na `BlockPolicy` (lista de
+bloqueio + grants ativos) e na lista de apps críticos.
 
 ## Dívida conhecida (pós-refatoração)
 
-- O `core/` ainda carrega `TokenStore`, `SyncWorker`, `OfflineFailsafeCounter`
-  herdados da arquitetura com backend. Sem servidor, viram lastro morto.
-  Enxugar isso é próxima rodada (escopo Kotlin, não JS).
-- O fluxo de onboarding é um placeholder (`OnboardingStepScreen`). Falta
-  conectar a concessão real de permissão à marcação de onboarding completo e
-  à transição pra home.
-- O `core/` continua sendo um projeto Gradle irmão do `android/`, injetado
-  por `withAceleralockBlocker.js`. Se a enxugação do core trouxer ele pra
-  dentro do módulo, esse plugin vira `noop`.
-- O iOS continua sem módulo nativo (decisão original: adaptar
-  `react-native-device-activity`, hoje fora de escopo).
+- **Defesa contra manipulação de relógio foi removida.** A `CorrectedClock`
+  original ancorava em `serverTime`. Sem servidor, não há o que ancorar — o
+  `BlockDecider` usa `Instant.now()` direto. Quem adianta o relógio do
+  celular fura o cooldown. Pra reintroduzir defesa é preciso voltar a ter
+  backend, ou uma autoridade de tempo alternativa (NTP do sistema, etc).
+- **Válvula de 7 dias sem servidor foi removida.** Sem `OfflineFailsafeCounter`
+  (era zerado por sync), não há contador de tempo offline. Se a app ficar
+  sem nuvem... não tem mais nuvem. Sem efeito.
+- **iOS continua sem módulo nativo.** Decisão original: adaptar
+  `react-native-device-activity`, hoje fora de escopo.
+- **O fluxo de onboarding é placeholder** (`OnboardingStepScreen`). Falta
+  conectar a concessão real de permissão à marcação de onboarding completo
+  e à transição pra home.
+- **UI de seleção de apps não existe.** `readBlockedPackages` retorna lista;
+  não há tela que escreva nela ainda.
+- **UI de desbloqueio (cooldown local) não existe.** `addGrant` está pronta
+  no nativo; falta a tela que conta o tempo e chama.
 
 ## Rodar
 
 ```bash
 npm install
 npm run typecheck
-npm run android          # ou: npm run ios
+npm run test           # 8 testes JS puros, sem emulador
+npm run android        # ou: npm run ios (iOS: sem bloqueador nativo)
 ```
+
+Testes do `core/` Kotlin precisam de `gradle` no PATH (o `core/` não tem
+wrapper próprio; roda via Gradle do prebuild do app).

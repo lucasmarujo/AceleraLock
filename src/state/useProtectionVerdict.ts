@@ -4,30 +4,9 @@ import { AppState, Platform } from 'react-native';
 import AceleralockBlocker from '@/native/blocker';
 
 import { readOnboardingComplete } from './onboardingStorage';
+import { computeVerdict, type ProtectionVerdict } from './verdict';
 
-export type ProtectionVerdict =
-  | 'loading'
-  | 'onboarding-incompleto'
-  | 'protegido';
-
-type Snapshot = {
-  coreGranted: boolean;
-  onboardingComplete: boolean;
-};
-
-function computeVerdict(snapshot: Snapshot): ProtectionVerdict {
-  const { coreGranted, onboardingComplete } = snapshot;
-
-  if (!onboardingComplete) {
-    return 'onboarding-incompleto';
-  }
-
-  if (!coreGranted) {
-    return 'onboarding-incompleto';
-  }
-
-  return 'protegido';
-}
+export type { ProtectionVerdict };
 
 export function useProtectionVerdict() {
   const [verdict, setVerdict] = useState<ProtectionVerdict>('loading');
