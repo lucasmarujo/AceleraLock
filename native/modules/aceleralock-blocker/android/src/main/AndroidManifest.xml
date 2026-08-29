@@ -9,18 +9,14 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
-        tools:ignore="QueryAllPackagesPermission" />
 
     <application>
 
         <!--
-          SEM android:process, de proposito. O TokenRotator usa exclusao dentro do
-          processo; um processo separado daria dois locks e a rotacao concorrente de
-          refresh token seria indistinguivel de token roubado para o backend, que
-          revogaria a familia e deslogaria o usuario. ProcessAffinityGuard falha alto
-          se isto mudar.
+          SEM android:process, de proposito. O servico precisa rodar no MESMO
+          processo do app para ver o SharedPreferences gravado pelo JS via
+          Module. Se alguem adicionar android:process no futuro, este servico
+          perde o acesso a config e o bloqueio trava.
         -->
         <service
             android:name=".BlockerService"
@@ -55,14 +51,6 @@
         <receiver
             android:name=".WatchdogReceiver"
             android:exported="false" />
-
-        <service
-            android:name=".PushMessagingService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
 
     </application>
 

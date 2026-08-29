@@ -8,6 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.SharedPreferences
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -17,9 +18,10 @@ import android.widget.FrameLayout
 import com.aceleralock.blocker.core.BlockDecider
 import com.aceleralock.blocker.core.BlockOutcome
 import com.aceleralock.blocker.core.BlockPolicy
-import com.aceleralock.blocker.core.CorrectedClock
-import com.aceleralock.blocker.core.CorrectedTime
-import com.aceleralock.blocker.core.OfflineFailsafeCounter
+import com.aceleralock.blocker.core.Clock
+import com.aceleralock.blocker.core.TemporaryGrant
+import org.json.JSONArray
+import org.json.JSONObject
 import java.time.Instant
 
 class BlockerService : Service() {
@@ -28,10 +30,7 @@ class BlockerService : Service() {
     private lateinit var detector: ForegroundAppDetector
     private lateinit var overlay: OverlayPresenter
     private lateinit var criticalApps: CriticalAppResolver
-    private lateinit var clock: CorrectedClock
     private lateinit var decider: BlockDecider
-    private lateinit var failsafe: OfflineFailsafeCounter
-    private lateinit var sync: SyncCoordinator
 
     @Volatile
     private var policy: BlockPolicy = BlockPolicy()
@@ -49,7 +48,6 @@ class BlockerService : Service() {
                     detector.resetWindow()
                     handler.removeCallbacks(pollLoop)
                     handler.post(pollLoop)
-                    sync.requestIfStale()
                 }
 
                 Intent.ACTION_SCREEN_OFF -> screenOn = false
@@ -66,20 +64,13 @@ class BlockerService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        ProcessAffinityGuard.assertSameProcessAsApp(this)
 
-        val store = EncryptedKeyValueStore(applicationContext)
-        val monotonic = SystemMonotonicClock()
         detector = ForegroundAppDetector(this)
         overlay = OverlayPresenter(this)
         criticalApps = CriticalAppResolver(this)
-        clock = CorrectedClock(monotonic, SystemWallClock())
-        decider = BlockDecider(clock)
-        failsafe = OfflineFailsafeCounter(store, monotonic).also { it.onBoot() }
-        sync = SyncCoordinator(applicationContext, clock, failsafe) { fresh ->
-            policy = fresh
-        }
+        decider = BlockDecider(Clock { Instant.now() })
 
+        policy = readPolicy(prefs())
         criticalPackages = criticalApps.resolve()
         startForeground(BlockerTuning.NOTIFICATION_ID, buildNotification())
         registerReceiver(screenReceiver, IntentFilter().apply {
@@ -88,21 +79,18 @@ class BlockerService : Service() {
             addAction(Intent.ACTION_USER_PRESENT)
         })
         handler.post(pollLoop)
-        sync.requestNow()
         ServiceWatchdog.schedule(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         when (intent?.action) {
             ACTION_REFRESH_CRITICAL -> criticalPackages = criticalApps.resolve()
-            ACTION_REQUEST_SYNC -> sync.requestNow()
-            ACTION_PUSH_TOKEN -> intent.getStringExtra(EXTRA_PUSH_TOKEN)?.let(sync::reportPushToken)
+            ACTION_REFRESH_POLICY -> policy = readPolicy(prefs())
         }
         return START_STICKY
     }
 
     override fun onDestroy() {
-        failsafe.tick()
         handler.removeCallbacks(pollLoop)
         runCatching { unregisterReceiver(screenReceiver) }
         overlay.hide()
@@ -112,9 +100,6 @@ class BlockerService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun tick() {
-        failsafe.tick()
-        sync.tickAndMaybeSync(screenOn)
-
         if (!screenOn) {
             overlay.hide()
             return
@@ -129,20 +114,15 @@ class BlockerService : Service() {
         }
     }
 
-    private fun currentPollInterval(): Long {
+    private fun currentPollInterval(): Long =
         if (overlay.currentlyShownFor() != null) {
-            return BlockerTuning.POLL_WHILE_BLOCKING.toMillis()
-        }
-        val insideWindow = when (val now = clock.now()) {
-            is CorrectedTime.Unanchored -> true
-            is CorrectedTime.Anchored -> policy.profiles.any { it.isActiveAt(now.instant) }
-        }
-        return if (insideWindow) {
-            BlockerTuning.POLL_INSIDE_WINDOW.toMillis()
+            BlockerTuning.POLL_WHILE_BLOCKING.toMillis()
         } else {
             BlockerTuning.POLL_OUTSIDE_WINDOW.toMillis()
         }
-    }
+
+    private fun prefs(): SharedPreferences =
+        applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     private fun buildNotification(): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -165,10 +145,10 @@ class BlockerService : Service() {
 
     companion object {
         private const val TAG = "BlockerService"
+        const val PREFS_NAME = "aceleralock.blocker"
+        const val KEY_POLICY = "policy.json"
         private const val ACTION_REFRESH_CRITICAL = "com.aceleralock.blocker.REFRESH_CRITICAL"
-        private const val ACTION_REQUEST_SYNC = "com.aceleralock.blocker.REQUEST_SYNC"
-        private const val ACTION_PUSH_TOKEN = "com.aceleralock.blocker.PUSH_TOKEN"
-        private const val EXTRA_PUSH_TOKEN = "pushToken"
+        private const val ACTION_REFRESH_POLICY = "com.aceleralock.blocker.REFRESH_POLICY"
 
         fun start(context: Context) {
             val intent = Intent(context, BlockerService::class.java)
@@ -177,6 +157,10 @@ class BlockerService : Service() {
             } else {
                 context.startService(intent)
             }
+        }
+
+        fun stop(context: Context) {
+            context.stopService(Intent(context, BlockerService::class.java))
         }
 
         fun refreshCriticalApps(context: Context) {
@@ -188,20 +172,8 @@ class BlockerService : Service() {
             }
         }
 
-        fun requestSync(context: Context) {
-            deliver(context, Intent(context, BlockerService::class.java).setAction(ACTION_REQUEST_SYNC))
-        }
-
-        fun reportPushToken(context: Context, token: String) {
-            deliver(
-                context,
-                Intent(context, BlockerService::class.java)
-                    .setAction(ACTION_PUSH_TOKEN)
-                    .putExtra(EXTRA_PUSH_TOKEN, token)
-            )
-        }
-
-        private fun deliver(context: Context, intent: Intent) {
+        fun refreshPolicy(context: Context) {
+            val intent = Intent(context, BlockerService::class.java).setAction(ACTION_REFRESH_POLICY)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
             } else {
@@ -209,8 +181,47 @@ class BlockerService : Service() {
             }
         }
 
-        fun stop(context: Context) {
-            context.stopService(Intent(context, BlockerService::class.java))
+        fun writePolicy(context: Context, policy: BlockPolicy) {
+            val json = JSONObject()
+            json.put("blockedPackages", JSONArray(policy.blockedPackages.toList()))
+            val grants = JSONArray()
+            for (g in policy.grants) {
+                grants.put(JSONObject().apply {
+                    put("packageName", g.packageName)
+                    put("grantEndsAt", g.grantEndsAt.toString())
+                })
+            }
+            json.put("grants", grants)
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                .edit()
+                .putString(KEY_POLICY, json.toString())
+                .apply()
+            refreshPolicy(context)
+        }
+
+        fun readPolicy(context: Context): BlockPolicy =
+            readPolicy(context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE))
+
+        private fun readPolicy(prefs: SharedPreferences): BlockPolicy {
+            val raw = prefs.getString(KEY_POLICY, null) ?: return BlockPolicy()
+            return runCatching {
+                val json = JSONObject(raw)
+                val blocked = mutableSetOf<String>()
+                json.optJSONArray("blockedPackages")?.let { arr ->
+                    for (i in 0 until arr.length()) blocked += arr.getString(i)
+                }
+                val grants = mutableListOf<TemporaryGrant>()
+                json.optJSONArray("grants")?.let { arr ->
+                    for (i in 0 until arr.length()) {
+                        val g = arr.getJSONObject(i)
+                        grants += TemporaryGrant(
+                            packageName = g.getString("packageName"),
+                            grantEndsAt = Instant.parse(g.getString("grantEndsAt"))
+                        )
+                    }
+                }
+                BlockPolicy(blockedPackages = blocked, grants = grants)
+            }.getOrDefault(BlockPolicy())
         }
     }
 }

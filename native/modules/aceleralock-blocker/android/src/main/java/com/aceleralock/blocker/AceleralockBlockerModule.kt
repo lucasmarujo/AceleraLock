@@ -1,18 +1,16 @@
 package com.aceleralock.blocker
 
-import com.aceleralock.blocker.core.TokenPair
+import com.aceleralock.blocker.core.BlockPolicy
+import com.aceleralock.blocker.core.TemporaryGrant
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import java.time.Instant
 
 /**
- * Ponte fina para o React Native. Deliberadamente fina: toda decisao de bloqueio
- * vive no core (Kotlin puro, testado em JVM) e toda persistencia de sessao vive no
- * TokenStore nativo.
- *
- * O JS nunca ve o refresh token e nunca chama /v1/auth/refresh — pede um access
- * token pronto. Dois rotacionadores seriam indistinguiveis de um token roubado
- * para o backend, que revogaria a familia e deslogaria o usuario.
+ * Ponte fina para o React Native. Toda decisao de bloqueio vive no core
+ * (Kotlin puro, testado em JVM). Esta camada so (1) le estado de permissao,
+ * (2) resolve a lista de apps criticos, e (3) entrega ao nativo a BlockPolicy
+ * calculada pelo JS a partir do que o user configurou.
  */
 class AceleralockBlockerModule : Module() {
 
@@ -34,36 +32,34 @@ class AceleralockBlockerModule : Module() {
             CriticalAppResolver(context).resolve().toList()
         }
 
-        Function("clientRefFor") { packageName: String ->
-            val ref = TargetRegistryHolder.of(context).clientRefFor(packageName)
-            TargetRegistryHolder.persist(context)
-            ref
+        Function("setBlockedPackages") { packages: Array<String> ->
+            val current = BlockerService.readPolicy(context)
+            BlockerService.writePolicy(
+                context,
+                current.copy(blockedPackages = packages.toSet())
+            )
         }
 
-        Function("rememberTarget") { targetId: String, packageName: String ->
-            TargetRegistryHolder.of(context).rememberTarget(targetId, packageName)
-            TargetRegistryHolder.persist(context)
+        Function("addGrant") { packageName: String, grantEndsAtIso: String ->
+            val current = BlockerService.readPolicy(context)
+            val without = current.grants.filter { it.packageName != packageName }
+            val updated = current.copy(
+                grants = without + TemporaryGrant(packageName, Instant.parse(grantEndsAtIso))
+            )
+            BlockerService.writePolicy(context, updated)
         }
 
-        Function("adoptSession") { baseUrl: String, deviceId: String, accessToken: String,
-                                   expiresInSeconds: Int, refreshToken: String ->
-            val store = EncryptedKeyValueStore(context)
-            store.putString(SyncCoordinator.KEY_BASE_URL, baseUrl)
-            store.putString(SyncCoordinator.KEY_DEVICE_ID, deviceId)
-            TokenStore(context, BackendClient(baseUrl, TargetRegistryHolder.of(context))).adopt(
-                TokenPair(
-                    accessToken = accessToken,
-                    accessExpiresAt = Instant.now().plusSeconds(expiresInSeconds.toLong()),
-                    refreshToken = refreshToken
-                )
+        Function("clearGrant") { packageName: String ->
+            val current = BlockerService.readPolicy(context)
+            BlockerService.writePolicy(
+                context,
+                current.copy(grants = current.grants.filter { it.packageName != packageName })
             )
         }
 
         Function("start") { BlockerService.start(context) }
 
         Function("stop") { BlockerService.stop(context) }
-
-        Function("requestSync") { BlockerService.requestSync(context) }
     }
 
     private val context
