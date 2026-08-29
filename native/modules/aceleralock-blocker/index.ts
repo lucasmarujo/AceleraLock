@@ -1,16 +1,23 @@
 import { requireNativeModule } from 'expo-modules-core';
 
-import type { PermissionState } from './src/AceleralockBlocker.types';
+import type { PermissionState, ProtectionState } from './src/AceleralockBlocker.types';
 
 type AceleralockBlockerModule = {
   probePermissions(): PermissionState;
   criticalPackages(): string[];
   setBlockedPackages(packages: string[]): void;
-  addGrant(packageName: string, grantEndsAtIso: string): void;
-  clearGrant(packageName: string): void;
+  /** So vale enquanto nunca houve configuracao. Depois disso, requestDurationChange. */
+  configureInitialDurations(waitMinutes: number, grantMinutes: number): boolean;
+  requestUnlock(packageName: string): boolean;
+  requestStopProtection(): boolean;
+  requestDurationChange(waitMinutes: number, grantMinutes: number): boolean;
+  /** Cancelar e livre: desistir tem de ser barato. */
+  cancelRequest(): void;
+  protectionState(): ProtectionState;
   start(): void;
-  stop(): void;
+  /** Sempre lanca. Desligar exige requestStopProtection e a espera cumprida. */
+  stop(): never;
 };
 
 export default requireNativeModule<AceleralockBlockerModule>('AceleralockBlocker');
-export type { PermissionState };
+export type { PermissionState, ProtectionState };

@@ -18,14 +18,14 @@ import android.widget.FrameLayout
 import com.aceleralock.blocker.core.BlockDecider
 import com.aceleralock.blocker.core.BlockOutcome
 import com.aceleralock.blocker.core.BlockPolicy
-import com.aceleralock.blocker.core.Clock
+import com.aceleralock.blocker.core.GrantWindow
 import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.PolicyReader
-import com.aceleralock.blocker.core.RawGrant
 import com.aceleralock.blocker.core.RawPolicy
+import com.aceleralock.blocker.core.WaitTarget
+import com.aceleralock.blocker.core.WaitingPeriod
 import org.json.JSONArray
 import org.json.JSONObject
-import java.time.Instant
 
 class BlockerService : Service() {
 
@@ -34,6 +34,8 @@ class BlockerService : Service() {
     private lateinit var overlay: OverlayPresenter
     private lateinit var criticalApps: CriticalAppResolver
     private lateinit var decider: BlockDecider
+    private lateinit var waiting: WaitingPeriod
+    private lateinit var grants: GrantWindow
 
     @Volatile
     private var policy: BlockPolicy = BlockPolicy()
@@ -71,7 +73,11 @@ class BlockerService : Service() {
         detector = ForegroundAppDetector(this)
         overlay = OverlayPresenter(this)
         criticalApps = CriticalAppResolver(this)
-        decider = BlockDecider(Clock { Instant.now() })
+        decider = BlockDecider()
+        waiting = WaitingPeriod(SharedPreferencesStore(this), SystemMonotonicClock)
+        grants = GrantWindow(SharedPreferencesStore(this), SystemMonotonicClock, waiting::grantDuration)
+        waiting.onBoot()
+        grants.onBoot()
 
         applyPolicy(readPolicy(prefs()))
         criticalPackages = criticalApps.resolve()
@@ -102,15 +108,27 @@ class BlockerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
+    private fun consumeMaturedWait() {
+        when (val target = waiting.consumeIfReady()) {
+            is WaitTarget.UnlockApp -> {
+                grants.open(target.packageName)
+                Log.i(TAG, "espera cumprida: concessao aberta")
+            }
+
+            is WaitTarget.StopProtection -> {
+                Log.i(TAG, "espera cumprida: protecao desligada pelo usuario")
+                stop(this)
+            }
+
+            is WaitTarget.ChangeDurations -> Log.i(TAG, "espera cumprida: novas duracoes em vigor")
+            null -> Unit
+        }
+    }
+
     private fun applyPolicy(read: PolicyRead) {
         when (read) {
             is PolicyRead.Absent -> policy = BlockPolicy()
-            is PolicyRead.Loaded -> {
-                if (read.discardedGrants > 0) {
-                    Log.w(TAG, "descartados ${read.discardedGrants} grants ilegiveis; alvos preservados")
-                }
-                policy = read.policy
-            }
+            is PolicyRead.Loaded -> policy = read.policy
 
             is PolicyRead.Unreadable -> Log.e(
                 TAG,
@@ -119,13 +137,21 @@ class BlockerService : Service() {
         }
     }
 
+    /**
+     * A espera e a concessao avancam mesmo com a tela apagada: o tempo passa do mesmo
+     * jeito, e so o desenho do overlay depende da tela estar ligada.
+     */
     private fun tick() {
+        waiting.tick()
+        grants.tick()
+        consumeMaturedWait()
+
         if (!screenOn) {
             overlay.hide()
             return
         }
         val foreground = detector.currentForegroundPackage() ?: return
-        val verdict = decider.decide(foreground, policy, criticalPackages)
+        val verdict = decider.decide(foreground, policy, criticalPackages, grants.activePackage())
 
         if (verdict.outcome == BlockOutcome.BLOCK) {
             overlay.show(foreground) { context -> FrameLayout(context) }
@@ -204,14 +230,6 @@ class BlockerService : Service() {
         fun writePolicy(context: Context, policy: BlockPolicy) {
             val json = JSONObject()
             json.put("blockedPackages", JSONArray(policy.blockedPackages.toList()))
-            val grants = JSONArray()
-            for (g in policy.grants) {
-                grants.put(JSONObject().apply {
-                    put("packageName", g.packageName)
-                    put("grantEndsAt", g.grantEndsAt.toString())
-                })
-            }
-            json.put("grants", grants)
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putString(KEY_POLICY, json.toString())
@@ -229,17 +247,7 @@ class BlockerService : Service() {
                 json.optJSONArray("blockedPackages")?.let { arr ->
                     for (i in 0 until arr.length()) blocked += arr.getString(i)
                 }
-                val grants = mutableListOf<RawGrant>()
-                json.optJSONArray("grants")?.let { arr ->
-                    for (i in 0 until arr.length()) {
-                        val g = arr.optJSONObject(i)
-                        grants += RawGrant(
-                            packageName = g?.optString("packageName", null),
-                            grantEndsAt = g?.optString("grantEndsAt", null)
-                        )
-                    }
-                }
-                RawPolicy(blocked, grants)
+                RawPolicy(blocked)
             }
     }
 }

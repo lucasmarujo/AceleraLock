@@ -1,10 +1,10 @@
 package com.aceleralock.blocker.core
 
-import java.time.Instant
-
-data class TemporaryGrant(val packageName: String, val grantEndsAt: Instant)
-
+/**
+ * A politica e so a lista de alvos. A concessao ativa NAO mora aqui, de proposito:
+ * concessao guardada em politica persistida vira registro historico, e registro
+ * historico de liberacao e uma chave que nao expira. Ver [GrantWindow].
+ */
 data class BlockPolicy(
-    val blockedPackages: Set<String> = emptySet(),
-    val grants: List<TemporaryGrant> = emptyList()
+    val blockedPackages: Set<String> = emptySet()
 )

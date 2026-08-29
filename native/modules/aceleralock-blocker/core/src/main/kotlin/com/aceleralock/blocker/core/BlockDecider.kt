@@ -1,7 +1,5 @@
 package com.aceleralock.blocker.core
 
-import java.time.Instant
-
 enum class BlockOutcome {
     BLOCK,
     ALLOW
@@ -20,22 +18,22 @@ data class BlockVerdict(
     val shouldDrawOverlay: Boolean get() = outcome == BlockOutcome.BLOCK
 }
 
-fun interface Clock {
-    fun now(): Instant
-}
-
 /**
- * Decisao de bloqueio. Sem ancora de servidor: o tempo e o do aparelho, e o user
- * que adianta o relogio tambem fura o bloqueio. Sem servidor, nao ha defesa melhor
- * (a CorrectedClock original ancorava em serverTime — sem server, nao ha o que
- * ancorar). Quando voltar a ter backend, reintroduzir defesa aqui.
+ * Decisao de bloqueio. Sem ancora de servidor: nao ha com que ancorar. Mas nao ha
+ * relogio de parede nenhum aqui — a concessao chega ja resolvida por [GrantWindow],
+ * que desconta saldo monotonico. Atrasar a hora do aparelho nao estica concessao e
+ * nao ressuscita concessao encerrada, porque nao existe instante de fim para
+ * comparar.
+ *
+ * O teto continua sendo desinstalar, e contra isso nao ha defesa sem Device Admin.
  */
-class BlockDecider(private val clock: Clock) {
+class BlockDecider {
 
     fun decide(
         packageName: String,
         policy: BlockPolicy,
-        criticalPackages: Set<String>
+        criticalPackages: Set<String>,
+        activeGrant: String?
     ): BlockVerdict {
         if (packageName in criticalPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.CRITICAL_APP)
@@ -43,9 +41,7 @@ class BlockDecider(private val clock: Clock) {
         if (packageName !in policy.blockedPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.NOT_A_TARGET)
         }
-        val now = clock.now()
-        val granted = policy.grants.any { it.packageName == packageName && now.isBefore(it.grantEndsAt) }
-        return if (granted) {
+        return if (packageName == activeGrant) {
             BlockVerdict(BlockOutcome.ALLOW, AllowReason.ACTIVE_GRANT)
         } else {
             BlockVerdict(BlockOutcome.BLOCK)

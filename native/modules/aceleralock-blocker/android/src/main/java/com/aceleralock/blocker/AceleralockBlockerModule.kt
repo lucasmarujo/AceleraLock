@@ -2,16 +2,21 @@ package com.aceleralock.blocker
 
 import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.PolicyRead
-import com.aceleralock.blocker.core.TemporaryGrant
+import com.aceleralock.blocker.core.WaitTarget
+import com.aceleralock.blocker.core.WaitingPeriod
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import java.time.Instant
+import java.time.Duration
 
 /**
  * Ponte fina para o React Native. Toda decisao de bloqueio vive no core
  * (Kotlin puro, testado em JVM). Esta camada so (1) le estado de permissao,
  * (2) resolve a lista de apps criticos, e (3) entrega ao nativo a BlockPolicy
  * calculada pelo JS a partir do que o user configurou.
+ *
+ * Nao existe funcao que libere um app na hora. Liberar exige pedir e esperar, e
+ * desligar a protecao passa pela mesma espera — porta dos fundos aqui tornaria a
+ * espera do outro lado encenacao.
  */
 class AceleralockBlockerModule : Module() {
 
@@ -34,34 +39,78 @@ class AceleralockBlockerModule : Module() {
         }
 
         Function("setBlockedPackages") { packages: Array<String> ->
-            val current = currentPolicy()
-            BlockerService.writePolicy(
-                context,
-                current.copy(blockedPackages = packages.toSet())
+            BlockerService.writePolicy(context, currentPolicy().copy(blockedPackages = packages.toSet()))
+        }
+
+        Function("configureInitialDurations") { waitMinutes: Int, grantMinutes: Int ->
+            waiting().configureInitial(
+                Duration.ofMinutes(waitMinutes.toLong()),
+                Duration.ofMinutes(grantMinutes.toLong())
             )
         }
 
-        Function("addGrant") { packageName: String, grantEndsAtIso: String ->
-            val current = currentPolicy()
-            val without = current.grants.filter { it.packageName != packageName }
-            val updated = current.copy(
-                grants = without + TemporaryGrant(packageName, Instant.parse(grantEndsAtIso))
-            )
-            BlockerService.writePolicy(context, updated)
+        Function("requestUnlock") { packageName: String ->
+            request(WaitTarget.UnlockApp(packageName))
         }
 
-        Function("clearGrant") { packageName: String ->
-            val current = currentPolicy()
-            BlockerService.writePolicy(
-                context,
-                current.copy(grants = current.grants.filter { it.packageName != packageName })
+        Function("requestStopProtection") {
+            request(WaitTarget.StopProtection)
+        }
+
+        Function("requestDurationChange") { waitMinutes: Int, grantMinutes: Int ->
+            request(
+                WaitTarget.ChangeDurations(
+                    Duration.ofMinutes(waitMinutes.toLong()),
+                    Duration.ofMinutes(grantMinutes.toLong())
+                )
+            )
+        }
+
+        Function("cancelRequest") { waiting().cancel() }
+
+        Function("protectionState") {
+            val period = waiting()
+            val pending = period.pending()
+            mapOf(
+                "configured" to period.isConfigured(),
+                "waitMinutes" to period.waitDuration().toMinutes(),
+                "grantMinutes" to period.grantDuration().toMinutes(),
+                "pendingTarget" to pending?.let(::describeTarget),
+                "pendingRemainingSeconds" to pending?.remaining?.seconds,
+                "pendingReady" to (pending?.isReady ?: false)
             )
         }
 
         Function("start") { BlockerService.start(context) }
 
-        Function("stop") { BlockerService.stop(context) }
+        /**
+         * Desligar exige a espera cumprida. O servico desliga a si mesmo quando o
+         * pedido amadurece; aqui a chamada crua so pode recusar.
+         */
+        Function("stop") {
+            throw IllegalStateException(
+                "desligar a protecao exige requestStopProtection e a espera cumprida"
+            )
+        }
     }
+
+    private fun request(target: WaitTarget): Boolean {
+        val accepted = waiting().request(target)
+        if (accepted) {
+            BlockerService.start(context)
+        }
+        return accepted
+    }
+
+    private fun describeTarget(pending: com.aceleralock.blocker.core.PendingWait): String =
+        when (pending.target) {
+            is WaitTarget.UnlockApp -> "UNLOCK_APP"
+            is WaitTarget.StopProtection -> "STOP_PROTECTION"
+            is WaitTarget.ChangeDurations -> "CHANGE_DURATIONS"
+        }
+
+    private fun waiting(): WaitingPeriod =
+        WaitingPeriod(SharedPreferencesStore(context), SystemMonotonicClock)
 
     /**
      * Toda escrita aqui e read-modify-write. Com a leitura antiga, politica ilegivel

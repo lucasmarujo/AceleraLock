@@ -17,6 +17,7 @@
     },
     "android": {
       "package": "com.aceleralock.app",
+      "allowBackup": true,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#04141c"

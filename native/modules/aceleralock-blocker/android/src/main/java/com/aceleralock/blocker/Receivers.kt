@@ -9,9 +9,9 @@ import android.os.Build
 import android.os.SystemClock
 
 /**
- * Religa o servico apos reboot ou atualizacao do app. Tambem e o que reancora o
- * relogio: no boot o elapsedRealtime zerou, entao ate o primeiro sync o modulo
- * fica UNANCHORED e bloqueia todos os alvos.
+ * Religa o servico apos reboot ou atualizacao do app. O boot tambem e marco das duas
+ * contagens monotonicas: a espera pendente conserva o acumulado e so troca de cursor,
+ * e a concessao ativa e encerrada — ver WaitingPeriod e GrantWindow.
  */
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
