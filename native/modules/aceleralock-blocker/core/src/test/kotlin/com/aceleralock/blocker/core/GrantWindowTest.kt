@@ -14,6 +14,10 @@ class GrantWindowTest {
     private val monotonic = FakeMonotonicClock()
     private val window = GrantWindow(store, monotonic) { Duration.ofMinutes(15) }
 
+    /** Servico recriado: instancia nova, mesmo armazenamento, mesmo relogio. */
+    private fun serviceRecreated(): GrantWindow =
+        GrantWindow(store, monotonic) { Duration.ofMinutes(15) }.also { it.onServiceStart() }
+
     private fun elapse(duration: Duration) {
         monotonic.advance(duration.toMillis())
         window.tick()
@@ -63,9 +67,9 @@ class GrantWindowTest {
         elapse(Duration.ofMinutes(5))
 
         monotonic.reboot()
-        window.tick()
+        val afterBoot = serviceRecreated()
 
-        assertNull(window.activePackage(), "reiniciar para prolongar tem de custar a concessao")
+        assertNull(afterBoot.activePackage(), "reiniciar para prolongar tem de custar a concessao")
     }
 
     @Test
@@ -75,11 +79,10 @@ class GrantWindowTest {
         elapse(Duration.ofMinutes(1))
 
         monotonic.reboot()
-        window.onBoot()
-        window.tick()
+        val afterBoot = serviceRecreated()
 
-        assertNull(window.activePackage())
-        assertEquals(Duration.ZERO, window.remaining())
+        assertNull(afterBoot.activePackage())
+        assertEquals(Duration.ZERO, afterBoot.remaining())
     }
 
     @Test
@@ -96,6 +99,32 @@ class GrantWindowTest {
 
         assertNull(window.activePackage())
         assertEquals(Duration.ZERO, window.remaining())
+    }
+
+    @Test
+    @DisplayName("uso: reciclagem de processo NAO encerra a concessao de quem nao fez nada")
+    fun processRecycleDoesNotEndTheGrant() {
+        window.open(instagram)
+        elapse(Duration.ofMinutes(5))
+
+        val recycled = serviceRecreated()
+
+        assertEquals(instagram, recycled.activePackage(), "recriar o servico nao e reiniciar o aparelho")
+    }
+
+    @Test
+    @DisplayName("seguranca: o tempo com o servico morto e descontado do saldo, nao congelado")
+    fun timeWithTheServiceDeadIsDiscounted() {
+        window.open(instagram)
+        elapse(Duration.ofMinutes(5))
+
+        monotonic.advance(Duration.ofMinutes(9).toMillis())
+        val recycled = serviceRecreated()
+        assertEquals(Duration.ofMinutes(1), recycled.remaining(), "nada estava bloqueado nesse intervalo")
+
+        monotonic.advance(Duration.ofMinutes(1).toMillis())
+        recycled.tick()
+        assertNull(recycled.activePackage())
     }
 
     @Test

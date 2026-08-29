@@ -62,7 +62,7 @@ class WaitingPeriodTest {
         elapse(Duration.ofMinutes(15))
 
         monotonic.reboot()
-        waiting.onBoot()
+        waiting.onServiceStart()
         waiting.tick()
 
         elapse(Duration.ofMinutes(15))
@@ -78,11 +78,25 @@ class WaitingPeriodTest {
         repeat(30) {
             elapse(Duration.ofMinutes(1))
             monotonic.reboot()
-            waiting.onBoot()
+            waiting.onServiceStart()
             waiting.tick()
         }
 
         assertNotNull(waiting.consumeIfReady())
+    }
+
+    @Test
+    @DisplayName("seguranca: reciclagem de processo congela a espera, nunca a adianta")
+    fun processRecycleFreezesTheWait() {
+        waiting.request(WaitTarget.UnlockApp(instagram))
+        elapse(Duration.ofMinutes(10))
+
+        monotonic.advance(Duration.ofMinutes(45).toMillis())
+        val recycled = WaitingPeriod(store, monotonic).also { it.onServiceStart() }
+        recycled.tick()
+
+        assertEquals(Duration.ofMinutes(10), recycled.pending()?.accumulated)
+        assertNull(recycled.consumeIfReady(), "o tempo fora do ar nao pode cumprir a espera")
     }
 
     @Test

@@ -186,6 +186,17 @@ Via `useFocusEffect`: o React Navigation mantém telas anteriores montadas, e um
 O produto passou a ser **100% local no aparelho**: sem backend, sem banco, sem
 autenticação, sem parceiro de confiança, sem cerimônia arbitrada por servidor.
 
+O motivo, nas palavras do usuário:
+
+> o MVP já tem que ser funcional, e colocar backend e banco num app como esse é só
+> complexidade desnecessária.
+
+**A arquitetura anterior não estava errada, estava cara.** Ela resolvia problemas
+reais — tempo autoritativo, aprovação de parceiro, estado que sobrevive à
+reinstalação — ao custo de servidor, banco, autenticação e deploy, para um MVP que
+precisa funcionar antes de escalar. O pivô troca garantias por entregabilidade, e a
+seção de dívidas conhecidas é a conta dessa troca. Foi escolha, não descuido.
+
 O que morreu junto: a cerimônia de desbloqueio com cooldown do servidor **e**
 aprovação de parceiro; a válvula unilateral de 48 h; o failsafe local de 7 dias
 sem servidor; a âncora de relógio em `serverTime`.
@@ -281,16 +292,61 @@ desliga backup em Ajustes, e defesa que o adversário desliga não é defesa.
 
 Sem Device Admin, vetado pelo usuário, não há defesa contra isso. Não invente uma.
 
+### Force-stop é o caminho mais barato, e a resposta é medir, não defender
+
+Depois de um force-stop pelas Configurações, o app entra no *stopped state*, e nesse
+estado o Android **não entrega broadcast nenhum** para ele. `BOOT_COMPLETED` não
+chega, o `BootReceiver` não dispara, e o `ServiceWatchdog` não tem quem o reagende: a
+proteção fica desligada **atravessando reboot**, até a pessoa abrir o app manualmente.
+
+Custo para quem quer burlar: dois toques. É mais barato que a espera de 30 minutos e
+mais barato que desinstalar — e, ao contrário de desinstalar, é reversível e não perde
+a configuração. **É o vetor mais barato do produto.**
+
+Não há defesa: sem Device Admin, um app não impede o próprio force-stop. A resposta é
+**medir e mostrar**, e isso não é consolo.
+
+Esta ferramenta é um compromisso da pessoa com ela mesma — ela não é uma invasora de
+quem o app se defende, é alguém que pediu ajuda contra o próprio impulso. Para ela,
+**lapso invisível é o que faz o produto falhar em silêncio**; lapso visível é
+exatamente a informação que ela instalou o app para ter. E sem isso o app voltaria
+dizendo "você está protegido" sobre um período em que não estava — a mesma mentira já
+corrigida no iOS, no estado de pausa e na leitura da política.
+
+O que o registro **não** sabe: por que o serviço morreu. Force-stop, morte por
+memória, crash e aparelho desligado são indistinguíveis. E interrupção que atravessa
+reboot é **contada sem ser cronometrada**, porque o `elapsedRealtime` zera e o relógio
+de parede é do dono do aparelho. O número é honesto; o rótulo seria chute.
+
+### O estado ativo é flag persistida, não "o serviço está no ar"
+
+Consultar serviço rodando é limitado desde o Android 8, e pior: serviço morto por
+falta de memória responderia "inativo", e o app diria "pausado" a quem nunca pausou —
+a mesma mentira, invertida. A flag é gravada quando a proteção liga e quando é
+desligada **deliberadamente**, e sobrevive à morte do processo.
+
+### Criação do serviço não é sinônimo de boot
+
+O Android recria o serviço sozinho ao reciclá-lo por pressão de memória, o que em
+aparelho modesto é rotina. Tratar isso como boot encerrava a concessão de quem não
+fez nada — o custo aceito no reboot, que é raro e conservador, virava frequente e
+arbitrário.
+
+O `elapsedRealtime` não zera quando o processo morre, só no boot de verdade, então o
+cursor persistido separa os dois sem ambiguidade. O intervalo fora do ar tem
+tratamento **oposto** nos dois mecanismos, pelo mesmo critério conservador: é
+**descontado** da concessão (nada estava bloqueado, a pessoa já usou aquele tempo) e
+**congelado** na espera (a espera demora mais, nunca menos).
+
 ---
 
 ## Projeto
 
 ### Licença MIT
 
-Decisão do usuário.
-
-**Pendente:** o titular do copyright no arquivo `LICENSE` não foi definido. Não
-foi preenchido para não inventar.
+Decisão do usuário. Titular do copyright: **Lucas Marujo**, 2026. O arquivo
+`LICENSE` está na raiz — repositório público sem licença é "todos os direitos
+reservados" na prática, e isso é o oposto da intenção.
 
 ### Conventional Commits a partir de 2026-08-29
 
@@ -312,9 +368,10 @@ estão aqui para ninguém descobrir sozinho depois de duas horas.
   compilados; a primeira `expo prebuild` é a primeira vez que esse código existe.
 - **Sobrevivência do serviço em fabricante agressivo não foi verificada.** Há
   `ServiceWatchdog` e receiver de boot, mas nada disso foi medido em aparelho, e
-  nenhum teste em JVM alcança. Enquanto o serviço está morto, nada é bloqueado —
-  então o problema real é ele morrer, não o que congela enquanto ele está fora.
+  nenhum teste em JVM alcança.
+- **O force-stop não foi verificado em aparelho.** O mecanismo do *stopped state* é
+  comportamento documentado do Android e leitura de código, não medição. É o item de
+  maior prioridade quando a camada `android/` compilar.
 - **`performance.now()` no Hermes** não foi verificado em aparelho.
 - **Nenhuma biblioteca de ícones escolhida.**
-- **`LICENSE` sem titular.**
 - **O entitlement da Apple para Family Controls não foi solicitado.**

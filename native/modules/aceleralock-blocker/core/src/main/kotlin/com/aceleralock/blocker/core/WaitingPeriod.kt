@@ -62,7 +62,14 @@ class WaitingPeriod(
 
     private var lastTickElapsed: Long? = null
 
-    fun onBoot() {
+    /**
+     * Chamado a cada criacao do servico, seja boot de verdade ou reciclagem de processo.
+     * O tratamento e o mesmo nos dois casos de proposito: o cursor recomeca e o intervalo
+     * fora do ar **nao e contado**. Congelar e o conservador aqui — a espera demora mais,
+     * nunca menos — e por isso a espera nao precisa distinguir boot de reciclagem, ao
+     * contrario da concessao (ver GrantWindow).
+     */
+    fun onServiceStart() {
         lastTickElapsed = null
     }
 

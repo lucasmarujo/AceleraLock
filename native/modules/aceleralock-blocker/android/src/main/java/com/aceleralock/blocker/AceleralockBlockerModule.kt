@@ -2,6 +2,7 @@ package com.aceleralock.blocker
 
 import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.PolicyRead
+import com.aceleralock.blocker.core.ProtectionLog
 import com.aceleralock.blocker.core.WaitTarget
 import com.aceleralock.blocker.core.WaitingPeriod
 import expo.modules.kotlin.modules.Module
@@ -71,7 +72,15 @@ class AceleralockBlockerModule : Module() {
         Function("protectionState") {
             val period = waiting()
             val pending = period.pending()
+            val log = ProtectionLog(SharedPreferencesStore(context), SystemMonotonicClock)
             mapOf(
+                // Flag persistida, nunca "o servico esta no ar agora": servico morto por
+                // falta de memoria diria "pausado" a quem nunca pausou.
+                "protectionActive" to log.isActive(),
+                "downtimeTotalSeconds" to log.totalMeasuredDowntime().seconds,
+                // null = houve interrupcao que atravessou reboot e nao da para cronometrar.
+                "downtimeLastSeconds" to log.lastInterruption()?.duration?.seconds,
+                "downtimeUnknownCount" to log.unknownInterruptions(),
                 "configured" to period.isConfigured(),
                 "waitMinutes" to period.waitDuration().toMinutes(),
                 "grantMinutes" to period.grantDuration().toMinutes(),

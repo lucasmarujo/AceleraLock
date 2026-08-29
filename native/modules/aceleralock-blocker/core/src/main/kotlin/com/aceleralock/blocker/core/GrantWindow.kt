@@ -24,6 +24,19 @@ import java.time.Duration
  * para o lado conservador. **Nao "conserte" isso preservando a concessao no boot** —
  * seria reabrir exatamente o flanco de desligar o aparelho para preservar o saldo, que
  * e indistinguivel de um reinicio legitimo.
+ *
+ * **Criacao do servico NAO e sinonimo de boot**, e confundir os dois cobrava caro: o
+ * Android recria o servico sozinho ao recicla-lo por pressao de memoria, o que em
+ * aparelho modesto e rotina, e cada reciclagem dessas encerrava a concessao de quem
+ * nao fez nada. O cursor persistido distingue os dois sem ambiguidade, porque
+ * elapsedRealtime nao zera quando o processo morre, so no boot de verdade: valor atual
+ * menor que o guardado e boot; maior ou igual e a mesma sessao, e o servico so foi
+ * reciclado.
+ *
+ * O intervalo em que o servico esteve morto e **descontado** do saldo, e nao congelado:
+ * enquanto ele esteve fora do ar nada estava bloqueado, entao a pessoa ja usou aquele
+ * tempo. Congelar seria pagar duas vezes a ela. (Na espera a politica e a oposta, e
+ * pelo mesmo criterio conservador — ver WaitingPeriod.)
  */
 class GrantWindow(
     private val store: KeyValueStore,
@@ -31,8 +44,12 @@ class GrantWindow(
     private val duration: () -> Duration
 ) {
 
-    fun onBoot() {
-        clear()
+    /**
+     * Chamado a cada criacao do servico. Encerra a concessao **so** se houve boot de
+     * verdade; reciclagem de processo apenas desconta o tempo fora do ar.
+     */
+    fun onServiceStart() {
+        tick()
     }
 
     fun open(packageName: String): Boolean {

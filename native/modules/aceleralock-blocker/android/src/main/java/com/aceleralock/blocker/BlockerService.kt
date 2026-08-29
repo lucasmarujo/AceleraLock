@@ -21,6 +21,7 @@ import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.GrantWindow
 import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.PolicyReader
+import com.aceleralock.blocker.core.ProtectionLog
 import com.aceleralock.blocker.core.RawPolicy
 import com.aceleralock.blocker.core.WaitTarget
 import com.aceleralock.blocker.core.WaitingPeriod
@@ -36,6 +37,7 @@ class BlockerService : Service() {
     private lateinit var decider: BlockDecider
     private lateinit var waiting: WaitingPeriod
     private lateinit var grants: GrantWindow
+    private lateinit var protectionLog: ProtectionLog
 
     @Volatile
     private var policy: BlockPolicy = BlockPolicy()
@@ -76,8 +78,13 @@ class BlockerService : Service() {
         decider = BlockDecider()
         waiting = WaitingPeriod(SharedPreferencesStore(this), SystemMonotonicClock)
         grants = GrantWindow(SharedPreferencesStore(this), SystemMonotonicClock, waiting::grantDuration)
-        waiting.onBoot()
-        grants.onBoot()
+        protectionLog = ProtectionLog(SharedPreferencesStore(this), SystemMonotonicClock)
+        protectionLog.onServiceStart()?.let { interrupcao ->
+            Log.w(TAG, "protecao esteve fora do ar: ${interrupcao.duration ?: "duracao imensuravel"}")
+        }
+        protectionLog.markActive()
+        waiting.onServiceStart()
+        grants.onServiceStart()
 
         applyPolicy(readPolicy(prefs()))
         criticalPackages = criticalApps.resolve()
@@ -92,6 +99,9 @@ class BlockerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // Reancora o cursor da espera: a ponte tem instancia propria de WaitingPeriod, e
+        // sem isto o primeiro tick apos um pedido somaria o intervalo anterior ao pedido.
+        waiting.onServiceStart()
         when (intent?.action) {
             ACTION_REFRESH_CRITICAL -> criticalPackages = criticalApps.resolve()
             ACTION_REFRESH_POLICY -> applyPolicy(readPolicy(prefs()))
@@ -117,6 +127,7 @@ class BlockerService : Service() {
 
             is WaitTarget.StopProtection -> {
                 Log.i(TAG, "espera cumprida: protecao desligada pelo usuario")
+                protectionLog.markStopped()
                 stop(this)
             }
 
@@ -144,6 +155,7 @@ class BlockerService : Service() {
     private fun tick() {
         waiting.tick()
         grants.tick()
+        protectionLog.heartbeat()
         consumeMaturedWait()
 
         if (!screenOn) {
