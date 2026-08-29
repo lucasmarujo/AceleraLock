@@ -26,7 +26,7 @@ gradle :core:test     # 34 testes, JVM pura, segundos
 
 ## Onde está o risco, e por que ele está no core
 
-Quatro decisões de segurança, todas no `core/` e todas cobertas por teste:
+Cinco decisões de segurança, todas no `core/` e todas cobertas por teste:
 
 **1. O relógio do aparelho nunca decide bloqueio.** Uma janela "segunda,
 08:00–12:00" comparada com `System.currentTimeMillis()` cai com três toques em
