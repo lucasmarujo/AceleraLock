@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { BackHandler } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useFocusEffect } from 'expo-router';
 
 import { OnboardingStepScreen } from '@/components/OnboardingStepScreen';
 
@@ -26,7 +25,7 @@ export default function OnboardingStart() {
       <Stack.Screen options={{ gestureEnabled: false }} />
       <OnboardingStepScreen
         title="Você escolhe os apps que roubam seu tempo. A gente tranca."
-        nextHref="/permiss%C3%B5es"
+        nextHref="/permissoes"
         ctaLabel="Começar"
       />
     </>

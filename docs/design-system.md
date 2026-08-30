@@ -59,6 +59,10 @@ Marca — turquesa + quase-preto (decisão do usuário, 2026-08-29). Não é uma
 | `brand.turquesaIconLight` | `#039796` | ícone/borda de marca no claro — elemento gráfico, piso 3:1 (não 4.5:1) |
 | `brand.turquesaPressedDark` | `#03a09e` | pressed do primário no escuro |
 | `brand.temaPressedLight` | `#042e34` | pressed do primário no claro |
+| `brand.aceleraAzul` | `#014D93` | **cor de marca, não de UI** — ponta baixo-esquerda do gradiente do anel do badge de splash (§3.24), medida da logo do AceleraDev |
+| `brand.aceleraCiano` | `#08EFD5` | idem, ponta cima-direita |
+
+As duas últimas existem só pro badge de splash herdar a linhagem do AceleraDev; **nenhum token semântico as consome**. Tela que precise de azul usa o primitivo `blue` abaixo, não elas.
 
 Âmbar — atrito / atenção (cooldown ativo, aviso):
 
@@ -432,6 +436,13 @@ Layout final (container, exato texto, o que acontece em `error`) é trabalho de 
 ### 3.23 Estados obrigatórios por tela
 
 Toda tela declara: `loading`, `empty`, `error`, `success`/conteúdo. Tela sem estado vazio é tela incompleta. Toda ação assíncrona dá feedback visual em < 100 ms (mesmo que seja só o botão em `loading`).
+
+### 3.24 `SplashScreen` — splash de marca
+
+- Badge do AceleraLock (128) + nome em `title1`, centralizados; assinatura **"Made By"** em `caption`/`textTertiary` + logo do AceleraDev (56) na base.
+- **É tela do app, não imagem da splash nativa.** A splash do Android 12+ recorta o que mostra num círculo e aceita um ícone só — texto e uma segunda logo não sobrevivem ao recorte. A nativa mostra só o badge; esta tela continua a partir dele, **no mesmo `bgCanvas`**, pra transição não piscar.
+- É o `loading` do `RootNavigator` (§3.23), com piso de tempo (`SPLASH_MIN_MS`): o veredito resolve em poucos ms e sem piso a assinatura apareceria por um frame. O piso corre **em paralelo** com o veredito, não em série.
+- As duas logos são PNG geradas (`assets/brand/README.md`), não `<Svg>` — o app não tem `react-native-svg`.
 
 ---
 

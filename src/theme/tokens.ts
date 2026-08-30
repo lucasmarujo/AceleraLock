@@ -37,6 +37,16 @@ export const brand = {
   turquesaPressedDark: '#03a09e',
   /** t=0.15 em direcao a `turquesa` — pressed do primario claro (invertido). */
   temaPressedLight: '#042e34',
+  /**
+   * As duas pontas do gradiente do anel da logo do AceleraDev
+   * (`assets/acelera-logo.svg`), medidas do proprio arquivo: azul embaixo a
+   * esquerda, ciano em cima a direita. Sao cor de *marca*, nao de UI —
+   * existem so pro badge de splash (`assets/brand/build-icons.py`) herdar a
+   * linhagem do AceleraDev. Nenhum token semantico as consome; se alguma
+   * tela precisar de azul, o primitivo `blue` do §1.1 e que e o lugar.
+   */
+  aceleraAzul: '#014D93',
+  aceleraCiano: '#08EFD5',
 } as const;
 
 export const amber = {

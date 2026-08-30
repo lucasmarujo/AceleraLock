@@ -1,29 +1,30 @@
-apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+// Mesma forma dos modulos Expo de node_modules (ver expo-linking/expo-system-ui):
+// e o `expo-module-gradle-plugin` que aplica o kotlin-android, fixa compileSdk /
+// targetSdk / nivel de Java a partir do projeto raiz e fornece o
+// expo-modules-core como dependencia de projeto. Declarar
+// `expo.modules:expo-modules-core:+` como artefato Maven nao resolve — esse
+// artefato nao existe em repositorio nenhum.
+plugins {
+    id 'com.android.library'
+    id 'expo-module-gradle-plugin'
+}
 
 group = 'com.aceleralock.blocker'
 version = '0.1.0'
 
 android {
     namespace 'com.aceleralock.blocker'
-    compileSdk 36
 
     defaultConfig {
+        // Piso real do modulo: TYPE_APPLICATION_OVERLAY e canal de notificacao
+        // sao API 26. O app inteiro sobe junto — ver native/plugins/
+        // withAceleralockBlocker.js, que fixa o mesmo 26 no projeto raiz.
         minSdk 26
-        targetSdk 36
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = '17'
+        versionCode 1
+        versionName '0.1.0'
     }
 }
 
 dependencies {
     implementation project(':aceleralock-blocker-core')
-    implementation 'expo.modules:expo-modules-core:+'
 }

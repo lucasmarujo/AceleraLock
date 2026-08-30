@@ -1,5 +1,4 @@
-import { createContext, useContext, useEffect, type ReactNode } from 'react';
-import * as SplashScreen from 'expo-splash-screen';
+import { createContext, useContext, type ReactNode } from 'react';
 
 import { useProtectionVerdict, type ProtectionVerdict } from './useProtectionVerdict';
 
@@ -20,12 +19,6 @@ const ProtectionVerdictContext = createContext<ProtectionVerdictContextValue | n
  */
 export function ProtectionVerdictProvider({ children }: { children: ReactNode }) {
   const { verdict, refresh } = useProtectionVerdict();
-
-  useEffect(() => {
-    if (verdict !== 'loading') {
-      SplashScreen.hideAsync().catch(() => {});
-    }
-  }, [verdict]);
 
   return (
     <ProtectionVerdictContext.Provider value={{ verdict, refresh }}>

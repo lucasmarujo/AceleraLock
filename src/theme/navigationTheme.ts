@@ -1,4 +1,4 @@
-import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, type Theme } from 'expo-router';
 
 /**
  * Cores de marca (decisao do usuario, 2026-08-29). O primario e invertido

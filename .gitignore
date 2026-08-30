@@ -11,3 +11,6 @@ build/
 /android/
 /ios/
 expo-env.d.ts
+
+# Cache do Python dos geradores de asset (assets/brand/*.py).
+__pycache__/

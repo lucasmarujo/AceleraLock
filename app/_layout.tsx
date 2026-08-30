@@ -1,20 +1,35 @@
+import { useEffect, useState } from 'react';
 import { useColorScheme } from 'react-native';
-import { ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
+import { Stack, ThemeProvider } from 'expo-router';
+import * as NativeSplash from 'expo-splash-screen';
 
+import { SplashScreen } from '@/components/SplashScreen';
 import { ProtectionVerdictProvider, useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
 import { AceleraLockDarkTheme, AceleraLockLightTheme } from '@/theme/navigationTheme';
 
-SplashScreen.preventAutoHideAsync().catch(() => {});
+NativeSplash.preventAutoHideAsync().catch(() => {});
+
+/**
+ * Tempo mínimo do splash de marca. O veredito costuma resolver em poucos ms,
+ * e sem piso a assinatura "Made By AceleraDev" apareceria por um frame — que
+ * é o mesmo que não aparecer. Não é atraso artificial do app: o piso corre em
+ * paralelo com o veredito, não em série.
+ */
+const SPLASH_MIN_MS = 1400;
 
 function RootNavigator() {
   const colorScheme = useColorScheme();
   const { verdict } = useProtectionVerdictContext();
+  const [minimumElapsed, setMinimumElapsed] = useState(false);
   const theme = colorScheme === 'dark' ? AceleraLockDarkTheme : AceleraLockLightTheme;
 
-  if (verdict === 'loading') {
-    return null;
+  useEffect(() => {
+    const timer = setTimeout(() => setMinimumElapsed(true), SPLASH_MIN_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (verdict === 'loading' || !minimumElapsed) {
+    return <SplashScreen />;
   }
 
   return (
@@ -38,6 +53,18 @@ function RootNavigator() {
 }
 
 export default function RootLayout() {
+  /**
+   * Esconde a splash nativa assim que a árvore monta — e não quando o
+   * veredito resolve, como era antes. O splash de marca é uma tela do app:
+   * se a nativa ficasse por cima até o veredito, ela cobriria exatamente a
+   * tela que precisa ser vista. Fica aqui, e não no `SplashScreen`, porque
+   * este componente monta em toda execução: um veredito que nunca passe por
+   * `loading` não pode deixar o app preso atrás da splash nativa.
+   */
+  useEffect(() => {
+    NativeSplash.hideAsync().catch(() => {});
+  }, []);
+
   return (
     <ProtectionVerdictProvider>
       <RootNavigator />
