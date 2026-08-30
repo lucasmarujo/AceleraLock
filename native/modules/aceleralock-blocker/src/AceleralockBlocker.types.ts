@@ -31,4 +31,6 @@ export type ProtectionState = {
 export type InstalledApp = {
   packageName: string;
   label: string;
+  /** `file://` do PNG em cache. null quando o icone nao pode ser lido. */
+  iconUri: string | null;
 };

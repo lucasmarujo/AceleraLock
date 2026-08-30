@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet, Switch, Text, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Switch, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 
@@ -21,15 +21,15 @@ type Carga =
   | { estado: 'erro' }
   | { estado: 'pronto'; apps: InstalledApp[] };
 
+const ICON_SIZE = 40;
+
 /**
- * docs/design-system.md §3.8 (`AppListItem`) e §3.9 (`Toggle`): rotulo a
- * esquerda, Switch nativo a direita, estado dito por accessibilityState e nao
- * so pela posicao do botao.
+ * docs/design-system.md §3.8 (`AppListItem`) e §3.9 (`Toggle`): icone do app +
+ * nome a esquerda, Switch nativo a direita, estado dito por accessibilityState
+ * e nao so pela posicao do botao.
  *
- * ponytail: sem icone do app nesta versao — resolver o Drawable de cada
- * pacote e converter pra imagem do RN custa uma ponte propria e atrasa a
- * lista inteira. Se o produto pedir o icone, ele entra no InstalledApp como
- * data URI resolvido em lote no nativo, nao um por linha a partir do JS.
+ * O icone chega como `file://` de um PNG que o nativo mantem em cache
+ * (InstalledAppsResolver) — o JS nunca desenha Drawable nem carrega base64.
  *
  * A gravacao e no CTA, nao a cada toque: `setBlockedPackages` reescreve a
  * politica e acorda o servico, e fazer isso a cada tique de Switch seria um
@@ -83,6 +83,18 @@ export function AppPickerScreen({ title, ctaLabel, onConfirm }: Props) {
     });
   };
 
+  // Conta o que esta em tela, nao marcados.size: a selecao carrega tambem os
+  // pacotes bloqueados que a lista nao mostra (ver mergeBlockedPackages), e um
+  // numero maior que o visivel pareceria erro de contagem.
+  const escolhidos =
+    carga.estado === 'pronto'
+      ? carga.apps.filter((app) => marcados.has(app.packageName)).length
+      : 0;
+  const resumo =
+    escolhidos === 0
+      ? 'Nenhum app escolhido ainda.'
+      : escolhidos + (escolhidos === 1 ? ' app bloqueado.' : ' apps bloqueados.');
+
   const salvar = async () => {
     setSalvando(true);
     try {
@@ -98,12 +110,17 @@ export function AppPickerScreen({ title, ctaLabel, onConfirm }: Props) {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
-      <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{title}</Text>
+      <View style={styles.cabecalho}>
+        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{title}</Text>
+        {carga.estado === 'pronto' && (
+          <Text style={[styles.body, { color: theme.colors.textSecondary }]}>{resumo}</Text>
+        )}
+      </View>
 
       {carga.estado === 'carregando' && (
         <View style={styles.feedback}>
           {[0, 1, 2, 3, 4].map((linha) => (
-            <Skeleton key={linha} width="100%" height={52} />
+            <Skeleton key={linha} width="100%" height={56} />
           ))}
         </View>
       )}
@@ -130,7 +147,27 @@ export function AppPickerScreen({ title, ctaLabel, onConfirm }: Props) {
           renderItem={({ item }) => {
             const marcado = marcados.has(item.packageName);
             return (
-              <View style={[styles.linha, { backgroundColor: theme.colors.bgSurface }]}>
+              <View
+                style={[
+                  styles.linha,
+                  {
+                    backgroundColor: marcado ? theme.colors.bgBrandSubtle : theme.colors.bgSurface,
+                    borderColor: marcado ? theme.colors.borderBrand : theme.colors.borderDefault,
+                  },
+                ]}
+              >
+                {item.iconUri ? (
+                  <Image
+                    source={{ uri: item.iconUri }}
+                    style={styles.icone}
+                    resizeMode="contain"
+                    accessibilityIgnoresInvertColors
+                  />
+                ) : (
+                  // Mesmo espaco reservado: lista que muda de alinhamento no
+                  // meio e pior do que lista sem icone nenhum.
+                  <View style={[styles.icone, { backgroundColor: theme.colors.bgSunken }]} />
+                )}
                 <Text
                   style={[styles.rotulo, { color: theme.colors.textPrimary }]}
                   numberOfLines={1}
@@ -166,6 +203,9 @@ const styles = StyleSheet.create({
     padding: spacing[6],
     gap: spacing[4],
   },
+  cabecalho: {
+    gap: spacing[1],
+  },
   title: {
     fontSize: typography.title3.fontSize,
     lineHeight: typography.title3.lineHeight,
@@ -189,12 +229,17 @@ const styles = StyleSheet.create({
   linha: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing[4],
+    gap: spacing[3],
     paddingVertical: spacing[2],
-    paddingHorizontal: spacing[4],
+    paddingHorizontal: spacing[3],
     borderRadius: radius.md,
-    minHeight: 52,
+    borderWidth: 1,
+    minHeight: 56,
+  },
+  icone: {
+    width: ICON_SIZE,
+    height: ICON_SIZE,
+    borderRadius: radius.sm,
   },
   rotulo: {
     flex: 1,

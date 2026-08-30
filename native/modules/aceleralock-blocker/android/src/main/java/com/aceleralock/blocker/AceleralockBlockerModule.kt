@@ -47,7 +47,7 @@ class AceleralockBlockerModule : Module() {
          */
         AsyncFunction("installedApps") {
             InstalledAppsResolver(context, CriticalAppResolver(context)).resolve().map {
-                mapOf("packageName" to it.packageName, "label" to it.label)
+                mapOf("packageName" to it.packageName, "label" to it.label, "iconUri" to it.iconUri)
             }
         }
 
