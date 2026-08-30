@@ -1,4 +1,5 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -25,7 +26,7 @@ export function SplashScreen() {
   const theme = useTheme();
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
       <View style={styles.brand}>
         <Image
           source={BADGE}
@@ -46,7 +47,7 @@ export function SplashScreen() {
           accessibilityLabel="AceleraDev"
         />
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 

@@ -10,6 +10,21 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
+    <!--
+      Visibilidade de pacotes (Android 11+): sem isto, queryIntentActivities
+      devolve quase nada e o seletor de apps fica vazio. E o filtro por
+      LAUNCHER, nao QUERY_ALL_PACKAGES — a permissao ampla e restrita no Play
+      e exigiria justificativa; ver apps com icone de launcher e exatamente o
+      que o seletor precisa. Tambem e o que faz appLabel() resolver o nome do
+      app no overlay em vez do fallback generico.
+    -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+    </queries>
+
     <application>
 
         <!--

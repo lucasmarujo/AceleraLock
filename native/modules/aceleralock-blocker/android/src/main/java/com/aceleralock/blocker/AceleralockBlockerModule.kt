@@ -39,6 +39,28 @@ class AceleralockBlockerModule : Module() {
             CriticalAppResolver(context).resolve().toList()
         }
 
+        /**
+         * AsyncFunction, ao contrario de todo o resto daqui: as outras leituras
+         * sao SharedPreferences ou AppOps, baratas o bastante para a thread de JS.
+         * Esta varre o PackageManager e resolve o rotulo de cada app instalado —
+         * numa lista de duzentos apps isso trava a UI se for sincrono.
+         */
+        AsyncFunction("installedApps") {
+            InstalledAppsResolver(context, CriticalAppResolver(context)).resolve().map {
+                mapOf("packageName" to it.packageName, "label" to it.label)
+            }
+        }
+
+        /**
+         * A politica vigente, para a tela de selecao abrir ja marcando o que esta
+         * bloqueado. Herda de currentPolicy() a recusa em politica ilegivel: devolver
+         * lista vazia diria "nada bloqueado" para quem tem tudo bloqueado, e a tela
+         * salvaria esse apagamento por cima.
+         */
+        Function("blockedPackages") {
+            currentPolicy().blockedPackages.toList()
+        }
+
         Function("setBlockedPackages") { packages: Array<String> ->
             BlockerService.writePolicy(context, currentPolicy().copy(blockedPackages = packages.toSet()))
         }

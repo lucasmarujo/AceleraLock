@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import AceleralockBlocker from '@/native/blocker';
@@ -53,7 +54,7 @@ export default function ProtectedHome() {
   };
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: 'center',
@@ -73,12 +74,13 @@ export default function ProtectedHome() {
       >
         Você está protegido.
       </Text>
+      <Button label="Escolher apps bloqueados" onPress={() => router.push('/apps')} />
       <Button
         label="Desligar proteção"
         variant="secondary"
         loading={requesting}
         onPress={handleStopProtection}
       />
-    </View>
+    </SafeAreaView>
   );
 }

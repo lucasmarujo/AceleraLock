@@ -26,3 +26,9 @@ export type ProtectionState = {
   pendingRemainingSeconds: number | null;
   pendingReady: boolean;
 };
+
+/** App que a pessoa pode escolher bloquear (com icone de launcher, nao critico). */
+export type InstalledApp = {
+  packageName: string;
+  label: string;
+};

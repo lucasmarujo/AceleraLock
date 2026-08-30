@@ -1,7 +1,7 @@
 import AceleralockBlockerNative from 'aceleralock-blocker';
-import type { PermissionState, ProtectionState } from 'aceleralock-blocker';
+import type { InstalledApp, PermissionState, ProtectionState } from 'aceleralock-blocker';
 
-export type { PermissionState, ProtectionState };
+export type { InstalledApp, PermissionState, ProtectionState };
 
 /**
  * index.ts do modulo nao reexporta PendingTarget por nome (so
@@ -13,6 +13,10 @@ export type PendingTarget = NonNullable<ProtectionState['pendingTarget']>;
 type AceleralockBlockerModule = {
   probePermissions(): PermissionState;
   criticalPackages(): string[];
+  /** Assincrona: varre o PackageManager, cara demais para a thread de JS. */
+  installedApps(): Promise<InstalledApp[]>;
+  /** Politica vigente. Lanca em politica ilegivel, nunca devolve lista vazia por engano. */
+  blockedPackages(): string[];
   setBlockedPackages(packages: string[]): void;
   /** So vale enquanto nunca houve configuracao. Depois disso, requestDurationChange. */
   configureInitialDurations(waitMinutes: number, grantMinutes: number): boolean;

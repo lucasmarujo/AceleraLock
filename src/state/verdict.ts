@@ -46,3 +46,27 @@ export function computeVerdict(snapshot: Snapshot): ProtectionVerdict {
 
   return 'protegido';
 }
+
+/** As duas de coreGranted (PermissionProbe.kt), na ordem em que sao pedidas. */
+export type CorePermission = 'usageAccess' | 'overlay';
+
+/**
+ * Proxima permissao essencial a pedir, ou null quando as duas ja estao
+ * concedidas. Uma por vez: cada uma abre uma tela diferente do sistema, e
+ * disparar as duas juntas so empilharia Settings sobre Settings.
+ *
+ * `null` (ainda nao sondado, ou plataforma sem suporte) conta como nada
+ * concedido — o lado seguro e pedir de novo, nunca deixar concluir o
+ * onboarding sem leitura nativa nenhuma.
+ */
+export function nextMissingCorePermission(
+  permissions: Record<CorePermission, boolean> | null
+): CorePermission | null {
+  if (!permissions || !permissions.usageAccess) {
+    return 'usageAccess';
+  }
+  if (!permissions.overlay) {
+    return 'overlay';
+  }
+  return null;
+}

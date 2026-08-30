@@ -1,4 +1,5 @@
-import { Text, View } from 'react-native';
+import { Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import AceleralockBlocker from '@/native/blocker';
@@ -23,7 +24,7 @@ export default function Paused() {
   };
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: 'center',
@@ -55,6 +56,6 @@ export default function Paused() {
         Foi um pedido seu, cumprido depois da espera. Nada está bloqueado agora.
       </Text>
       <Button label="Ativar proteção" onPress={handleActivate} />
-    </View>
+    </SafeAreaView>
   );
 }

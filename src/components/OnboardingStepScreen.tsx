@@ -1,5 +1,6 @@
-import { BackHandler, Platform, Pressable, Text, View } from 'react-native';
+import { BackHandler, Platform, Pressable, Text } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { spacing, typography } from '@/theme/tokens';
@@ -7,7 +8,12 @@ import { useTheme } from '@/theme/useTheme';
 
 type Props = {
   title: string;
-  nextHref: Href;
+  /**
+   * Ausente no ultimo passo: quem tira a pessoa do grupo (onboarding) e o
+   * veredito reavaliado, nao um push. Empurrar '/' de dentro do grupo so
+   * volta pro primeiro passo — era o loop entre as duas telas.
+   */
+  nextHref?: Href;
   ctaLabel?: string;
   onPressContinue?: () => void | Promise<void>;
 };
@@ -25,11 +31,13 @@ export function OnboardingStepScreen({ title, nextHref, ctaLabel = 'Continuar', 
     if (onPressContinue) {
       await onPressContinue();
     }
-    router.push(nextHref);
+    if (nextHref) {
+      router.push(nextHref);
+    }
   };
 
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: 'center',
@@ -82,6 +90,6 @@ export function OnboardingStepScreen({ title, nextHref, ctaLabel = 'Continuar', 
           </Text>
         </Pressable>
       )}
-    </View>
+    </SafeAreaView>
   );
 }

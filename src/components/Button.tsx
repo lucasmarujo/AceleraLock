@@ -61,6 +61,11 @@ export function Button({ label, onPress, variant = 'primary', size = 'lg', disab
     <View
       style={[
         styles.focusRing,
+        // size 'lg' e full-width (design-system.md 3.1) e o Pressable pede width
+        // '100%' — que so resolve se este wrapper tiver largura propria. Os
+        // containers de tela usam alignItems 'center': sem o stretch, o wrapper
+        // encolhe pro conteudo e o rotulo sai do lugar dentro do botao.
+        size === 'lg' && styles.stretch,
         { borderRadius: radius.md + 4 },
         focused && { borderColor: theme.colors.focusRing },
       ]}
@@ -114,6 +119,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: 'transparent',
     padding: 2,
+  },
+  stretch: {
+    alignSelf: 'stretch',
   },
   base: {
     flexDirection: 'row',

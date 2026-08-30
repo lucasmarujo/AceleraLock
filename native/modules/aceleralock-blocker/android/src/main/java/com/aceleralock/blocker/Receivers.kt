@@ -5,8 +5,8 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.SystemClock
+import android.util.Log
 
 /**
  * Religa o servico apos reboot ou atualizacao do app. O boot tambem e marco das duas
@@ -37,6 +37,7 @@ class PackageChangedReceiver : BroadcastReceiver() {
  */
 object ServiceWatchdog {
 
+    private const val TAG = "ServiceWatchdog"
     private const val REQUEST_CODE = 4201
 
     fun schedule(context: Context) {
@@ -48,11 +49,21 @@ object ServiceWatchdog {
             Intent(context, WatchdogReceiver::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            manager.setExactAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pending)
-        } else {
-            manager.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pending)
-        }
+        // Inexato de proposito. Alarme exato exige SCHEDULE_EXACT_ALARM (que o
+        // usuario concede a mao a partir do targetSdk 33) ou USE_EXACT_ALARM (que
+        // o Play so libera pra despertador, cronometro e agenda) — o mesmo
+        // criterio de politica que ja vetou Device Admin aqui. E um watchdog de
+        // 15 em 15 minutos nao precisa de precisao: precisa furar o Doze, que
+        // allowWhileIdle faz sozinho (o Doze reduz para ~1 disparo a cada 9 min,
+        // ainda dentro do intervalo).
+        //
+        // runCatching porque a rede de sobrevivencia nunca pode derrubar o que ela
+        // protege: este schedule roda dentro do onCreate do BlockerService, e a
+        // excecao aqui matava o servico inteiro. Sem watchdog o servico ainda tem
+        // a outra rede (WorkManager periodico).
+        runCatching {
+            manager.setAndAllowWhileIdle(AlarmManager.ELAPSED_REALTIME_WAKEUP, triggerAt, pending)
+        }.onFailure { Log.w(TAG, "watchdog nao agendado", it) }
     }
 }
 

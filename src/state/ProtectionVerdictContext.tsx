@@ -1,9 +1,13 @@
 import { createContext, useContext, type ReactNode } from 'react';
 
+import type { PermissionState } from '@/native/blocker';
+
 import { useProtectionVerdict, type ProtectionVerdict } from './useProtectionVerdict';
 
 type ProtectionVerdictContextValue = {
   verdict: ProtectionVerdict;
+  /** null enquanto nao houve sonda nativa (loading, ou plataforma sem suporte). */
+  permissions: PermissionState | null;
   refresh: () => Promise<void>;
 };
 
@@ -18,10 +22,10 @@ const ProtectionVerdictContext = createContext<ProtectionVerdictContextValue | n
  * plano de scaffold evita.
  */
 export function ProtectionVerdictProvider({ children }: { children: ReactNode }) {
-  const { verdict, refresh } = useProtectionVerdict();
+  const { verdict, permissions, refresh } = useProtectionVerdict();
 
   return (
-    <ProtectionVerdictContext.Provider value={{ verdict, refresh }}>
+    <ProtectionVerdictContext.Provider value={{ verdict, permissions, refresh }}>
       {children}
     </ProtectionVerdictContext.Provider>
   );

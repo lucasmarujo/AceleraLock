@@ -1,10 +1,13 @@
 import { requireNativeModule } from 'expo-modules-core';
 
-import type { PermissionState, ProtectionState } from './src/AceleralockBlocker.types';
+import type { InstalledApp, PermissionState, ProtectionState } from './src/AceleralockBlocker.types';
 
 type AceleralockBlockerModule = {
   probePermissions(): PermissionState;
   criticalPackages(): string[];
+  /** Assincrona: varre o PackageManager, cara demais para a thread de JS. */
+  installedApps(): Promise<InstalledApp[]>;
+  blockedPackages(): string[];
   setBlockedPackages(packages: string[]): void;
   /** So vale enquanto nunca houve configuracao. Depois disso, requestDurationChange. */
   configureInitialDurations(waitMinutes: number, grantMinutes: number): boolean;
@@ -20,4 +23,4 @@ type AceleralockBlockerModule = {
 };
 
 export default requireNativeModule<AceleralockBlockerModule>('AceleralockBlocker');
-export type { PermissionState, ProtectionState };
+export type { InstalledApp, PermissionState, ProtectionState };

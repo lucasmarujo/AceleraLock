@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { Countdown } from '@/components/Countdown/Countdown';
@@ -44,7 +45,7 @@ export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel }: Prop
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
       <View style={styles.body}>
         <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{copy.title}</Text>
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{copy.body}</Text>
@@ -58,7 +59,7 @@ export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel }: Prop
         </View>
       </View>
       <Button label="Cancelar" variant="primary" loading={canceling} onPress={handleCancel} />
-    </View>
+    </SafeAreaView>
   );
 }
 

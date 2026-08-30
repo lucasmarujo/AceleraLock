@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { computeVerdict } from '../src/state/verdict';
+import { computeVerdict, nextMissingCorePermission } from '../src/state/verdict';
 
 const BASE = { platformSupported: true, coreGranted: true, onboardingComplete: true, protectionActive: true };
 
@@ -51,4 +51,24 @@ test('protecao desligada mas plataforma sem suporte: plataforma-nao-suportada, n
     computeVerdict({ ...BASE, protectionActive: false, platformSupported: false }),
     'plataforma-nao-suportada'
   );
+});
+
+test('sem sonda nativa: pede a primeira permissao, nunca deixa concluir', () => {
+  assert.equal(nextMissingCorePermission(null), 'usageAccess');
+});
+
+test('nenhuma permissao concedida: pede o acesso ao uso primeiro', () => {
+  assert.equal(nextMissingCorePermission({ usageAccess: false, overlay: false }), 'usageAccess');
+});
+
+test('acesso ao uso concedido: pede a sobreposicao', () => {
+  assert.equal(nextMissingCorePermission({ usageAccess: true, overlay: false }), 'overlay');
+});
+
+test('so a sobreposicao concedida: ainda pede o acesso ao uso', () => {
+  assert.equal(nextMissingCorePermission({ usageAccess: false, overlay: true }), 'usageAccess');
+});
+
+test('as duas concedidas: nada pendente', () => {
+  assert.equal(nextMissingCorePermission({ usageAccess: true, overlay: true }), null);
 });
