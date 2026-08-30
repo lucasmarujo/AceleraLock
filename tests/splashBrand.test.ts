@@ -14,7 +14,7 @@ function readPngHeader(relative: string) {
   assert.equal(
     buffer.subarray(0, 8).toString('latin1'),
     '\x89PNG\r\n\x1a\n',
-    `${relative}: não é um PNG`,
+    `${relative}: não é um PNG`
   );
   assert.equal(buffer.subarray(12, 16).toString('latin1'), 'IHDR', `${relative}: IHDR ausente`);
   return {
@@ -72,7 +72,7 @@ test('o require do SplashScreen aponta pro mesmo arquivo que este teste verifica
   const source = readFileSync(path.join(ROOT, 'src/components/SplashScreen.tsx'), 'utf8');
   assert.ok(
     source.includes(`../../${BADGE_DA_TELA}`),
-    `SplashScreen.tsx não carrega ${BADGE_DA_TELA}`,
+    `SplashScreen.tsx não carrega ${BADGE_DA_TELA}`
   );
 });
 

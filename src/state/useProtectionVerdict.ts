@@ -30,7 +30,12 @@ export function useProtectionVerdict() {
         setPermissions(state);
       }
 
-      const next = computeVerdict({ platformSupported, coreGranted, onboardingComplete, protectionActive });
+      const next = computeVerdict({
+        platformSupported,
+        coreGranted,
+        onboardingComplete,
+        protectionActive,
+      });
       previousVerdict.current = next;
       setVerdict(next);
     } catch (error) {
@@ -42,6 +47,10 @@ export function useProtectionVerdict() {
   }, []);
 
   useEffect(() => {
+    // `refresh` e async: todo setState dela acontece depois de um await,
+    // nunca sincrono no corpo do efeito. E a carga inicial, que precisa
+    // rodar no mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
 
     const subscription = AppState.addEventListener('change', (state) => {

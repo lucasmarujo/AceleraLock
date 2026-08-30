@@ -27,7 +27,12 @@ export function ProtectedCard({ title, subtitle, streakLabel, icon, loading = fa
   const theme = useTheme();
 
   return (
-    <View style={[styles.card, { backgroundColor: theme.colors.bgBrandSubtle, borderRadius: radius.lg }]}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: theme.colors.bgBrandSubtle, borderRadius: radius.lg },
+      ]}
+    >
       {icon}
       {loading ? (
         <>
@@ -37,8 +42,14 @@ export function ProtectedCard({ title, subtitle, streakLabel, icon, loading = fa
       ) : (
         <>
           <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{title}</Text>
-          {subtitle && <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>}
-          {streakLabel && <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{streakLabel}</Text>}
+          {subtitle && (
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{subtitle}</Text>
+          )}
+          {streakLabel && (
+            <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              {streakLabel}
+            </Text>
+          )}
         </>
       )}
     </View>

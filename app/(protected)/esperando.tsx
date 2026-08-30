@@ -51,7 +51,9 @@ export default function Esperando() {
   return (
     <WaitingScreen
       pendingTarget={pendingTarget}
-      readRemainingMs={() => (AceleralockBlocker.protectionState().pendingRemainingSeconds ?? 0) * 1000}
+      readRemainingMs={() =>
+        (AceleralockBlocker.protectionState().pendingRemainingSeconds ?? 0) * 1000
+      }
       onCancel={async () => {
         AceleralockBlocker.cancelRequest();
         router.back();

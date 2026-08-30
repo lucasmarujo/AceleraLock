@@ -59,9 +59,7 @@ async function abrirSettings(permissao: CorePermission) {
 }
 
 type Carga =
-  | { estado: 'carregando' }
-  | { estado: 'erro' }
-  | { estado: 'pronto'; apps: InstalledApp[] };
+  { estado: 'carregando' } | { estado: 'erro' } | { estado: 'pronto'; apps: InstalledApp[] };
 
 type Props = {
   passoInicial: Passo;
@@ -97,7 +95,6 @@ export function OnboardingFlow({ passoInicial, passo, onPasso }: Props) {
       onPasso(4);
     }
   }, [passo, pediuUso, permissions?.usageAccess, onPasso]);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -195,8 +192,12 @@ export function OnboardingFlow({ passoInicial, passo, onPasso }: Props) {
       <Animated.View
         key={passo}
         style={styles.secao}
-        entering={reduzido ? FadeInRight.duration(duration.instant) : FadeInRight.duration(duration.base)}
-        exiting={reduzido ? FadeOutLeft.duration(duration.instant) : FadeOutLeft.duration(duration.fast)}
+        entering={
+          reduzido ? FadeInRight.duration(duration.instant) : FadeInRight.duration(duration.base)
+        }
+        exiting={
+          reduzido ? FadeOutLeft.duration(duration.instant) : FadeOutLeft.duration(duration.fast)
+        }
       >
         {passo === 1 && (
           <View style={styles.corpo}>
@@ -272,13 +273,18 @@ export function OnboardingFlow({ passoInicial, passo, onPasso }: Props) {
         {passo === 4 && (
           <View style={styles.corpo}>
             <Text style={[styles.titulo, { color: theme.colors.textPrimary }]}>
-              {nome ? `${nome}, vamos criar seu primeiro bloqueio!` : 'Vamos criar seu primeiro bloqueio!'}
+              {nome
+                ? `${nome}, vamos criar seu primeiro bloqueio!`
+                : 'Vamos criar seu primeiro bloqueio!'}
             </Text>
 
             <View
               style={[
                 styles.cartao,
-                { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
+                {
+                  backgroundColor: theme.colors.bgSurface,
+                  borderColor: theme.colors.borderDefault,
+                },
               ]}
             >
               <TextField
@@ -402,9 +408,7 @@ function CartaoBloqueado({ app, reduzido }: { app: InstalledApp | null; reduzido
   const entrada = useSharedValue(reduzido ? 1 : 0);
 
   useEffect(() => {
-    entrada.value = reduzido
-      ? 1
-      : withSpring(1, { damping: 14, stiffness: 140, mass: 0.6 });
+    entrada.value = reduzido ? 1 : withSpring(1, { damping: 14, stiffness: 140, mass: 0.6 });
   }, [entrada, reduzido]);
 
   const estilo = useAnimatedStyle(() => ({

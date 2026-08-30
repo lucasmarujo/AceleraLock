@@ -41,7 +41,8 @@ export function formatRemainingForScreenReader(remainingMs: number): string {
   const { minutes, seconds } = splitMinutesSeconds(remainingMs);
   const parts: string[] = [];
   if (minutes > 0) parts.push(`${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`);
-  if (seconds > 0 || minutes === 0) parts.push(`${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}`);
+  if (seconds > 0 || minutes === 0)
+    parts.push(`${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}`);
   return `Faltam ${parts.join(' e ')}`;
 }
 

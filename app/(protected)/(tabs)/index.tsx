@@ -57,17 +57,24 @@ export default function Home() {
     }, [])
   );
 
-  const ultimosDias =
-    tempoTela.estado === 'pronto' ? ultimosSeteDias(tempoTela.resumo.days) : [];
+  const ultimosDias = tempoTela.estado === 'pronto' ? ultimosSeteDias(tempoTela.resumo.days) : [];
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]} edges={['top']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}
+      edges={['top']}
+    >
       <ScrollView contentContainerStyle={styles.conteudo}>
         <Text style={[styles.saudacao, { color: theme.colors.textPrimary }]}>
           {nome ? `Você está protegido, ${nome}.` : 'Você está protegido.'}
         </Text>
 
-        <View style={[styles.cartao, { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault }]}>
+        <View
+          style={[
+            styles.cartao,
+            { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
+          ]}
+        >
           <Text style={[styles.rotulo, { color: theme.colors.textSecondary }]}>Hoje na tela</Text>
           {tempoTela.estado === 'carregando' && <Skeleton width="60%" height={60} />}
           {tempoTela.estado === 'erro' && (

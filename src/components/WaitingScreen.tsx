@@ -53,7 +53,9 @@ export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel }: Prop
           <Countdown
             readRemainingMs={readRemainingMs}
             completeSlot={
-              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>Confirmando…</Text>
+              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+                Confirmando…
+              </Text>
             }
           />
         </View>

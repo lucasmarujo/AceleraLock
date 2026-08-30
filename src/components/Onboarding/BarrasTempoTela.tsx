@@ -68,9 +68,7 @@ function Barra({
   // Com texto por cima, a barra deixa de ser so indicador e vira superficie de
   // conteudo: o par vem de `surfaces.brand`, que e o unico do sistema com
   // contraste medido (8,52:1) e que ja inverte sozinho entre os temas.
-  const preenchimento = mostrarValor
-    ? theme.colors.surfaces.brand.fill
-    : theme.colors.borderBrand;
+  const preenchimento = mostrarValor ? theme.colors.surfaces.brand.fill : theme.colors.borderBrand;
 
   const valor = formatarDuracao(dado.horas * 3600);
   const cabeDentro = alvo >= ALTURA_MINIMA_PRO_VALOR;

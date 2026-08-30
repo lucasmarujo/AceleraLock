@@ -36,11 +36,21 @@ function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, su
   switch (variant) {
     case 'primary': {
       const s = surface ?? theme.colors.surfaces.brand;
-      return { backgroundColor: pressed ? s.pressedFill : s.fill, textColor: s.onFill, borderWidth: 0, borderColor: 'transparent' };
+      return {
+        backgroundColor: pressed ? s.pressedFill : s.fill,
+        textColor: s.onFill,
+        borderWidth: 0,
+        borderColor: 'transparent',
+      };
     }
     case 'destructive': {
       const s = theme.colors.surfaces.danger;
-      return { backgroundColor: pressed ? s.pressedFill : s.fill, textColor: s.onFill, borderWidth: 0, borderColor: 'transparent' };
+      return {
+        backgroundColor: pressed ? s.pressedFill : s.fill,
+        textColor: s.onFill,
+        borderWidth: 0,
+        borderColor: 'transparent',
+      };
     }
     case 'secondary':
       return {
@@ -50,7 +60,12 @@ function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, su
         borderColor: theme.colors.borderStrong,
       };
     case 'ghost':
-      return { backgroundColor: 'transparent', textColor: theme.colors.textBrand, borderWidth: 0, borderColor: 'transparent' };
+      return {
+        backgroundColor: 'transparent',
+        textColor: theme.colors.textBrand,
+        borderWidth: 0,
+        borderColor: 'transparent',
+      };
   }
 }
 
@@ -58,7 +73,15 @@ function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, su
  * docs/design-system.md §3.1. Rótulo diz a ação ("Salvar alterações", nunca
  * "OK") — decisão de copy de quem chama, este componente só desenha.
  */
-export function Button({ label, onPress, variant = 'primary', size = 'lg', disabled = false, loading = false, surface }: Props) {
+export function Button({
+  label,
+  onPress,
+  variant = 'primary',
+  size = 'lg',
+  disabled = false,
+  loading = false,
+  surface,
+}: Props) {
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
   const isDisabled = disabled || loading;
@@ -104,7 +127,10 @@ export function Button({ label, onPress, variant = 'primary', size = 'lg', disab
           const v = variantStyle(theme, variant, pressed, surface);
           return (
             <>
-              <Text style={[styles.label, { color: v.textColor, opacity: loading ? 0 : 1 }]} numberOfLines={1}>
+              <Text
+                style={[styles.label, { color: v.textColor, opacity: loading ? 0 : 1 }]}
+                numberOfLines={1}
+              >
                 {label}
               </Text>
               {loading && (

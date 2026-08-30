@@ -4,9 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import AceleralockBlocker, { type ScreenTimeSummary } from '@/native/blocker';
 
 export type CargaTempoTela =
-  | { estado: 'carregando' }
-  | { estado: 'erro' }
-  | { estado: 'pronto'; resumo: ScreenTimeSummary };
+  { estado: 'carregando' } | { estado: 'erro' } | { estado: 'pronto'; resumo: ScreenTimeSummary };
 
 /**
  * Le o resumo de tempo de tela a cada foco da tela. Duas abas consomem isto, e

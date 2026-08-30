@@ -4,7 +4,10 @@ import { Stack, ThemeProvider } from 'expo-router';
 import * as NativeSplash from 'expo-splash-screen';
 
 import { SplashScreen } from '@/components/SplashScreen';
-import { ProtectionVerdictProvider, useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
+import {
+  ProtectionVerdictProvider,
+  useProtectionVerdictContext,
+} from '@/state/ProtectionVerdictContext';
 import { AceleraLockDarkTheme, AceleraLockLightTheme } from '@/theme/navigationTheme';
 
 NativeSplash.preventAutoHideAsync().catch(() => {});

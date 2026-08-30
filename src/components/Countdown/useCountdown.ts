@@ -3,7 +3,8 @@ import { AppState } from 'react-native';
 
 import { deriveCountdownStatus, type CountdownStatus } from './countdownStatus';
 
-export type CountdownSnapshot = { status: 'loading' } | CountdownStatus | { status: 'error'; message: string };
+export type CountdownSnapshot =
+  { status: 'loading' } | CountdownStatus | { status: 'error'; message: string };
 
 export type RemainingMsReader = () => Promise<number> | number;
 
@@ -40,6 +41,10 @@ export function useCountdown(readRemainingMs: RemainingMsReader) {
   }, [readRemainingMs]);
 
   useEffect(() => {
+    // `refresh` e async: todo setState dela acontece depois de um await,
+    // nunca sincrono no corpo do efeito. E a carga inicial, que precisa
+    // rodar no mount.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh();
 
     const interval = setInterval(() => {

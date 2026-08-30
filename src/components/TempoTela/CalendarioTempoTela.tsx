@@ -73,8 +73,7 @@ function Dia({ dia, maximo }: { dia: DiaDoMes; maximo: number }) {
 
   // Sem leitura: so a borda, sem preenchimento. Com leitura: opacidade da marca
   // com piso, pra um dia medido de uso baixo nao sumir dentro do fundo.
-  const preenchimento =
-    intensidade === null ? 'transparent' : theme.colors.borderBrand;
+  const preenchimento = intensidade === null ? 'transparent' : theme.colors.borderBrand;
   const opacidade = intensidade === null ? 0 : 0.2 + intensidade * 0.8;
 
   return (

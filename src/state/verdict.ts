@@ -1,9 +1,5 @@
 export type ProtectionVerdict =
-  | 'loading'
-  | 'onboarding-incompleto'
-  | 'pausado'
-  | 'protegido'
-  | 'plataforma-nao-suportada';
+  'loading' | 'onboarding-incompleto' | 'pausado' | 'protegido' | 'plataforma-nao-suportada';
 
 export type Snapshot = {
   /**

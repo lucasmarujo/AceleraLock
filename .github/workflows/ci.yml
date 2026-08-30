@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# Push seguido de push na mesma branch cancela a execucao anterior: o resultado
+# que importa e o do ultimo commit, e fila parada custa minuto de runner.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qualidade:
+    name: Formatacao, lint, tipagem e testes JS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` e nao `npm install`: instala exatamente o lockfile e falha se
+      # ele estiver dessincronizado do package.json. O modo legacy-peer-deps que
+      # este projeto precisa esta no .npmrc, versionado — ver o motivo la.
+      - name: Instalar dependencias
+        run: npm ci
+
+      # Passos separados de proposito: um job com quatro steps diz qual dos
+      # quatro quebrou direto na lista do GitHub. Encadeados num script so, o
+      # primeiro erro esconde os outros tres.
+      - name: Formatacao (Prettier)
+        run: npm run format:check
+
+      - name: Lint (ESLint)
+        run: npm run lint
+
+      - name: Tipagem (tsc)
+        run: npm run typecheck
+
+      - name: Testes (node:test)
+        run: npm test
+
+  testes-kotlin:
+    name: Testes do core (Kotlin)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      # O `core` e Kotlin/JVM puro e tem settings.gradle.kts proprio: roda sem
+      # SDK do Android e sem Expo. E onde moram as decisoes testaveis do modulo
+      # nativo (bloqueio, espera e agregacao de tempo de tela).
+      - name: Testes do core
+        run: gradle -p native/modules/aceleralock-blocker :core:test --no-daemon
+
+      - name: Publicar relatorio quando falhar
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: relatorio-testes-core
+          path: native/modules/aceleralock-blocker/core/build/reports/tests/test/
+
+  build:
+    name: Build do APK (desativado)
+    # Desativado ate haver assinatura e destino de distribuicao definidos.
+    # Para ligar: troque por `needs: [qualidade, testes-kotlin]` e configure os
+    # secrets do EAS (ou do keystore, se o build for local).
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      # `expo prebuild` regenera android/ (a pasta e gitignorada: o projeto usa
+      # CNG). O plugin em native/plugins/withAceleralockBlocker.js entra aqui.
+      - name: Prebuild
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Montar APK de release
+        run: ./android/gradlew -p android assembleRelease
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aceleralock-apk
+          path: android/app/build/outputs/apk/release/*.apk

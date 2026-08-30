@@ -18,9 +18,7 @@ type Props = {
 };
 
 type Carga =
-  | { estado: 'carregando' }
-  | { estado: 'erro' }
-  | { estado: 'pronto'; apps: InstalledApp[] };
+  { estado: 'carregando' } | { estado: 'erro' } | { estado: 'pronto'; apps: InstalledApp[] };
 
 /**
  * Cada linha e um `AppListRow` (docs/design-system.md §3.8 e §3.9), que a
@@ -123,7 +121,8 @@ export function AppPickerScreen({ title, ctaLabel, onConfirm }: Props) {
       {carga.estado === 'erro' && (
         <View style={styles.feedback}>
           <Text style={[styles.body, { color: theme.colors.textSecondary }]}>
-            Não deu para ler a lista de apps do aparelho. Saia e entre nesta tela para tentar de novo.
+            Não deu para ler a lista de apps do aparelho. Saia e entre nesta tela para tentar de
+            novo.
           </Text>
         </View>
       )}

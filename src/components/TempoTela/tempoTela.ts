@@ -105,5 +105,8 @@ export function intensidadeDoDia(segundos: number | null, maximo: number): numbe
 
 /** Maior leitura do conjunto, pra escala do calendario. 0 quando nada foi medido. */
 export function maiorLeitura(dias: DiaDoMes[]): number {
-  return dias.reduce((maior, dia) => (dia.segundos !== null && dia.segundos > maior ? dia.segundos : maior), 0);
+  return dias.reduce(
+    (maior, dia) => (dia.segundos !== null && dia.segundos > maior ? dia.segundos : maior),
+    0
+  );
 }

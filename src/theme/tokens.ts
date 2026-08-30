@@ -122,7 +122,11 @@ export const easing = {
   accelerate: [0.3, 0, 1, 1],
 } as const;
 
-type TextStyleToken = { fontSize: number; lineHeight: number; fontWeight: '400' | '500' | '600' | '700' };
+type TextStyleToken = {
+  fontSize: number;
+  lineHeight: number;
+  fontWeight: '400' | '500' | '600' | '700';
+};
 
 export const typography: Record<string, TextStyleToken> = {
   display: { fontSize: 34, lineHeight: 40, fontWeight: '700' },

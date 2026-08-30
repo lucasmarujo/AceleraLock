@@ -34,7 +34,9 @@ export function ProtectionVerdictProvider({ children }: { children: ReactNode })
 export function useProtectionVerdictContext(): ProtectionVerdictContextValue {
   const context = useContext(ProtectionVerdictContext);
   if (!context) {
-    throw new Error('useProtectionVerdictContext precisa estar dentro de ProtectionVerdictProvider');
+    throw new Error(
+      'useProtectionVerdictContext precisa estar dentro de ProtectionVerdictProvider'
+    );
   }
   return context;
 }

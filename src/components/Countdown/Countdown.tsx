@@ -6,7 +6,11 @@ import { Skeleton } from '@/components/Skeleton';
 import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-import { formatRemainingForScreenReader, formatRemainingShort, roundToAnnouncementBucket } from './countdownStatus';
+import {
+  formatRemainingForScreenReader,
+  formatRemainingShort,
+  roundToAnnouncementBucket,
+} from './countdownStatus';
 import { useCountdown, type RemainingMsReader } from './useCountdown';
 
 type Props = {
@@ -48,7 +52,13 @@ export function Countdown({ readRemainingMs, completeSlot }: Props) {
     return (
       <View style={styles.container} accessibilityLiveRegion="polite">
         <Text style={[styles.message, { color: theme.colors.textDanger }]}>{snapshot.message}</Text>
-        <Button label="Tentar de novo" variant="secondary" size="md" loading={retrying} onPress={handleRetry} />
+        <Button
+          label="Tentar de novo"
+          variant="secondary"
+          size="md"
+          loading={retrying}
+          onPress={handleRetry}
+        />
       </View>
     );
   }
@@ -78,14 +88,22 @@ export function Countdown({ readRemainingMs, completeSlot }: Props) {
       <Text
         style={[
           styles.number,
-          { color: theme.colors.textPrimary, fontSize: numberStyle.fontSize, lineHeight: numberStyle.lineHeight, fontWeight: numberStyle.fontWeight },
+          {
+            color: theme.colors.textPrimary,
+            fontSize: numberStyle.fontSize,
+            lineHeight: numberStyle.lineHeight,
+            fontWeight: numberStyle.fontWeight,
+          },
         ]}
         maxFontSizeMultiplier={1.3}
         importantForAccessibility="no"
       >
         {formatRemainingShort(remainingMs).replace('Faltam ', '')}
       </Text>
-      <Text style={[styles.label, { color: theme.colors.textSecondary }]} importantForAccessibility="no">
+      <Text
+        style={[styles.label, { color: theme.colors.textSecondary }]}
+        importantForAccessibility="no"
+      >
         {formatRemainingShort(remainingMs)}
       </Text>
     </View>

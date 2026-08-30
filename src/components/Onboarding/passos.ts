@@ -56,11 +56,7 @@ export function proporcaoDoToque(x: number, largura: number): number {
   return Math.min(1, Math.max(0, x / largura));
 }
 
-export function horasDaProporcao(
-  proporcao: number,
-  min = HORAS_MIN,
-  max = HORAS_MAX
-): number {
+export function horasDaProporcao(proporcao: number, min = HORAS_MIN, max = HORAS_MAX): number {
   return Math.round(min + Math.min(1, Math.max(0, proporcao)) * (max - min));
 }
 

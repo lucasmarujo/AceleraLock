@@ -10,7 +10,12 @@
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
     "typecheck": "tsc --noEmit",
-    "test": "node --test --import tsx tests/*.test.ts"
+    "test": "node --test --import tsx tests/*.test.ts",
+    "lint": "eslint .",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json}\"",
+    "test:kotlin": "gradle -p native/modules/aceleralock-blocker :core:test",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm test"
   },
   "dependencies": {
     "@expo/vector-icons": "15.1.1",
@@ -38,6 +43,9 @@
   "devDependencies": {
     "@types/node": "^26.4.0",
     "@types/react": "19.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "^57.0.2",
+    "prettier": "^3.9.6",
     "tsx": "^4.23.12",
     "typescript": "6.0.3"
   }

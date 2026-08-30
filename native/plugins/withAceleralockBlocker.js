@@ -45,12 +45,12 @@ function withAceleralockBlockerMinSdk(config) {
         throw new Error(
           `withAceleralockBlocker: nao achei '${ROOT_PROJECT_APPLY}' no build.gradle raiz — ` +
             'sem esse ponto de ancoragem o minSdk 26 do modulo nativo nao entra e o ' +
-            'merge de manifesto falha. Conferir se o template do Expo mudou.',
+            'merge de manifesto falha. Conferir se o template do Expo mudou.'
         );
       }
       mod.modResults.contents = mod.modResults.contents.replace(
         ROOT_PROJECT_APPLY,
-        `${MIN_SDK}\n\n${ROOT_PROJECT_APPLY}`,
+        `${MIN_SDK}\n\n${ROOT_PROJECT_APPLY}`
       );
     }
     return mod;

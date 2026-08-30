@@ -52,7 +52,6 @@ export function SliderHoras({ horas, onChange }: Props) {
   // O PanResponder e criado uma vez; sem refs ele congelaria o primeiro
   // `onChange` e a largura ainda nao medida pelo layout.
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
   const horasRef = useRef(horas);
   const offsetRef = useRef(0);
   const arrastandoRef = useRef(false);
@@ -60,6 +59,21 @@ export function SliderHoras({ horas, onChange }: Props) {
   const proporcao = useSharedValue(proporcaoDasHoras(horas));
   const pulo = useSharedValue(1);
 
+  // Em efeito e nao no corpo do render: escrever ref durante o render deixa o
+  // valor divergente entre a renderizacao e o commit quando o React reexecuta
+  // o componente. O gesto so le isto depois do mount, entao um frame de atraso
+  // nao alcanca nenhum toque.
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  // O PanResponder precisa ser criado UMA vez: recria-lo a cada render trocaria
+  // o handler no meio do arrasto. Por isso ele nao fecha sobre prop nenhuma —
+  // tudo que usa mora em ref, justamente pra lista de dependencias poder ser
+  // vazia. As duas regras abaixo leem "ref dentro de useMemo" como leitura
+  // durante o render; aqui sao closures que so rodam quando o dedo encosta na
+  // tela, nunca enquanto o React renderiza.
+  /* eslint-disable react-hooks/refs, react-hooks/exhaustive-deps */
   const responder = useMemo(
     () =>
       PanResponder.create({
@@ -80,6 +94,7 @@ export function SliderHoras({ horas, onChange }: Props) {
       }),
     []
   );
+  /* eslint-enable react-hooks/refs, react-hooks/exhaustive-deps */
 
   function aplicar(x: number) {
     const posicao = proporcaoDoToque(x, larguraRef.current);
@@ -132,10 +147,7 @@ export function SliderHoras({ horas, onChange }: Props) {
   }));
 
   const estiloThumb = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: proporcao.value * largura - THUMB / 2 },
-      { scale: pulo.value },
-    ],
+    transform: [{ translateX: proporcao.value * largura - THUMB / 2 }, { scale: pulo.value }],
   }));
 
   return (

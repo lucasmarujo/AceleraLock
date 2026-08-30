@@ -14,7 +14,7 @@ function readPngHeader(relative: string) {
   assert.equal(
     buffer.subarray(0, 8).toString('latin1'),
     '\x89PNG\r\n\x1a\n',
-    `${relative}: não é um PNG`,
+    `${relative}: não é um PNG`
   );
   assert.equal(buffer.subarray(12, 16).toString('latin1'), 'IHDR', `${relative}: IHDR ausente`);
   return {

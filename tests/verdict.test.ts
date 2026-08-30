@@ -3,7 +3,12 @@ import assert from 'node:assert/strict';
 
 import { computeVerdict, nextMissingCorePermission } from '../src/state/verdict';
 
-const BASE = { platformSupported: true, coreGranted: true, onboardingComplete: true, protectionActive: true };
+const BASE = {
+  platformSupported: true,
+  coreGranted: true,
+  onboardingComplete: true,
+  protectionActive: true,
+};
 
 test('onboarding nao concluido: onboarding-incompleto mesmo com permissoes', () => {
   assert.equal(computeVerdict({ ...BASE, onboardingComplete: false }), 'onboarding-incompleto');
@@ -30,7 +35,12 @@ test('plataforma sem suporte: plataforma-nao-suportada mesmo com onboarding e pe
 
 test('plataforma sem suporte e nada mais: plataforma-nao-suportada', () => {
   assert.equal(
-    computeVerdict({ ...BASE, platformSupported: false, coreGranted: false, onboardingComplete: false }),
+    computeVerdict({
+      ...BASE,
+      platformSupported: false,
+      coreGranted: false,
+      onboardingComplete: false,
+    }),
     'plataforma-nao-suportada'
   );
 });
