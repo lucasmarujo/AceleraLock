@@ -40,3 +40,16 @@ class InMemoryStore : KeyValueStore {
         }
     }
 }
+
+class FakeWallClock(
+    private var day: java.time.LocalDate = java.time.LocalDate.of(2026, 8, 30),
+    private var now: Long = 0L
+) : WallClock {
+    override fun today(): java.time.LocalDate = day
+
+    override fun nowMillis(): Long = now
+
+    fun setToday(value: java.time.LocalDate) {
+        day = value
+    }
+}

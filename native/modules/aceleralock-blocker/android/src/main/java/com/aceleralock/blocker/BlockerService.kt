@@ -154,6 +154,29 @@ class BlockerService : Service() {
     }
 
     /**
+     * Fecha o dia que acabou de virar, gravando no historico o que o
+     * UsageStatsManager ainda tem.
+     *
+     * E aqui e nao num alarme porque o servico ja esta de pe: a checagem e uma
+     * comparacao de data por poll, e sem ela o dado do dia se perderia pra quem
+     * so abre o app uma vez por semana — o sistema esquece a granularidade
+     * diaria antes disso.
+     *
+     * Falha na coleta nao pode derrubar o tick: bloqueio e a funcao do servico,
+     * grafico e informacao. A data e marcada como tentada de qualquer forma,
+     * senao um erro permanente faria o servico varrer eventos a cada poll.
+     */
+    private fun coletarTempoDeTelaNaViradaDoDia() {
+        val hoje = SystemWallClock.today().toString()
+        if (prefs().getString(KEY_ULTIMA_COLETA, null) == hoje) {
+            return
+        }
+        prefs().edit().putString(KEY_ULTIMA_COLETA, hoje).apply()
+        runCatching { ScreenTimeCollector(this).collect() }
+            .onFailure { Log.w(TAG, "falha ao coletar tempo de tela", it) }
+    }
+
+    /**
      * A espera e a concessao avancam mesmo com a tela apagada: o tempo passa do mesmo
      * jeito, e so o desenho do overlay depende da tela estar ligada.
      */
@@ -162,6 +185,7 @@ class BlockerService : Service() {
         grants.tick()
         protectionLog.heartbeat()
         consumeMaturedWait()
+        coletarTempoDeTelaNaViradaDoDia()
 
         if (!screenOn) {
             overlay.hide()
@@ -212,6 +236,7 @@ class BlockerService : Service() {
         private const val TAG = "BlockerService"
         const val PREFS_NAME = "aceleralock.blocker"
         const val KEY_POLICY = "policy.json"
+        private const val KEY_ULTIMA_COLETA = "screentime.last_collected_day"
         private const val ACTION_REFRESH_CRITICAL = "com.aceleralock.blocker.REFRESH_CRITICAL"
         private const val ACTION_REFRESH_POLICY = "com.aceleralock.blocker.REFRESH_POLICY"
 

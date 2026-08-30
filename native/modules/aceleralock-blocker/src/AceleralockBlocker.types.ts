@@ -34,3 +34,32 @@ export type InstalledApp = {
   /** `file://` do PNG em cache. null quando o icone nao pode ser lido. */
   iconUri: string | null;
 };
+
+/** Um app no ranking de consumo do dia. */
+export type ScreenTimeApp = {
+  packageName: string;
+  /** Cai pro proprio packageName quando o app nao esta na lista de launcher. */
+  label: string;
+  /** `file://` do PNG em cache, ou null (launcher, Ajustes, app sem icone). */
+  iconUri: string | null;
+  seconds: number;
+};
+
+/** Um dia com leitura. Dia ausente da lista nunca virou zero: nao foi medido. */
+export type ScreenTimeDay = {
+  /** ISO `YYYY-MM-DD`, no fuso do aparelho. */
+  date: string;
+  seconds: number;
+};
+
+export type ScreenTimeSummary = {
+  todaySeconds: number;
+  /** Do que mais consome pro que menos, so o dia corrente. */
+  byPackage: ScreenTimeApp[];
+  /**
+   * Todo o historico acumulado pelo app (ate 90 dias), em ordem crescente de
+   * data. Quem recorta e a tela: o calendario filtra o mes, a home pega os
+   * ultimos sete dias — que podem atravessar a virada do mes.
+   */
+  days: ScreenTimeDay[];
+};

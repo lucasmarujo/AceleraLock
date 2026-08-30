@@ -106,8 +106,24 @@ o prebuild: `ActivityMonitorExtension`, `ShieldAction`, `ShieldConfiguration`.
   helper application" ao revogar autorização e no `onSelectionChange`. Toca o
   fluxo de revogação de permissão (§6 do onboarding). Precisa de teste em
   device real cedo.
-- Lacunas de relatório de uso (#64, #29, #43): irrelevantes para nós. Não
-  medimos tempo de tela, só bloqueamos.
+- Lacunas de relatório de uso (#64, #29, #43): irrelevantes para o **iOS**, que
+  segue só bloqueando.
+
+  > **Revisto em 2026-08-30.** Esta linha dizia "não medimos tempo de tela, só
+  > bloqueamos", e valia para os dois lados. Não vale mais no Android: as telas
+  > de Início e Perfil mostram tempo de tela real, lido por `queryEvents` do
+  > `UsageStatsManager` e reconstruído em sessões no `core/`
+  > (`ScreenTimeSessions`, `ScreenTimeBuckets`, `ScreenTimeHistory`).
+  >
+  > **O que não mudou:** a recusa ao wrapper de analytics do §3 continua de pé,
+  > e pelo mesmo motivo — o que precisávamos era da leitura crua, não de uma
+  > camada de métricas por cima dela. Medir é uma tela de leitura para quem
+  > instalou; não vira telemetria, não sai do aparelho.
+  >
+  > **O que isso custou:** o histórico diário passou a ser acumulado por nós,
+  > porque o Android retém pouca granularidade diária, e o relógio de parede
+  > entrou no produto (restrito ao histórico — a espera continua monotônica).
+  > Ver `WallClock.kt`.
 
 ### Recomendação
 

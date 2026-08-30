@@ -1,7 +1,21 @@
 import AceleralockBlockerNative from 'aceleralock-blocker';
-import type { InstalledApp, PermissionState, ProtectionState } from 'aceleralock-blocker';
+import type {
+  InstalledApp,
+  PermissionState,
+  ProtectionState,
+  ScreenTimeApp,
+  ScreenTimeDay,
+  ScreenTimeSummary,
+} from 'aceleralock-blocker';
 
-export type { InstalledApp, PermissionState, ProtectionState };
+export type {
+  InstalledApp,
+  PermissionState,
+  ProtectionState,
+  ScreenTimeApp,
+  ScreenTimeDay,
+  ScreenTimeSummary,
+};
 
 /**
  * index.ts do modulo nao reexporta PendingTarget por nome (so
@@ -15,6 +29,13 @@ type AceleralockBlockerModule = {
   criticalPackages(): string[];
   /** Assincrona: varre o PackageManager, cara demais para a thread de JS. */
   installedApps(): Promise<InstalledApp[]>;
+  /**
+   * Assincrona pelo mesmo motivo: varre ate sete dias de eventos de uso.
+   * `days` e o historico inteiro que o app acumula, nao do sistema — o Android
+   * esquece a granularidade diaria em poucos dias, entao dia ausente da lista
+   * significa nao medido, nunca zero.
+   */
+  screenTimeSummary(): Promise<ScreenTimeSummary>;
   /** Politica vigente. Lanca em politica ilegivel, nunca devolve lista vazia por engano. */
   blockedPackages(): string[];
   setBlockedPackages(packages: string[]): void;

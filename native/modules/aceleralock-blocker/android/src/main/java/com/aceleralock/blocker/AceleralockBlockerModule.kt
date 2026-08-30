@@ -52,6 +52,45 @@ class AceleralockBlockerModule : Module() {
         }
 
         /**
+         * Tempo de tela: total de hoje, ranking de apps do dia e os dias do mes
+         * corrente. Uma chamada so — as tres visualizacoes saem da mesma passada
+         * de eventos, e separar em tres funcoes custaria tres varreduras.
+         *
+         * AsyncFunction pelo mesmo criterio de installedApps(): queryEvents numa
+         * janela de sete dias nao e leitura barata.
+         *
+         * Os dias vem do historico que o app acumula, nao de releitura: o Android
+         * esquece a granularidade diaria em poucos dias, e o calendario do mes
+         * so existe porque gravamos enquanto o dado estava la.
+         */
+        AsyncFunction("screenTimeSummary") {
+            val resumo = ScreenTimeCollector(context).collect()
+            val instalados = InstalledAppsResolver(context, CriticalAppResolver(context))
+                .resolve()
+                .associateBy { it.packageName }
+
+            mapOf(
+                "todaySeconds" to resumo.today.seconds,
+                "byPackage" to resumo.byPackage.map { total ->
+                    // O resolver so conhece app com icone de launcher e nao
+                    // critico, mas o UsageStatsManager reporta launcher, Ajustes
+                    // e discador tambem. Pacote sem resolucao entra com o proprio
+                    // nome e sem icone — sumir com ele esconderia tempo real.
+                    val conhecido = instalados[total.packageName]
+                    mapOf(
+                        "packageName" to total.packageName,
+                        "label" to (conhecido?.label ?: total.packageName),
+                        "iconUri" to conhecido?.iconUri,
+                        "seconds" to total.total.seconds
+                    )
+                },
+                "days" to resumo.days.entries.sortedBy { it.key }.map { (dia, total) ->
+                    mapOf("date" to dia.toString(), "seconds" to total.seconds)
+                }
+            )
+        }
+
+        /**
          * A politica vigente, para a tela de selecao abrir ja marcando o que esta
          * bloqueado. Herda de currentPolicy() a recusa em politica ilegivel: devolver
          * lista vazia diria "nada bloqueado" para quem tem tudo bloqueado, e a tela

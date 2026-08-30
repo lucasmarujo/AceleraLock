@@ -431,7 +431,8 @@ Layout final (container, exato texto, o que acontece em `error`) é trabalho de 
 ### 3.20 Navegação — `Header` e `TabBar`
 
 - **`Header`:** título da tela + ação de voltar (seta iOS / seta Android) + ações à direita. Large-title permitido no iOS, top app bar padrão no Android — **mesmo texto, mesmas ações**.
-- **`TabBar`:** 3–4 destinos, ícone + rótulo, na base. Tab bar iOS / navigation bar Android. Item ativo em `icon.brand` + rótulo `bodyStrong`.
+- **`TabBar`:** 2–4 destinos, ícone + rótulo, na base. Tab bar iOS / navigation bar Android. Item ativo em `icon.brand` + rótulo `bodyStrong`.
+  - O piso era 3. Passou a 2 em 2026-08-30, quando a área logada ganhou Início e Perfil: o app faz uma coisa, e um terceiro destino existiria só para cumprir a faixa — item de menu de enfeite é pior que uma barra curta.
 
 ### 3.23 Estados obrigatórios por tela
 

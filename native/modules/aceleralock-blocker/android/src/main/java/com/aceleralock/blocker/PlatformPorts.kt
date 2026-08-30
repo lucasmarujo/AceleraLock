@@ -46,3 +46,13 @@ class SharedPreferencesStore(context: Context) : KeyValueStore {
         prefs.edit().putString(key, value).apply()
     }
 }
+
+/**
+ * Relogio de parede. Existe so pro historico de tempo de tela — ver o comentario
+ * de WallClock no core sobre por que aqui a regra e diferente da espera.
+ */
+object SystemWallClock : com.aceleralock.blocker.core.WallClock {
+    override fun today(): java.time.LocalDate = java.time.LocalDate.now()
+
+    override fun nowMillis(): Long = System.currentTimeMillis()
+}

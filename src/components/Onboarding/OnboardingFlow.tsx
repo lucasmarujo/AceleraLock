@@ -19,7 +19,7 @@ import { Skeleton } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
 import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
 import { mergeBlockedPackages } from '@/state/blockedApps';
-import { markOnboardingComplete, saveUserName } from '@/state/onboardingStorage';
+import { markOnboardingComplete, saveDailyHours, saveUserName } from '@/state/onboardingStorage';
 import { useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
 import { nextMissingCorePermission, type CorePermission } from '@/state/verdict';
 import { duration, easing, radius, spacing, typography } from '@/theme/tokens';
@@ -174,6 +174,10 @@ export function OnboardingFlow({ passoInicial, passo, onPasso }: Props) {
     setSalvando(true);
     try {
       await saveUserName(nome);
+      // Ate agora a estimativa era coletada e descartada: nao havia nada que a
+      // lesse. O perfil passou a mostra-la (e a deixar corrigir), entao ela
+      // vira dado gravado.
+      await saveDailyHours(horas);
       await markOnboardingComplete();
       AceleralockBlocker.start();
       // Quem tira a pessoa do grupo e o veredito reavaliado, nunca um push:

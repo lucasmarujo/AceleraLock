@@ -44,3 +44,28 @@ export async function saveUserName(nome: string): Promise<void> {
   }
   await AsyncStorage.setItem(KEY_USER_NAME, limpo);
 }
+
+/**
+ * Horas por dia que a pessoa estimou na secao 2 do onboarding. Informativo por
+ * decisao: nao e meta, nao dispara nada, nao e comparado com a leitura real —
+ * so aparece no perfil, onde da pra corrigir.
+ */
+const KEY_DAILY_HOURS = 'aceleralock.daily_hours';
+
+export async function readDailyHours(): Promise<number | null> {
+  const value = await AsyncStorage.getItem(KEY_DAILY_HOURS);
+  if (value === null) {
+    return null;
+  }
+  const parsed = Number.parseInt(value, 10);
+  // Valor ilegivel conta como ausente: melhor a tela nao mostrar nada do que
+  // mostrar NaN onde deveria ter um numero de horas.
+  return Number.isInteger(parsed) ? parsed : null;
+}
+
+export async function saveDailyHours(horas: number): Promise<void> {
+  if (!Number.isInteger(horas)) {
+    return;
+  }
+  await AsyncStorage.setItem(KEY_DAILY_HOURS, String(horas));
+}
