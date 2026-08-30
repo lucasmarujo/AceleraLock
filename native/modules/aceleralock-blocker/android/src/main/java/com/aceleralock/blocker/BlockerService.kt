@@ -196,7 +196,7 @@ class BlockerService : Service() {
 
         if (verdict.outcome == BlockOutcome.BLOCK) {
             overlay.show(foreground) { context ->
-                BlockScreenView(context, foreground, waiting::pendingUnlockFor)
+                BlockScreenView(context, foreground)
             }
         } else {
             overlay.hide()

@@ -91,3 +91,15 @@ test('fundo do adaptive icon continua sendo o tema da marca, não hex solto', ()
   // com o token, senão o ícone muda de fundo dependendo do launcher.
   assert.equal(appJson.expo.android.adaptiveIcon.backgroundColor, brand.tema);
 });
+
+test('marca do overlay nativo existe com a geometria que a tela de bloqueio espera', () => {
+  // O overlay do bloqueador nao passa pelo `expo prebuild` — o `res/` dele e
+  // mantido a mao, entao nada avisa se o PNG sumir num rebase. O sintoma seria
+  // `Resources$NotFoundException` no `addView`, ja com a tela por cima do app.
+  const header = readPngHeader(
+    'native/modules/aceleralock-blocker/android/src/main/res/drawable-xxxhdpi/ic_aceleralock_mark.png'
+  );
+  assert.deepEqual([header.width, header.height], [512, 512]);
+  // Um asset so serve tema claro e escuro: quem pinta o fundo e o canvas do overlay.
+  assert.equal(header.hasAlpha, true);
+});
