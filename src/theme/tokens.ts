@@ -98,6 +98,27 @@ export const radius = {
   full: 999,
 } as const;
 
+/**
+ * docs/design-system.md §1.7. Existiam so na doc ate agora — nao havia
+ * animacao nenhuma no app pra consumi-los. Easing sai como tupla e nao como
+ * string CSS porque quem consome e `Easing.bezier(...easing.standard)` do
+ * reanimated, nao um browser.
+ */
+export const duration = {
+  instant: 100,
+  fast: 150,
+  base: 220,
+  slow: 300,
+} as const;
+
+export const easing = {
+  standard: [0.2, 0, 0, 1],
+  /** entrada: desacelera ate parar */
+  decelerate: [0, 0, 0, 1],
+  /** saida: acelera pra fora */
+  accelerate: [0.3, 0, 1, 1],
+} as const;
+
 type TextStyleToken = { fontSize: number; lineHeight: number; fontWeight: '400' | '500' | '600' | '700' };
 
 export const typography: Record<string, TextStyleToken> = {
@@ -113,7 +134,7 @@ export const typography: Record<string, TextStyleToken> = {
   timerHero: { fontSize: 56, lineHeight: 60, fontWeight: '700' },
 };
 
-type Surface = { fill: string; onFill: string; pressedFill: string };
+export type Surface = { fill: string; onFill: string; pressedFill: string };
 
 type SemanticTokens = {
   colors: {

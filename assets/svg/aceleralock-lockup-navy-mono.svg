@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="240" viewBox="0 0 1000 240">
+  <defs>
+  <linearGradient id="rim" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#1f6fb0"></stop><stop offset="1" stop-color="#19d6cf"></stop>
+  </linearGradient>
+  <linearGradient id="bodyG" x1="0.15" y1="0" x2="0.85" y2="1">
+    <stop offset="0" stop-color="#5ff0e8"></stop><stop offset="0.42" stop-color="#1fcfc8"></stop><stop offset="1" stop-color="#0b8f8d"></stop>
+  </linearGradient>
+  <linearGradient id="bodyEdge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0a7573"></stop><stop offset="1" stop-color="#075a5b"></stop>
+  </linearGradient>
+  <linearGradient id="shackG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#8ff6f0"></stop><stop offset="0.5" stop-color="#1cc6c1"></stop><stop offset="1" stop-color="#0a8b8b"></stop>
+  </linearGradient>
+  <linearGradient id="glossG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff" stop-opacity=".55"></stop><stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+  </linearGradient>
+  <linearGradient id="trailG" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#17c9c4" stop-opacity="0"></stop><stop offset="1" stop-color="#6ef2ec" stop-opacity=".95"></stop>
+  </linearGradient>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4"></feGaussianBlur></filter>
+  <filter id="lift" x="-30%" y="-30%" width="170%" height="170%">
+    <feDropShadow dx="3" dy="7" stdDeviation="7" flood-color="#03191d" flood-opacity=".65"></feDropShadow>
+  </filter></defs>
+  
+  <g transform="translate(6 0)"><mask id="chevMask" maskUnits="userSpaceOnUse" x="0" y="0" width="240" height="240">
+      <rect x="0" y="0" width="240" height="240" fill="#fff"></rect>
+      <g transform="translate(120 120) scale(0.8) translate(-120 -120)"><g transform="translate(120 122) skewX(-10) translate(-120 -122)">
+        <path d="M112 137 L134 152 L112 167" fill="none" stroke="#000" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
+      </g></g>
+    </mask>
+    <g mask="url(#chevMask)" fill="#0b1b23" stroke="#0b1b23"><g transform="translate(120 120) scale(0.8) translate(-120 -120)">
+      <g transform="translate(120 122) skewX(-10) translate(-120 -122)">
+        <path d="M88 116 V100 A31 31 0 0 1 150 100 V116" fill="none" stroke-width="16" stroke-linecap="round"></path>
+        <rect x="62" y="110" width="112" height="86" rx="26" stroke="none"></rect>
+      </g>
+    </g></g></g>
+  <g transform="translate(250 86)"><g transform="scale(0.86)"><text x="0" y="72" font-family="Archivo Black, Archivo, Helvetica, Arial, sans-serif" font-size="86" font-weight="900" font-style="italic" letter-spacing="-2"><tspan fill="#0b1b23">ACELERA</tspan><tspan fill="#0b1b23">LOCK</tspan></text></g></g>
+</svg>

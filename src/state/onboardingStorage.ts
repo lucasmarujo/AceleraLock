@@ -18,3 +18,29 @@ export async function readOnboardingComplete(): Promise<boolean> {
 export async function markOnboardingComplete(): Promise<void> {
   await AsyncStorage.setItem(KEY_ONBOARDING_COMPLETE, 'true');
 }
+
+/**
+ * Nome de tratamento, coletado na secao 1 do onboarding e usado na saudacao
+ * da home. Nao e identidade nem credencial — e como a pessoa quer ser
+ * chamada -, entao AsyncStorage pelo mesmo motivo do flag acima.
+ */
+const KEY_USER_NAME = 'aceleralock.user_name';
+
+export async function readUserName(): Promise<string | null> {
+  const value = await AsyncStorage.getItem(KEY_USER_NAME);
+  return value && value.length > 0 ? value : null;
+}
+
+/**
+ * Nome vazio nao apaga o que ja esta gravado. Protege a reentrada: quem so
+ * voltou pro onboarding porque revogou uma permissao comeca na secao 3, com
+ * `nome` em branco em memoria, e chega na secao 5 gravando — sem esta guarda,
+ * concluir de novo apagaria o nome que a pessoa deu da primeira vez.
+ */
+export async function saveUserName(nome: string): Promise<void> {
+  const limpo = nome.trim();
+  if (limpo.length === 0) {
+    return;
+  }
+  await AsyncStorage.setItem(KEY_USER_NAME, limpo);
+}

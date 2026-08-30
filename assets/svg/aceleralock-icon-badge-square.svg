@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">
+  <defs>
+  <linearGradient id="rim" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#1f6fb0"></stop><stop offset="1" stop-color="#19d6cf"></stop>
+  </linearGradient>
+  <linearGradient id="bodyG" x1="0.15" y1="0" x2="0.85" y2="1">
+    <stop offset="0" stop-color="#5ff0e8"></stop><stop offset="0.42" stop-color="#1fcfc8"></stop><stop offset="1" stop-color="#0b8f8d"></stop>
+  </linearGradient>
+  <linearGradient id="bodyEdge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#0a7573"></stop><stop offset="1" stop-color="#075a5b"></stop>
+  </linearGradient>
+  <linearGradient id="shackG" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#8ff6f0"></stop><stop offset="0.5" stop-color="#1cc6c1"></stop><stop offset="1" stop-color="#0a8b8b"></stop>
+  </linearGradient>
+  <linearGradient id="glossG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#ffffff" stop-opacity=".55"></stop><stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+  </linearGradient>
+  <linearGradient id="trailG" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#17c9c4" stop-opacity="0"></stop><stop offset="1" stop-color="#6ef2ec" stop-opacity=".95"></stop>
+  </linearGradient>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="4"></feGaussianBlur></filter>
+  <filter id="lift" x="-30%" y="-30%" width="170%" height="170%">
+    <feDropShadow dx="3" dy="7" stdDeviation="7" flood-color="#03191d" flood-opacity=".65"></feDropShadow>
+  </filter></defs>
+  <rect x="0" y="0" width="240" height="240" rx="52" fill="#0b1b23"></rect>
+  <rect x="3" y="3" width="234" height="234" rx="50" fill="none" stroke="url(#rim)" stroke-width="6"></rect>
+<g transform="translate(120 120) scale(0.74) translate(-120 -120)">
+    <g filter="url(#soft)" opacity=".5"><rect x="4" y="96" width="86" height="14" rx="7" fill="url(#trailG)"></rect></g>
+    <rect x="10" y="72" width="46" height="10" rx="5" fill="url(#trailG)"></rect>
+    <rect x="2" y="98" width="62" height="10" rx="5" fill="url(#trailG)" opacity=".8"></rect>
+    <rect x="16" y="124" width="34" height="10" rx="5" fill="url(#trailG)" opacity=".5"></rect>
+  </g>
+<g transform="translate(120 120) scale(0.74) translate(-120 -120)" filter="url(#lift)">
+    <g transform="translate(120 122) skewX(-10) translate(-120 -122)">
+      <path d="M90 118 V102 A31 31 0 0 1 152 102 V118" fill="none" stroke="#075c5e" stroke-width="17" stroke-linecap="round"></path>
+      <path d="M88 116 V100 A31 31 0 0 1 150 100 V116" fill="none" stroke="url(#shackG)" stroke-width="15" stroke-linecap="round"></path>
+      <path d="M88 112 V100 A31 31 0 0 1 106 72" fill="none" stroke="#d6fffb" stroke-width="4" stroke-linecap="round" opacity=".75"></path>
+      <rect x="64" y="116" width="112" height="84" rx="26" fill="url(#bodyEdge)"></rect>
+      <rect x="62" y="110" width="112" height="86" rx="26" fill="url(#bodyG)"></rect>
+      <path d="M88 110 H148 A26 26 0 0 1 174 136 V140 H62 V136 A26 26 0 0 1 88 110 Z" fill="url(#glossG)"></path>
+      <rect x="68" y="116" width="100" height="74" rx="21" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="2"></rect>
+      <path d="M110 140 L133 154 L110 168" fill="none" stroke="#0d3a3d" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity=".45"></path>
+      <path d="M112 137 L134 152 L112 167" fill="none" stroke="#07171d" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
+    </g>
+  </g>
+</svg>

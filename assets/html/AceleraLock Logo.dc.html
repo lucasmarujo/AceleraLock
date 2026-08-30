@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,500;0,700;1,600;1,800;1,900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; background: #0a1117; }
+  a { color: #17c9c4; }
+  a:hover { color: #4ee0dc; }
+</style>
+</helmet>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="rim" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#1f6fb0"></stop><stop offset="1" stop-color="#19d6cf"></stop>
+    </linearGradient>
+    <linearGradient id="bodyG" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#5ff0e8"></stop>
+      <stop offset="0.42" stop-color="#1fcfc8"></stop>
+      <stop offset="1" stop-color="#0b8f8d"></stop>
+    </linearGradient>
+    <linearGradient id="bodyEdge" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a7573"></stop><stop offset="1" stop-color="#075a5b"></stop>
+    </linearGradient>
+    <linearGradient id="shackG" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8ff6f0"></stop>
+      <stop offset="0.5" stop-color="#1cc6c1"></stop>
+      <stop offset="1" stop-color="#0a8b8b"></stop>
+    </linearGradient>
+    <linearGradient id="glossG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".55"></stop>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"></stop>
+    </linearGradient>
+    <linearGradient id="trailG" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#17c9c4" stop-opacity="0"></stop>
+      <stop offset="1" stop-color="#6ef2ec" stop-opacity=".95"></stop>
+    </linearGradient>
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4"></feGaussianBlur>
+    </filter>
+    <filter id="lift" x="-30%" y="-30%" width="170%" height="170%">
+      <feDropShadow dx="3" dy="7" stdDeviation="7" flood-color="#03191d" flood-opacity=".65"></feDropShadow>
+    </filter>
+
+    <g id="trail">
+      <g transform="translate(120 120) scale(0.8) translate(-120 -120)">
+        <g filter="url(#soft)" opacity=".5">
+          <rect x="4" y="96" width="86" height="14" rx="7" fill="url(#trailG)"></rect>
+        </g>
+        <rect x="10" y="72" width="46" height="10" rx="5" fill="url(#trailG)"></rect>
+        <rect x="2" y="98" width="62" height="10" rx="5" fill="url(#trailG)" opacity=".8"></rect>
+        <rect x="16" y="124" width="34" height="10" rx="5" fill="url(#trailG)" opacity=".5"></rect>
+      </g>
+    </g>
+
+    <g id="lockFull">
+      <g transform="translate(120 120) scale(0.8) translate(-120 -120)" filter="url(#lift)">
+        <g transform="translate(120 122) skewX(-10) translate(-120 -122)">
+          <path d="M90 118 V102 A31 31 0 0 1 152 102 V118" fill="none" stroke="#075c5e" stroke-width="17" stroke-linecap="round"></path>
+          <path d="M88 116 V100 A31 31 0 0 1 150 100 V116" fill="none" stroke="url(#shackG)" stroke-width="15" stroke-linecap="round"></path>
+          <path d="M88 112 V100 A31 31 0 0 1 106 72" fill="none" stroke="#d6fffb" stroke-width="4" stroke-linecap="round" opacity=".75"></path>
+          <rect x="64" y="116" width="112" height="84" rx="26" fill="url(#bodyEdge)"></rect>
+          <rect x="62" y="110" width="112" height="86" rx="26" fill="url(#bodyG)"></rect>
+          <path d="M88 110 H148 A26 26 0 0 1 174 136 V140 H62 V136 A26 26 0 0 1 88 110 Z" fill="url(#glossG)"></path>
+          <rect x="68" y="116" width="100" height="74" rx="21" fill="none" stroke="#ffffff" stroke-opacity=".28" stroke-width="2"></rect>
+          <path d="M110 140 L133 154 L110 168" fill="none" stroke="#0d3a3d" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity=".45"></path>
+          <path d="M112 137 L134 152 L112 167" fill="none" stroke="var(--neg, #08181f)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
+        </g>
+      </g>
+    </g>
+
+    <g id="lockFlat">
+      <g transform="translate(120 120) scale(0.8) translate(-120 -120)">
+        <g transform="translate(120 122) skewX(-10) translate(-120 -122)">
+          <path d="M88 116 V100 A31 31 0 0 1 150 100 V116" fill="none" stroke="currentColor" stroke-width="16" stroke-linecap="round"></path>
+          <rect x="62" y="110" width="112" height="86" rx="26" fill="currentColor"></rect>
+          <path d="M112 137 L134 152 L112 167" fill="none" stroke="var(--neg, #08181f)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"></path>
+        </g>
+      </g>
+    </g>
+  </defs>
+</svg>
+
+<section style="display:flex; flex-direction:column; gap:30px; padding:56px; font-family:Archivo, Helvetica, sans-serif; background:#0a1117; color:#e8f0f2;">
+
+  <div style="display:flex; flex-direction:column; gap:10px; max-width:900px;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:#5c7a85;">Turn 2 &middot; Velocity Lock &middot; refino 3D</div>
+    <div style="font-size:34px; font-weight:800; font-style:italic; letter-spacing:-.01em;">Cadeado com volume, brilho metálico e rastro de velocidade.</div>
+    <div style="font-size:16px; line-height:1.55; color:#9fb4bb; max-width:680px; text-wrap:pretty;">Mesma construção do <a href="#2a">2a</a> em três níveis de acabamento: disco cheio para loja e marketing, versão sólida para ícones pequenos, e o lockup horizontal. O rastro só aparece acima de 48px.</div>
+  </div>
+
+  <div id="2a" style="display:flex; flex-wrap:wrap; gap:24px; align-items:stretch;">
+
+    <div style="flex:1 1 420px; min-width:380px; display:flex; flex-direction:column; gap:20px; padding:36px; border:1px solid #1b2b34; border-radius:22px; background:radial-gradient(120% 100% at 30% 0%, #12222b 0%, #0b1319 70%);">
+      <div style="display:flex; align-items:baseline; gap:12px;">
+        <span style="font-family:'JetBrains Mono',monospace; font-size:12px; padding:4px 9px; border-radius:6px; background:#17c9c4; color:#07161b; font-weight:500;">2a</span>
+        <span style="font-size:20px; font-weight:800; font-style:italic;">Velocity Lock &mdash; primary</span>
+      </div>
+      <div style="display:flex; justify-content:center; padding:14px 0 4px;">
+        <svg width="300" height="300" viewBox="0 0 240 240" style="--neg:#07171d;" aria-label="AceleraLock icon">
+          <circle cx="120" cy="120" r="110" fill="#0b1b23" stroke="url(#rim)" stroke-width="9"></circle>
+          <circle cx="120" cy="120" r="105.5" fill="radial-gradient(#000,#000)" opacity="0"></circle>
+          <use href="#trail"></use>
+          <use href="#lockFull"></use>
+        </svg>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#5c7a85; text-align:center;">app icon &middot; 512 / 1024 px</div>
+    </div>
+
+    <div style="flex:1 1 320px; min-width:300px; display:flex; flex-direction:column; gap:26px;">
+
+      <div style="display:flex; flex-direction:column; gap:18px; padding:28px; border:1px solid #1b2b34; border-radius:22px; background:#0d161d;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5c7a85;">Sem disco &middot; sobre fundo escuro</div>
+        <div style="display:flex; align-items:center; gap:22px; flex-wrap:wrap;">
+          <svg width="120" height="120" viewBox="0 0 240 240" style="--neg:#0d161d;">
+            <use href="#trail"></use>
+            <use href="#lockFull"></use>
+          </svg>
+          <svg width="64" height="64" viewBox="0 0 240 240" style="--neg:#0d161d;"><use href="#lockFull"></use></svg>
+          <svg width="40" height="40" viewBox="0 0 240 240" style="--neg:#0d161d; color:#17c9c4;"><use href="#lockFlat"></use></svg>
+          <svg width="24" height="24" viewBox="0 0 240 240" style="--neg:#0d161d; color:#e8f0f2;"><use href="#lockFlat"></use></svg>
+        </div>
+        <div style="font-size:13px; line-height:1.5; color:#7d949c;">120 e 64px com volume. A partir de 40px, versão sólida sem gradiente e sem rastro.</div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:16px; padding:28px; border-radius:22px; background:#f2f7f8;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#7e949b;">Fundo claro</div>
+        <div style="display:flex; align-items:center; gap:20px;">
+          <svg width="88" height="88" viewBox="0 0 240 240" style="--neg:#f2f7f8;"><use href="#lockFull"></use></svg>
+          <svg width="34" height="34" viewBox="0 0 240 240" style="--neg:#f2f7f8; color:#0e857f;"><use href="#lockFlat"></use></svg>
+          <div style="font-size:24px; font-weight:900; font-style:italic; letter-spacing:-.02em; color:#0b1b23; line-height:1;">ACELERA<span style="color:#0e857f;">LOCK</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:24px;">
+    <div style="flex:1 1 420px; display:flex; align-items:center; gap:20px; padding:30px 34px; border:1px solid #1b2b34; border-radius:22px; background:#0b1319;">
+      <svg width="76" height="76" viewBox="0 0 240 240" style="--neg:#0b1319;"><use href="#trail"></use><use href="#lockFull"></use></svg>
+      <div style="display:flex; flex-direction:column; gap:6px;">
+        <div style="font-size:38px; font-weight:900; font-style:italic; letter-spacing:-.025em; line-height:.95;"><span style="color:#17c9c4;">ACELERA</span><span style="color:#f2f7f8;">LOCK</span></div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:#5c7a85;">foco em alta velocidade</div>
+      </div>
+    </div>
+    <div style="flex:1 1 260px; display:flex; align-items:center; justify-content:center; gap:18px; padding:30px; border:1px solid #1b2b34; border-radius:22px; background:#17c9c4;">
+      <svg width="64" height="64" viewBox="0 0 240 240" style="--neg:#17c9c4; color:#08262b;"><use href="#lockFlat"></use></svg>
+      <div style="font-size:26px; font-weight:900; font-style:italic; letter-spacing:-.02em; color:#08262b; line-height:1;">ACELERALOCK</div>
+    </div>
+  </div>
+
+  <sc-if value="{{ showSpecs }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; flex-wrap:wrap; gap:28px; padding:30px 34px; border:1px solid #1b2b34; border-radius:22px; background:#0d161d;">
+      <div style="flex:1 1 280px; display:flex; flex-direction:column; gap:12px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5c7a85;">Paleta</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="display:flex; flex-direction:column; gap:6px;"><div style="width:60px; height:42px; border-radius:8px; background:#5ff0e8;"></div><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#93a9b1;">#5FF0E8</span></div>
+          <div style="display:flex; flex-direction:column; gap:6px;"><div style="width:60px; height:42px; border-radius:8px; background:#17c9c4;"></div><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#93a9b1;">#17C9C4</span></div>
+          <div style="display:flex; flex-direction:column; gap:6px;"><div style="width:60px; height:42px; border-radius:8px; background:#0b8f8d;"></div><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#93a9b1;">#0B8F8D</span></div>
+          <div style="display:flex; flex-direction:column; gap:6px;"><div style="width:60px; height:42px; border-radius:8px; background:#1f6fb0;"></div><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#93a9b1;">#1F6FB0</span></div>
+          <div style="display:flex; flex-direction:column; gap:6px;"><div style="width:60px; height:42px; border-radius:8px; background:#0b1b23; border:1px solid #24363f;"></div><span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:#93a9b1;">#0B1B23</span></div>
+        </div>
+      </div>
+      <div style="flex:1 1 220px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5c7a85;">Construção</div>
+        <div style="font-size:15px; color:#c9d8dd; line-height:1.6;">Inclinação de 10°, luz vindo do canto superior esquerdo, sombra projetada a 3px/7px. Margem interna mínima de 15% do diâmetro.</div>
+      </div>
+      <div style="flex:1 1 220px; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#5c7a85;">Regras de tamanho</div>
+        <div style="font-size:15px; color:#c9d8dd; line-height:1.6;">Rastro e volume acima de 48px. Abaixo, ícone sólido de uma cor, sem disco, sem rastro.</div>
+      </div>
+    </div>
+  </sc-if>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showSpecs&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Apresentação&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showSpecs: this.props.showSpecs ?? true };
+  }
+}
+</script>
+</body>
+</html>
