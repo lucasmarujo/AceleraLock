@@ -1,13 +1,14 @@
 import { useCallback, useState } from 'react';
-import { FlatList, Image, StyleSheet, Switch, Text, View } from 'react-native';
+import { FlatList, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 
+import { AppListRow } from '@/components/AppListRow';
 import { Button } from '@/components/Button';
 import { Skeleton } from '@/components/Skeleton';
 import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
 import { mergeBlockedPackages } from '@/state/blockedApps';
-import { radius, spacing, typography } from '@/theme/tokens';
+import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
@@ -21,15 +22,9 @@ type Carga =
   | { estado: 'erro' }
   | { estado: 'pronto'; apps: InstalledApp[] };
 
-const ICON_SIZE = 40;
-
 /**
- * docs/design-system.md §3.8 (`AppListItem`) e §3.9 (`Toggle`): icone do app +
- * nome a esquerda, Switch nativo a direita, estado dito por accessibilityState
- * e nao so pela posicao do botao.
- *
- * O icone chega como `file://` de um PNG que o nativo mantem em cache
- * (InstalledAppsResolver) — o JS nunca desenha Drawable nem carrega base64.
+ * Cada linha e um `AppListRow` (docs/design-system.md §3.8 e §3.9), que a
+ * secao 4 do onboarding tambem usa.
  *
  * A gravacao e no CTA, nao a cada toque: `setBlockedPackages` reescreve a
  * politica e acorda o servico, e fazer isso a cada tique de Switch seria um
@@ -144,46 +139,13 @@ export function AppPickerScreen({ title, ctaLabel, onConfirm }: Props) {
               Nenhum app para escolher neste aparelho.
             </Text>
           }
-          renderItem={({ item }) => {
-            const marcado = marcados.has(item.packageName);
-            return (
-              <View
-                style={[
-                  styles.linha,
-                  {
-                    backgroundColor: marcado ? theme.colors.bgBrandSubtle : theme.colors.bgSurface,
-                    borderColor: marcado ? theme.colors.borderBrand : theme.colors.borderDefault,
-                  },
-                ]}
-              >
-                {item.iconUri ? (
-                  <Image
-                    source={{ uri: item.iconUri }}
-                    style={styles.icone}
-                    resizeMode="contain"
-                    accessibilityIgnoresInvertColors
-                  />
-                ) : (
-                  // Mesmo espaco reservado: lista que muda de alinhamento no
-                  // meio e pior do que lista sem icone nenhum.
-                  <View style={[styles.icone, { backgroundColor: theme.colors.bgSunken }]} />
-                )}
-                <Text
-                  style={[styles.rotulo, { color: theme.colors.textPrimary }]}
-                  numberOfLines={1}
-                >
-                  {item.label}
-                </Text>
-                <Switch
-                  accessibilityRole="switch"
-                  accessibilityLabel={item.label}
-                  accessibilityState={{ checked: marcado }}
-                  value={marcado}
-                  onValueChange={() => alternar(item.packageName)}
-                />
-              </View>
-            );
-          }}
+          renderItem={({ item }) => (
+            <AppListRow
+              app={item}
+              marcado={marcados.has(item.packageName)}
+              onToggle={() => alternar(item.packageName)}
+            />
+          )}
         />
       )}
 
@@ -225,25 +187,5 @@ const styles = StyleSheet.create({
   listaConteudo: {
     // §2 do design-system: gap padrao entre itens de lista.
     gap: spacing[3],
-  },
-  linha: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing[3],
-    paddingVertical: spacing[2],
-    paddingHorizontal: spacing[3],
-    borderRadius: radius.md,
-    borderWidth: 1,
-    minHeight: 56,
-  },
-  icone: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: radius.sm,
-  },
-  rotulo: {
-    flex: 1,
-    fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
   },
 });

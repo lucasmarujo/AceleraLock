@@ -39,11 +39,14 @@ export const brand = {
   temaPressedLight: '#042e34',
   /**
    * As duas pontas do gradiente do anel da logo do AceleraDev
-   * (`assets/acelera-logo.svg`), medidas do proprio arquivo: azul embaixo a
-   * esquerda, ciano em cima a direita. Sao cor de *marca*, nao de UI —
-   * existem so pro badge de splash (`assets/brand/build-icons.py`) herdar a
-   * linhagem do AceleraDev. Nenhum token semantico as consome; se alguma
-   * tela precisar de azul, o primitivo `blue` do §1.1 e que e o lugar.
+   * (`assets/aceleradev-logo.svg`), medidas do proprio arquivo: azul embaixo
+   * a esquerda, ciano em cima a direita. Sao cor de *marca*, nao de UI.
+   *
+   * Estao orfas desde o redesenho de 2026-08-30 (commit `77ef62b`): o badge
+   * do AceleraLock era gerado no repo a partir delas e agora chega pronto em
+   * `assets/png/mark/`, na paleta nova. Ficam registradas porque a logo do
+   * AceleraDev na splash ainda e essa; nenhum token semantico as consome, e
+   * se alguma tela precisar de azul, o primitivo `blue` do §1.1 e o lugar.
    */
   aceleraAzul: '#014D93',
   aceleraCiano: '#08EFD5',

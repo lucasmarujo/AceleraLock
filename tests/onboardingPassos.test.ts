@@ -5,10 +5,12 @@ import {
   HORAS_MAX,
   HORAS_MIN,
   filtrarApps,
+  horasDaProporcao,
   horasDoToque,
   normalizarNome,
   passoInicial,
   proporcaoDasHoras,
+  proporcaoDoToque,
 } from '../src/components/Onboarding/passos';
 
 test('primeira execucao comeca na secao 1 (nome)', () => {
@@ -59,4 +61,35 @@ test('filtrarApps: termo vazio devolve a lista inteira, sem match devolve vazio'
   const apps = [{ label: 'Instagram' }, { label: 'TikTok' }];
   assert.deepEqual(filtrarApps(apps, '   '), apps);
   assert.deepEqual(filtrarApps(apps, 'zzz'), []);
+});
+
+test('proporcaoDoToque e continua — e o que faz o thumb seguir o dedo em vez de pular', () => {
+  // Duas posicoes dentro do MESMO degrau de hora tem que dar proporcoes
+  // diferentes. Se derivassem da hora arredondada, seriam iguais, e o thumb
+  // so teria 12 paradas possiveis.
+  const a = proporcaoDoToque(151, 300);
+  const b = proporcaoDoToque(158, 300);
+  assert.notEqual(a, b);
+  assert.equal(horasDaProporcao(a), horasDaProporcao(b));
+});
+
+test('proporcaoDoToque clampa e sobrevive a largura zero', () => {
+  assert.equal(proporcaoDoToque(-50, 300), 0);
+  assert.equal(proporcaoDoToque(9999, 300), 1);
+  assert.equal(proporcaoDoToque(50, 0), 0);
+});
+
+test('horasDaProporcao cobre o intervalo inteiro nas duas pontas', () => {
+  assert.equal(horasDaProporcao(0), HORAS_MIN);
+  assert.equal(horasDaProporcao(1), HORAS_MAX);
+  assert.equal(horasDaProporcao(-1), HORAS_MIN);
+  assert.equal(horasDaProporcao(2), HORAS_MAX);
+});
+
+test('proporcaoDasHoras e horasDaProporcao sao inversos em todo degrau', () => {
+  // E o que garante que o assentamento ao soltar o dedo para exatamente onde
+  // o numero exibido diz que parou.
+  for (let hora = HORAS_MIN; hora <= HORAS_MAX; hora++) {
+    assert.equal(horasDaProporcao(proporcaoDasHoras(hora)), hora, `hora ${hora}`);
+  }
 });

@@ -41,13 +41,31 @@ export function passoInicial(onboardingComplete: boolean): Passo {
   return onboardingComplete ? 3 : PASSO_PRIMEIRO;
 }
 
-/** Clampado nas duas pontas: arrastar pra fora da trilha satura, nao extrapola. */
-export function horasDoToque(x: number, largura: number, min = HORAS_MIN, max = HORAS_MAX): number {
+/**
+ * Posicao continua (0..1) do dedo na trilha. Separada do arredondamento de
+ * proposito: o thumb segue esta, o numero segue `horasDaProporcao`. Derivar a
+ * posicao da hora ja arredondada e o que faz o thumb andar aos pulos, porque
+ * ele so consegue parar nas 12 posicoes inteiras.
+ *
+ * Clampado nas duas pontas: arrastar pra fora da trilha satura, nao extrapola.
+ */
+export function proporcaoDoToque(x: number, largura: number): number {
   if (largura <= 0) {
-    return min;
+    return 0;
   }
-  const proporcao = Math.min(1, Math.max(0, x / largura));
-  return Math.round(min + proporcao * (max - min));
+  return Math.min(1, Math.max(0, x / largura));
+}
+
+export function horasDaProporcao(
+  proporcao: number,
+  min = HORAS_MIN,
+  max = HORAS_MAX
+): number {
+  return Math.round(min + Math.min(1, Math.max(0, proporcao)) * (max - min));
+}
+
+export function horasDoToque(x: number, largura: number, min = HORAS_MIN, max = HORAS_MAX): number {
+  return horasDaProporcao(proporcaoDoToque(x, largura), min, max);
 }
 
 /** Posicao (0..1) do valor na trilha — inverso de `horasDoToque`. */

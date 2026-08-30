@@ -10,7 +10,7 @@ import {
 
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
-import type { Theme } from '@/theme/tokens';
+import type { Surface, Theme } from '@/theme/tokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 export type ButtonSize = 'lg' | 'md';
@@ -22,14 +22,20 @@ type Props = {
   size?: ButtonSize;
   disabled?: boolean;
   loading?: boolean;
+  /**
+   * Sobrepoe `surfaces.brand` no variant primario. Existe pra tela que e uma
+   * superficie de marca fixa (o degrade das boas-vindas), onde a inversao
+   * clara/escura do sistema entregaria o par errado. Fora desse caso, nao usar.
+   */
+  surface?: Surface;
 };
 
 const HEIGHT: Record<ButtonSize, number> = { lg: 52, md: 44 };
 
-function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean) {
+function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, surface?: Surface) {
   switch (variant) {
     case 'primary': {
-      const s = theme.colors.surfaces.brand;
+      const s = surface ?? theme.colors.surfaces.brand;
       return { backgroundColor: pressed ? s.pressedFill : s.fill, textColor: s.onFill, borderWidth: 0, borderColor: 'transparent' };
     }
     case 'destructive': {
@@ -52,7 +58,7 @@ function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean) {
  * docs/design-system.md §3.1. Rótulo diz a ação ("Salvar alterações", nunca
  * "OK") — decisão de copy de quem chama, este componente só desenha.
  */
-export function Button({ label, onPress, variant = 'primary', size = 'lg', disabled = false, loading = false }: Props) {
+export function Button({ label, onPress, variant = 'primary', size = 'lg', disabled = false, loading = false, surface }: Props) {
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
   const isDisabled = disabled || loading;
@@ -79,7 +85,7 @@ export function Button({ label, onPress, variant = 'primary', size = 'lg', disab
         onBlur={() => setFocused(false)}
         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
         style={({ pressed }) => {
-          const v = variantStyle(theme, variant, pressed);
+          const v = variantStyle(theme, variant, pressed, surface);
           return [
             styles.base,
             {
@@ -95,7 +101,7 @@ export function Button({ label, onPress, variant = 'primary', size = 'lg', disab
         }}
       >
         {({ pressed }) => {
-          const v = variantStyle(theme, variant, pressed);
+          const v = variantStyle(theme, variant, pressed, surface);
           return (
             <>
               <Text style={[styles.label, { color: v.textColor, opacity: loading ? 0 : 1 }]} numberOfLines={1}>

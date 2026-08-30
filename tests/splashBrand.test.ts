@@ -4,10 +4,9 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import appJson from '../app.json';
-import { brand, lightTheme, darkTheme } from '../src/theme/tokens';
+import { lightTheme, darkTheme } from '../src/theme/tokens';
 
 const ROOT = path.join(import.meta.dirname, '..');
-const GENERATOR = 'assets/brand/build-icons.py';
 
 /** IHDR de um PNG: assinatura + largura/altura/tipo de cor, sem decodificar pixel. */
 function readPngHeader(relative: string) {
@@ -23,13 +22,6 @@ function readPngHeader(relative: string) {
     height: buffer.readUInt32BE(20),
     hasAlpha: (buffer.readUInt8(25) & 4) !== 0,
   };
-}
-
-function generatorConstant(name: string): string {
-  const source = readFileSync(path.join(ROOT, GENERATOR), 'utf8');
-  const match = source.match(new RegExp(`^${name} = (?:"(#[0-9a-fA-F]{6})"|([\\d.]+))`, 'm'));
-  assert.ok(match, `${GENERATOR}: constante ${name} não encontrada`);
-  return match[1] ?? match[2];
 }
 
 type SplashConfig = {
@@ -53,19 +45,35 @@ function splashConfig(): SplashConfig {
 
 const splash = splashConfig();
 
-test('app.json configura a splash nativa com o badge gerado', () => {
-  assert.equal(splash.image, './assets/splash-icon.png');
-  // O badge carrega o próprio disco escuro, então serve os dois temas: uma
-  // imagem só, e nenhuma variante clara/escura pra sair de sincronia.
+/** O que a tela de marca (`src/components/SplashScreen.tsx`) carrega por `require`. */
+const BADGE_DA_TELA = 'assets/png/mark/lock-3d-trail-1024.png';
+
+test('a splash nativa usa uma imagem só nos dois temas — nada pra sair de sincronia', () => {
   assert.equal(splash.dark.image, splash.image);
 });
 
-test('badge da splash é 1024 com alfa (o fundo é o do tema, não o da imagem)', () => {
-  for (const reference of ['assets/splash-icon.png', 'assets/alock-badge.png']) {
-    const header = readPngHeader(reference);
-    assert.deepEqual([header.width, header.height], [1024, 1024], reference);
-    assert.equal(header.hasAlpha, true, reference);
-  }
+test('imagem da splash nativa existe, é quadrada e tem alfa (o fundo é o do tema)', () => {
+  const header = readPngHeader(splash.image.replace(/^\.\//, ''));
+  assert.deepEqual([header.width, header.height], [1024, 1024]);
+  assert.equal(header.hasAlpha, true);
+});
+
+test('badge da tela de marca existe, é quadrado e tem alfa', () => {
+  // Se este `require` quebrar, o app não abre: a tela de splash é a primeira
+  // coisa que monta. O teste falha aqui em vez de no aparelho.
+  const header = readPngHeader(BADGE_DA_TELA);
+  assert.deepEqual([header.width, header.height], [1024, 1024]);
+  assert.equal(header.hasAlpha, true);
+});
+
+test('o require do SplashScreen aponta pro mesmo arquivo que este teste verifica', () => {
+  // Trava o par: trocar a marca na tela sem atualizar o teste (ou o contrário)
+  // deixaria o teste verde verificando um arquivo que ninguém carrega.
+  const source = readFileSync(path.join(ROOT, 'src/components/SplashScreen.tsx'), 'utf8');
+  assert.ok(
+    source.includes(`../../${BADGE_DA_TELA}`),
+    `SplashScreen.tsx não carrega ${BADGE_DA_TELA}`,
+  );
 });
 
 test('logo do AceleraDev rasterizada existe, quadrada e com alfa', () => {
@@ -79,39 +87,11 @@ test('fundo da splash nativa é o mesmo canvas do tema — senão a troca pisca'
   assert.equal(splash.dark.backgroundColor, darkTheme.colors.bgCanvas);
 });
 
-test('cores do badge saem de `brand`, não de hex solto no gerador', () => {
-  const expected = {
-    TURQUESA: brand.turquesa,
-    TEMA: brand.tema,
-    AZUL: brand.aceleraAzul,
-    CIANO: brand.aceleraCiano,
-  };
-  for (const [name, value] of Object.entries(expected)) {
-    assert.equal(generatorConstant(name).toLowerCase(), value.toLowerCase(), name);
-  }
-});
-
-test('badge da splash nativa cabe na máscara circular do Android 12+', () => {
-  // O Android 12+ só mostra o miolo do drawable da splash; o badge preenche a
-  // caixa inteira do desenho, então a folga tem que vir da escala. O gerador
-  // trava isso num assert — este teste é a mesma trava rodando no `npm test`,
-  // onde ninguém precisa reexecutar o Python pra descobrir que quebrou.
-  const safe = Number(generatorConstant('SPLASH_SCALE_SAFE'));
-  assert.ok(safe > 0, 'SPLASH_SCALE_SAFE não é um número');
-  assert.ok(safe <= 2 / 3, `SPLASH_SCALE_SAFE=${safe} estoura a máscara do Android 12+`);
-});
-
-test('o rasterizador da logo do AceleraDev recusa SVG fora do subconjunto', () => {
-  // A logo é de terceiro: se o arquivo for trocado por um que use arco,
-  // subpath múltiplo ou gradiente radial, o gerador tem que levantar em vez
-  // de entregar um PNG deformado em silêncio.
-  const source = readFileSync(path.join(ROOT, 'assets/brand/build-aceleradev-logo.py'), 'utf8');
-  for (const guard of [
-    'comando SVG nao suportado',
-    'path com mais de um subpath',
-    'so gradientUnits=userSpaceOnUse e suportado',
-    'nenhum <path> encontrado',
-  ]) {
-    assert.ok(source.includes(guard), `guarda ausente: ${guard}`);
-  }
+test('a imagem da splash nativa cabe na máscara circular do Android 12+', () => {
+  // O Android 12+ mostra só o miolo do drawable. A folga agora vem do próprio
+  // export (é o foreground do adaptive icon, desenhado dentro da safe zone),
+  // não mais de uma constante de gerador — o que dá pra travar aqui é o
+  // `imageWidth`, que é o que o plugin usa pra escalar dentro da janela.
+  assert.ok(splash.imageWidth <= 288, `imageWidth=${splash.imageWidth} estoura a máscara`);
+  assert.equal(splash.image, appJson.expo.android.adaptiveIcon.foregroundImage);
 });

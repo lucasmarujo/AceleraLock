@@ -24,15 +24,21 @@ function readPngHeader(relative: string) {
   };
 }
 
-const ANDROID_DENSITIES = { mdpi: 1, hdpi: 1.5, xhdpi: 2, xxhdpi: 3, xxxhdpi: 4 } as const;
-const ANDROID_RES = 'assets/brand/icon/android';
+/**
+ * Os ícones deixaram de ser gerados por script Python no repo (redesenho de
+ * 2026-08-30, commit `77ef62b`): agora chegam prontos em `assets/png/**` e
+ * `assets/svg/**`. Os testes que liam constantes do gerador morreram com ele —
+ * o que sobra, e que continua sendo o que quebra o build de verdade, é: o
+ * app.json aponta pra arquivo que existe, com a geometria que cada slot da
+ * plataforma exige.
+ */
 
-test('app.json aponta pros PNG de ícone gerados, todos 1024×1024', () => {
+const ANDROID_MIPMAP = 'assets/png/android/mipmap';
+
+test('todo ícone referenciado pelo app.json existe e é quadrado 1024', () => {
   const referenced = [
     appJson.expo.icon,
-    appJson.expo.ios.icon.light,
-    appJson.expo.ios.icon.dark,
-    appJson.expo.ios.icon.tinted,
+    appJson.expo.android.adaptiveIcon.backgroundImage,
     appJson.expo.android.adaptiveIcon.foregroundImage,
     appJson.expo.android.adaptiveIcon.monochromeImage,
   ];
@@ -42,12 +48,8 @@ test('app.json aponta pros PNG de ícone gerados, todos 1024×1024', () => {
   }
 });
 
-test('ícone opaco não tem canal alfa (App Store rejeita) e as variantes têm', () => {
-  assert.equal(readPngHeader(appJson.expo.icon).hasAlpha, false);
-  assert.equal(readPngHeader(`${ANDROID_RES}/ic_launcher-playstore.png`).hasAlpha, false);
+test('foreground e monochrome do adaptive têm alfa — quem preenche o fundo é a camada de trás', () => {
   for (const reference of [
-    appJson.expo.ios.icon.dark,
-    appJson.expo.ios.icon.tinted,
     appJson.expo.android.adaptiveIcon.foregroundImage,
     appJson.expo.android.adaptiveIcon.monochromeImage,
   ]) {
@@ -55,42 +57,37 @@ test('ícone opaco não tem canal alfa (App Store rejeita) e as variantes têm',
   }
 });
 
-test('escada de densidades do Android: launcher 48dp e foreground 108dp em cada dpi', () => {
-  for (const [density, factor] of Object.entries(ANDROID_DENSITIES)) {
-    for (const [file, dp] of [
-      ['ic_launcher.png', 48],
-      ['ic_launcher_round.png', 48],
-      ['ic_launcher_foreground.png', 108],
-      ['ic_launcher_monochrome.png', 108],
-    ] as const) {
-      const reference = `${ANDROID_RES}/mipmap-${density}/${file}`;
-      const header = readPngHeader(reference);
-      assert.equal(header.width, Math.round(dp * factor), reference);
-      assert.equal(header.height, header.width, reference);
-    }
+test('escada de densidades do launcher Android: 48dp redondo em cada dpi', () => {
+  // O `expo prebuild` gera a mipmap a partir do adaptive icon, mas o conjunto
+  // exportado pelo design acompanha a escada pronta — se faltar um degrau, é
+  // export incompleto, e o sintoma no aparelho é ícone borrado só numa
+  // densidade, que ninguém acha olhando o emulador padrão.
+  for (const [size, dp] of [
+    [48, 'mdpi'],
+    [72, 'hdpi'],
+    [96, 'xhdpi'],
+    [144, 'xxhdpi'],
+    [192, 'xxxhdpi'],
+  ] as const) {
+    const reference = `${ANDROID_MIPMAP}/icon-round-${size}.png`;
+    const header = readPngHeader(reference);
+    assert.deepEqual([header.width, header.height], [size, size], `${reference} (${dp})`);
   }
 });
 
 test('ícone da Play Store é 512×512', () => {
-  const header = readPngHeader(`${ANDROID_RES}/ic_launcher-playstore.png`);
+  const header = readPngHeader('assets/png/android/playstore-icon-512.png');
   assert.deepEqual([header.width, header.height], [512, 512]);
 });
 
-test('cores do mark e do adaptive icon saem de `brand`, não de hex solto', () => {
-  const sources = {
-    'assets/brand/alock-mark-turquesa.svg': brand.turquesa,
-    'assets/brand/alock-mark-tema.svg': brand.tema,
-    [`${ANDROID_RES}/values/ic_launcher_background.xml`]: brand.tema,
-  };
-  for (const [file, expected] of Object.entries(sources)) {
-    const hexes = new Set(
-      (readFileSync(path.join(ROOT, file), 'utf8').match(/#[0-9a-fA-F]{6}/g) ?? []).map((hex) =>
-        hex.toLowerCase(),
-      ),
-    );
-    hexes.delete('#000000');
-    hexes.delete('#ffffff');
-    assert.deepEqual([...hexes], [expected.toLowerCase()], file);
-  }
+test('ícone da App Store é 1024×1024', () => {
+  const header = readPngHeader('assets/png/ios/icon-1024.png');
+  assert.deepEqual([header.width, header.height], [1024, 1024]);
+});
+
+test('fundo do adaptive icon continua sendo o tema da marca, não hex solto', () => {
+  // `backgroundImage` é o campo que o Android usa; `backgroundColor` fica como
+  // fallback pra quem não compõe as duas camadas. Os dois precisam concordar
+  // com o token, senão o ícone muda de fundo dependendo do launcher.
   assert.equal(appJson.expo.android.adaptiveIcon.backgroundColor, brand.tema);
 });

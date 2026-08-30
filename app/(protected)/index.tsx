@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import AceleralockBlocker from '@/native/blocker';
+import { readUserName } from '@/state/onboardingStorage';
 import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
@@ -12,6 +13,7 @@ export default function ProtectedHome() {
   const theme = useTheme();
   const router = useRouter();
   const [requesting, setRequesting] = useState(false);
+  const [nome, setNome] = useState<string | null>(null);
 
   // Reavalia toda vez que esta tela ganha foco (ex.: voltando de
   // esperando.tsx depois de cancelar) — nunca assume que nada mudou so
@@ -32,6 +34,17 @@ export default function ProtectedHome() {
       if (pendingTarget) {
         router.replace('/esperando');
       }
+
+      // Saudacao pelo nome dado no onboarding. Lida aqui e nao uma vez no
+      // mount porque a pessoa pode ter acabado de conclui-lo — esta tela ja
+      // estaria montada com o valor antigo.
+      let ativo = true;
+      readUserName()
+        .then((salvo) => ativo && setNome(salvo))
+        .catch(() => {});
+      return () => {
+        ativo = false;
+      };
     }, [router])
   );
 
@@ -72,7 +85,7 @@ export default function ProtectedHome() {
           color: theme.colors.textPrimary,
         }}
       >
-        Você está protegido.
+        {nome ? `Você está protegido, ${nome}.` : 'Você está protegido.'}
       </Text>
       <Button label="Escolher apps bloqueados" onPress={() => router.push('/apps')} />
       <Button
