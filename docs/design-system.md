@@ -49,6 +49,16 @@ Neutros:
 | `neutral.900` | `#14181D` |
 | `neutral.950` | `#0D1014` |
 
+Neutros do tema escuro — `brand.tema` clareado (ou escurecido, no 950) até bater a **luma** do passo de `neutral` que substitui. Existem porque a escala neutra fica no matiz 213–217 e `brand.tema` no 200: card e borda neutros sobre o canvas escuro liam como cinza sujo. Como a luma é a mesma, todas as relações de contraste do §1.2 ficam dentro de 0,05 do que eram — é troca de matiz, não de hierarquia. No claro o problema não existe (canvas quase branco), então **é escala só do escuro**:
+
+| Token | Hex | Substitui |
+|---|---|---|
+| `temaNeutral.600` | `#49545A` | `neutral.600` |
+| `temaNeutral.700` | `#2E3C42` | `neutral.700` |
+| `temaNeutral.800` | `#19282F` | `neutral.800` |
+| `temaNeutral.900` | `#0B1A22` | `neutral.900` |
+| `temaNeutral.950` | `#04121A` | `neutral.950` |
+
 Marca — turquesa + quase-preto (decisão do usuário, 2026-08-29). Não é uma escala de luminância como as outras: são dois valores-âncora, mais alguns tons derivados só onde a matemática de contraste exige (ver §1.2). O par se comporta como **um par**, não como dois tokens independentes — `surfaces.brand` (§1.2) é quem garante isso no código, não a lista abaixo:
 
 | Token | Hex | Uso |
@@ -103,9 +113,9 @@ Informação — azul (neutro, links, dicas):
 | Semântico | Claro | Escuro | Uso |
 |---|---|---|---|
 | `bg.canvas` | `neutral.50` | `brand.tema` | fundo da tela |
-| `bg.surface` | `neutral.0` | `neutral.900` | card, sheet, lista |
-| `bg.surfaceRaised` | `neutral.0` | `neutral.800` | sheet sobre sheet, menu |
-| `bg.sunken` | `neutral.100` | `neutral.950` | trilha de progresso, input |
+| `bg.surface` | `neutral.0` | `temaNeutral.900` | card, sheet, lista |
+| `bg.surfaceRaised` | `neutral.0` | `temaNeutral.800` | sheet sobre sheet, menu |
+| `bg.sunken` | `neutral.100` | `temaNeutral.950` | trilha de progresso, input |
 | `bg.brandSubtle` | `#E6F9F9` | `#04262C` | fundo do estado "protegido" — turquesa a 10% sobre branco/`brand.tema`, não um primitivo da escala antiga |
 | `bg.amberSubtle` | `amber.50` | `#3A2A0E` | fundo do estado "cooldown" |
 | `bg.redSubtle` | `red.50` | `#3A1815` | fundo de erro inline |
@@ -115,8 +125,8 @@ Informação — azul (neutro, links, dicas):
 | `text.tertiary` | `neutral.500` | `neutral.400` | placeholder, timestamp |
 | `text.brand` | `brand.turquesaTextLight` | `brand.turquesa` | link, ênfase de marca (**não** é o fill do botão — ver `surfaces.brand` abaixo) |
 | `text.danger` | `red.600` | `red.300` | mensagem de erro |
-| `border.default` | `neutral.200` | `neutral.700` | borda de card, divisória |
-| `border.strong` | `neutral.300` | `neutral.600` | borda de input, contorno |
+| `border.default` | `neutral.200` | `temaNeutral.700` | borda de card, divisória |
+| `border.strong` | `neutral.300` | `temaNeutral.600` | borda de input, contorno |
 | `border.brand` | `brand.turquesaIconLight` | `brand.turquesa` | input focado, chip selecionado |
 | `focus.ring` | `brand.turquesaIconLight` | `brand.turquesa` | anel de foco (2px + offset 2px) |
 | `icon.default` | `neutral.600` | `neutral.300` | ícone neutro |

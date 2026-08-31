@@ -52,6 +52,33 @@ export const brand = {
   aceleraCiano: '#08EFD5',
 } as const;
 
+/**
+ * Neutros do tema escuro. Existem porque `neutral` e frio demais em cima do
+ * canvas escuro: a escala neutra fica no matiz 213-217 (azul) e `brand.tema`
+ * no 200 (ciano), entao card e borda liam como cinza sujo sobre um fundo de
+ * marca — no claro isso nao aparece porque la o canvas e quase branco.
+ *
+ * Cada passo e `brand.tema` misturado com branco (ou com preto, no 950) no
+ * `t` anotado, escolhido pra bater a luma do passo de `neutral` que ele
+ * substitui. Bater luma e o ponto: as relacoes de contraste do §1.2 ficam
+ * todas dentro de 0,05 do que eram, entao isto e troca de matiz, nao de
+ * hierarquia — nao ha nada pra remedir aqui.
+ */
+export const temaNeutral = {
+  /** t=0.076 em direcao ao preto — par de `neutral.950`. */
+  950: '#04121A',
+  /** t=0.026 em direcao ao branco — par de `neutral.900`. */
+  900: '#0B1A22',
+  /** t=0.083 — par de `neutral.800`. Sem consumidor: `bg.surfaceRaised` do
+   *  §1.2 ainda nao existe em codigo. Fica pra quem for implementa-lo nao
+   *  voltar pro neutro puro. */
+  800: '#19282F',
+  /** t=0.169 — par de `neutral.700`. */
+  700: '#2E3C42',
+  /** t=0.273 — par de `neutral.600`. */
+  600: '#49545A',
+} as const;
+
 export const amber = {
   50: '#FBF1E2',
   100: '#F5DEBC',
@@ -195,20 +222,20 @@ export const lightTheme: SemanticTokens = {
 export const darkTheme: SemanticTokens = {
   colors: {
     bgCanvas: brand.tema,
-    bgSurface: neutral[900],
-    bgSunken: neutral[950],
-    // No escuro `bgSurface` (neutral[900]) e quase indistinguivel de
-    // `bgSunken` (neutral[950]): 8 passos de luma em 255, a varredura some.
-    // Sobe pra neutral[700], que le como reflexo sem virar alarme.
-    bgShimmer: neutral[700],
+    bgSurface: temaNeutral[900],
+    bgSunken: temaNeutral[950],
+    // No escuro `bgSurface` (temaNeutral[900]) e quase indistinguivel de
+    // `bgSunken` (temaNeutral[950]): 8 passos de luma em 255, a varredura
+    // some. Sobe pra temaNeutral[700], que le como reflexo sem virar alarme.
+    bgShimmer: temaNeutral[700],
     bgBrandSubtle: '#04262C',
     textPrimary: neutral[50],
     textSecondary: neutral[300],
     textTertiary: neutral[400],
     textDanger: red[300],
     textBrand: brand.turquesa,
-    borderDefault: neutral[700],
-    borderStrong: neutral[600],
+    borderDefault: temaNeutral[700],
+    borderStrong: temaNeutral[600],
     borderBrand: brand.turquesa,
     focusRing: brand.turquesa,
     surfaces: {
