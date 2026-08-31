@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useColorScheme } from 'react-native';
 import { Stack, ThemeProvider } from 'expo-router';
 import * as NativeSplash from 'expo-splash-screen';
+import { StatusBar } from 'expo-status-bar';
 
 import { SplashScreen } from '@/components/SplashScreen';
 import {
@@ -9,6 +9,7 @@ import {
   useProtectionVerdictContext,
 } from '@/state/ProtectionVerdictContext';
 import { AceleraLockDarkTheme, AceleraLockLightTheme } from '@/theme/navigationTheme';
+import { ThemePreferenceProvider, useThemePreference } from '@/theme/ThemePreferenceContext';
 
 NativeSplash.preventAutoHideAsync().catch(() => {});
 
@@ -21,22 +22,36 @@ NativeSplash.preventAutoHideAsync().catch(() => {});
 const SPLASH_MIN_MS = 1400;
 
 function RootNavigator() {
-  const colorScheme = useColorScheme();
+  const { esquema } = useThemePreference();
   const { verdict } = useProtectionVerdictContext();
   const [minimumElapsed, setMinimumElapsed] = useState(false);
-  const theme = colorScheme === 'dark' ? AceleraLockDarkTheme : AceleraLockLightTheme;
+  const theme = esquema === 'escuro' ? AceleraLockDarkTheme : AceleraLockLightTheme;
 
   useEffect(() => {
     const timer = setTimeout(() => setMinimumElapsed(true), SPLASH_MIN_MS);
     return () => clearTimeout(timer);
   }, []);
 
+  /**
+   * Ate existir escolha manual de tema, a barra de status acertava sozinha: o
+   * app seguia o esquema do aparelho, entao o contraste sempre fechava. Com
+   * `claro` sobre um sistema escuro (ou o contrario) os dois divergem, e sem
+   * isto o relogio fica ilegivel — texto claro sobre fundo claro.
+   */
+  const barraDeStatus = <StatusBar style={esquema === 'escuro' ? 'light' : 'dark'} />;
+
   if (verdict === 'loading' || !minimumElapsed) {
-    return <SplashScreen />;
+    return (
+      <>
+        {barraDeStatus}
+        <SplashScreen />
+      </>
+    );
   }
 
   return (
     <ThemeProvider value={theme}>
+      {barraDeStatus}
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={verdict === 'plataforma-nao-suportada'}>
           <Stack.Screen name="(unsupported)" />
@@ -68,9 +83,15 @@ export default function RootLayout() {
     NativeSplash.hideAsync().catch(() => {});
   }, []);
 
+  /**
+   * `ThemePreferenceProvider` por fora de tudo: a `SplashScreen` tambem chama
+   * `useTheme()`, e ela renderiza antes do veredito resolver.
+   */
   return (
-    <ProtectionVerdictProvider>
-      <RootNavigator />
-    </ProtectionVerdictProvider>
+    <ThemePreferenceProvider>
+      <ProtectionVerdictProvider>
+        <RootNavigator />
+      </ProtectionVerdictProvider>
+    </ThemePreferenceProvider>
   );
 }

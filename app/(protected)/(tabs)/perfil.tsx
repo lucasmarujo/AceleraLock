@@ -17,6 +17,8 @@ import { useTempoTela } from '@/components/TempoTela/useTempoTela';
 import AceleralockBlocker from '@/native/blocker';
 import { readDailyHours, readUserName, saveDailyHours } from '@/state/onboardingStorage';
 import { useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
+import { PREFERENCIAS, ROTULOS_PREFERENCIA } from '@/theme/preferenciaTema';
+import { useThemePreference } from '@/theme/ThemePreferenceContext';
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
@@ -27,6 +29,7 @@ export default function Perfil() {
   const router = useRouter();
   const tempoTela = useTempoTela();
   const { permissions } = useProtectionVerdictContext();
+  const { preferencia, definirPreferencia } = useThemePreference();
 
   const [nome, setNome] = useState<string | null>(null);
   const [horas, setHoras] = useState<number | null>(null);
@@ -181,6 +184,27 @@ export default function Perfil() {
           </Text>
         </View>
         */}
+
+        <View style={styles.secao}>
+          <Text style={[styles.tituloSecao, { color: theme.colors.textPrimary }]}>Aparência</Text>
+          <View
+            style={[
+              styles.cartao,
+              { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
+            ]}
+          >
+            {PREFERENCIAS.map((opcao) => (
+              <ListRow
+                key={opcao}
+                label={ROTULOS_PREFERENCIA[opcao]}
+                value={preferencia === opcao ? 'Ativo' : undefined}
+                emphasis="brand"
+                selected={preferencia === opcao}
+                onPress={() => definirPreferencia(opcao)}
+              />
+            ))}
+          </View>
+        </View>
 
         <View style={styles.secao}>
           <Text style={[styles.tituloSecao, { color: theme.colors.textPrimary }]}>Permissões</Text>

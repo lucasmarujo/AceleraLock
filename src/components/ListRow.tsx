@@ -14,12 +14,27 @@ type Props = {
   onPress?: () => void;
   /** Pinta o valor com a cor de marca — para "concedida", "ativa". */
   emphasis?: 'default' | 'brand' | 'danger';
+  /**
+   * Marca a linha como opcao de uma escolha unica. Definir isto troca o papel
+   * de acessibilidade de `button` pra `radio`: sem isto, uma lista de temas
+   * seria anunciada como tres botoes soltos, sem dizer qual esta ativo.
+   * Ausente mantem o comportamento de antes.
+   */
+  selected?: boolean;
 };
 
 const MIN_HEIGHT = 48;
 
 /** docs/design-system.md §3.19. Altura minima de 48 e do proprio §3.19. */
-export function ListRow({ label, value, icon, accessory, onPress, emphasis = 'default' }: Props) {
+export function ListRow({
+  label,
+  value,
+  icon,
+  accessory,
+  onPress,
+  emphasis = 'default',
+  selected,
+}: Props) {
   const theme = useTheme();
   const corDoValor = {
     default: theme.colors.textSecondary,
@@ -48,7 +63,8 @@ export function ListRow({ label, value, icon, accessory, onPress, emphasis = 'de
 
   return (
     <Pressable
-      accessibilityRole="button"
+      accessibilityRole={selected === undefined ? 'button' : 'radio'}
+      accessibilityState={selected === undefined ? undefined : { checked: selected }}
       accessibilityLabel={value ? `${label}, ${value}` : label}
       onPress={onPress}
       style={({ pressed }) => [

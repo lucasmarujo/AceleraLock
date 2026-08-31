@@ -148,6 +148,7 @@ type SemanticTokens = {
     bgCanvas: string;
     bgSurface: string;
     bgSunken: string;
+    bgShimmer: string;
     bgBrandSubtle: string;
     textPrimary: string;
     textSecondary: string;
@@ -170,6 +171,9 @@ export const lightTheme: SemanticTokens = {
     bgCanvas: neutral[50],
     bgSurface: neutral[0],
     bgSunken: neutral[100],
+    // Faixa do shimmer do Skeleton: tem que ser mais clara que `bgSunken`, e
+    // no claro o teto e o branco — a base ja esta perto dele.
+    bgShimmer: neutral[0],
     bgBrandSubtle: '#E6F9F9',
     textPrimary: neutral[900],
     textSecondary: neutral[600],
@@ -193,6 +197,10 @@ export const darkTheme: SemanticTokens = {
     bgCanvas: brand.tema,
     bgSurface: neutral[900],
     bgSunken: neutral[950],
+    // No escuro `bgSurface` (neutral[900]) e quase indistinguivel de
+    // `bgSunken` (neutral[950]): 8 passos de luma em 255, a varredura some.
+    // Sobe pra neutral[700], que le como reflexo sem virar alarme.
+    bgShimmer: neutral[700],
     bgBrandSubtle: '#04262C',
     textPrimary: neutral[50],
     textSecondary: neutral[300],

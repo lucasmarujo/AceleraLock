@@ -1,15 +1,14 @@
-import { useColorScheme } from 'react-native';
-
 import { darkTheme, lightTheme, type Theme } from './tokens';
+import { useThemePreference } from './ThemePreferenceContext';
 
 /**
- * Sem Context/Provider de proposito: nenhum componente ainda precisa de
- * override manual de tema (so deteccao de sistema), e useColorScheme() ja e
- * a fonte que app/_layout.tsx usa pro tema de navegacao — chamar de novo
- * aqui e barato e evita duas fontes de verdade sobre "qual tema".
- * ponytail: adicionar Provider quando existir toggle manual de tema.
+ * Le o esquema ja resolvido do `ThemePreferenceProvider` (raiz do app) em vez
+ * de chamar `useColorScheme()` direto, que era o que fazia antes de existir a
+ * escolha manual no perfil. Continua sem decidir nada sozinho: quem combina
+ * "o que a pessoa escolheu" com "o que o aparelho esta usando" e o Provider,
+ * pra nao existirem duas respostas pra "qual tema" no mesmo frame.
  */
 export function useTheme(): Theme {
-  const scheme = useColorScheme();
-  return scheme === 'dark' ? darkTheme : lightTheme;
+  const { esquema } = useThemePreference();
+  return esquema === 'escuro' ? darkTheme : lightTheme;
 }
