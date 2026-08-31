@@ -1,4 +1,9 @@
-const { withProjectBuildGradle, withSettingsGradle } = require('@expo/config-plugins');
+const {
+  withProjectBuildGradle,
+  withSettingsGradle,
+  withEntitlementsPlist,
+  withInfoPlist,
+} = require('@expo/config-plugins');
 
 // O modulo nativo declara minSdk 26 (android/build.gradle) porque as APIs de
 // overlay e de canal de notificacao que ele usa sao de API 26. O padrao do
@@ -57,8 +62,37 @@ function withAceleralockBlockerMinSdk(config) {
   });
 }
 
+// iOS: App Group para compartilhar UserDefaults entre o app principal e as
+// extensions (DeviceActivityMonitor, ShieldConfiguration, DeviceActivityReport).
+function withAceleralockBlockerAppGroup(config) {
+  return withEntitlementsPlist(config, (mod) => {
+    const groups = mod.modResults['com.apple.security.application-groups'] || [];
+    if (!groups.includes('group.com.aceleralock.app')) {
+      groups.push('group.com.aceleralock.app');
+    }
+    mod.modResults['com.apple.security.application-groups'] = groups;
+    return mod;
+  });
+}
+
+// iOS: Background modes para processar callbacks do DeviceActivity.
+function withAceleralockBlockerBackgroundModes(config) {
+  return withInfoPlist(config, (mod) => {
+    const modes = mod.modResults.UIBackgroundModes || [];
+    if (!modes.includes('processing')) {
+      modes.push('processing');
+    }
+    mod.modResults.UIBackgroundModes = modes;
+    return mod;
+  });
+}
+
 function withAceleralockBlocker(config) {
-  return withAceleralockBlockerMinSdk(withAceleralockBlockerCoreGradle(config));
+  config = withAceleralockBlockerMinSdk(config);
+  config = withAceleralockBlockerCoreGradle(config);
+  config = withAceleralockBlockerAppGroup(config);
+  config = withAceleralockBlockerBackgroundModes(config);
+  return config;
 }
 
 module.exports = withAceleralockBlocker;

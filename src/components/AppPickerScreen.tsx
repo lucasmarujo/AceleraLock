@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 
 import { AppListRow } from '@/components/AppListRow';
 import { Button } from '@/components/Button';
+import { FamilyActivityPickerView } from '@/native/FamilyActivityPickerView';
 import { Skeleton } from '@/components/Skeleton';
 import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
 import { mergeBlockedPackages } from '@/state/blockedApps';
@@ -100,6 +101,21 @@ export function AppPickerScreen({ title, ctaLabel, onConfirm }: Props) {
       setSalvando(false);
     }
   };
+
+  if (Platform.OS === 'ios') {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
+        <View style={styles.cabecalho}>
+          <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{title}</Text>
+          <Text style={[styles.body, { color: theme.colors.textSecondary }]}>
+            Selecione os apps que deseja bloquear no picker abaixo.
+          </Text>
+        </View>
+        <FamilyActivityPickerView style={styles.lista} />
+        <Button label={ctaLabel} loading={salvando} onPress={salvar} />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>

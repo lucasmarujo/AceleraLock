@@ -20,7 +20,7 @@ export function useProtectionVerdict() {
     try {
       const onboardingComplete = await readOnboardingComplete();
 
-      const platformSupported = Platform.OS === 'android';
+      const platformSupported = Platform.OS === 'android' || Platform.OS === 'ios';
       let coreGranted = false;
       let protectionActive = true;
       if (platformSupported) {

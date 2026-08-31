@@ -13,7 +13,8 @@
       "bundleIdentifier": "com.aceleralock.app",
       "supportsTablet": false,
       "entitlements": {
-        "com.apple.developer.family-controls": true
+        "com.apple.developer.family-controls": true,
+        "com.apple.security.application-groups": ["group.com.aceleralock.app"]
       }
     },
     "android": {
