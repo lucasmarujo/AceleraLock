@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Linking, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Easing,
   FadeInRight,
@@ -37,15 +37,9 @@ import {
 } from './passos';
 
 /**
- * Intents das duas permissoes essenciais, herdados da tela
- * `(onboarding)/permissoes.tsx` que este fluxo substituiu. Nenhuma das duas
- * tem dialogo de runtime: o CTA abre as Settings e a releitura vem do
- * `AppState 'active'` do `useProtectionVerdict`, que ja resonda sozinho.
- *
- * `Linking.sendIntent` nao carrega data URI, entao a tela de sobreposicao abre
- * na lista geral de apps em vez de ja no AceleraLock: um toque a mais, em
- * troca de nao precisar de funcao nativa nova (e rebuild) so pra montar o
- * `package:` do Intent.
+ * Intents das duas permissoes essenciais (Android). No iOS, Family Controls
+ * usa um dialog de runtime via AuthorizationCenter — a autorizacao e pedida
+ * diretamente pela funcao start() do modulo nativo, nao via Settings.
  */
 const INTENT: Record<CorePermission, string> = {
   usageAccess: 'android.settings.USAGE_ACCESS_SETTINGS',
@@ -53,8 +47,12 @@ const INTENT: Record<CorePermission, string> = {
 };
 
 async function abrirSettings(permissao: CorePermission) {
-  // Fabricante sem a tela do intent cai nos detalhes do proprio app, onde as
-  // duas permissoes tambem sao alcancaveis. Nunca falha calado.
+  if (Platform.OS === 'ios') {
+    // No iOS, Family Controls e autorizado via dialog do sistema, disparado
+    // pelo start() do modulo nativo. Abrir Settings genericas como fallback.
+    await Linking.openSettings();
+    return;
+  }
   await Linking.sendIntent(INTENT[permissao]).catch(() => Linking.openSettings());
 }
 

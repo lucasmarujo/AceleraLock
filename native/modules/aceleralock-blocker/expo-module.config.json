@@ -1,6 +1,9 @@
 {
-  "platforms": ["android"],
+  "platforms": ["android", "ios"],
   "android": {
     "modules": ["com.aceleralock.blocker.AceleralockBlockerModule"]
+  },
+  "ios": {
+    "modules": ["AceleralockBlockerModule"]
   }
 }
