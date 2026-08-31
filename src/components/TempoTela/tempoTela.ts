@@ -110,3 +110,42 @@ export function maiorLeitura(dias: DiaDoMes[]): number {
     0
   );
 }
+
+/**
+ * `4h30`, `4h`, `45min`. Versao curta pro eixo do grafico de barras, onde a
+ * coluna tem ~32dp: `formatarDuracao` daria "4h 30min", que nao cabe e quebra
+ * em duas linhas. Abaixo de uma hora as duas formas ja sao iguais.
+ */
+export function formatarDuracaoCompacta(segundos: number): string {
+  if (!Number.isFinite(segundos) || segundos < 3600) {
+    return formatarDuracao(segundos);
+  }
+  const horas = Math.floor(segundos / 3600);
+  const minutos = Math.floor((segundos % 3600) / 60);
+  return minutos > 0 ? `${horas}h${String(minutos).padStart(2, '0')}` : `${horas}h`;
+}
+
+/**
+ * Altura em px da barra de `valor` numa escala que vai ate `maximo`.
+ *
+ * Leitura acima de zero nunca desce abaixo de `minima`: um dia de 5 minutos
+ * contra um maximo de 7h daria 1px, e 1px le como "nao teve leitura" — que ja
+ * tem outro desenho (a trilha vazia). Zero medido continua zero, pela mesma
+ * distincao que `intensidadeDoDia` faz.
+ */
+export function alturaDaBarra(valor: number, maximo: number, altura: number, minima = 0): number {
+  if (!Number.isFinite(valor) || valor <= 0 || maximo <= 0) {
+    return 0;
+  }
+  return Math.max(minima, Math.min(1, valor / maximo) * altura);
+}
+
+/**
+ * Teto da escala do grafico de barras. A estimativa entra junto com as
+ * leituras: linha de referencia so compara alguma coisa se dividir a escala
+ * das barras — presa no topo, "estimei 12h" e "estimei 5h" cairiam no mesmo
+ * lugar. O piso de 1 segura a escala quando ainda nao ha nada medido.
+ */
+export function escalaDoGrafico(horas: number[], estimativa: number | null): number {
+  return Math.max(...horas, estimativa ?? 0, 1);
+}

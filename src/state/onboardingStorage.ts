@@ -46,9 +46,12 @@ export async function saveUserName(nome: string): Promise<void> {
 }
 
 /**
- * Horas por dia que a pessoa estimou na secao 2 do onboarding. Informativo por
- * decisao: nao e meta, nao dispara nada, nao e comparado com a leitura real —
- * so aparece no perfil, onde da pra corrigir.
+ * Horas por dia que a pessoa estimou na secao 2 do onboarding. Nao e meta e
+ * nao dispara nada: nenhum bloqueio, nenhum alerta, nenhuma cobranca sai
+ * daqui. Aparece no perfil, onde da pra corrigir, e vira a linha tracejada do
+ * grafico da home (decisao do usuario, 2026-08-31) — ali ela e comparada com a
+ * leitura real, que era justamente o que a versao anterior desta nota
+ * descartava. Comparar e so mostrar os dois na mesma escala.
  */
 const KEY_DAILY_HOURS = 'aceleralock.daily_hours';
 

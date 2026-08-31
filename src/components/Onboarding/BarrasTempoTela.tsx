@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -9,7 +10,12 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { descreverDuracao, formatarDuracao } from '@/components/TempoTela/tempoTela';
+import {
+  alturaDaBarra,
+  descreverDuracao,
+  escalaDoGrafico,
+  formatarDuracaoCompacta,
+} from '@/components/TempoTela/tempoTela';
 import { duration, easing, radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
@@ -20,22 +26,51 @@ type Props = {
   /** Fica sempre visivel — ver o comentario do componente. */
   legenda: string;
   /**
-   * Escreve a duracao na propria barra. Fica de fora por padrao: nas barras de
+   * Escreve a duracao sob cada barra. Fica de fora por padrao: nas barras de
    * exemplo do onboarding, cravar "3h 12min" daria ao numero inventado a mesma
    * assertividade de um dado medido.
    */
   mostrarValor?: boolean;
+  /**
+   * Horas por dia que a pessoa estimou na secao 2 do onboarding
+   * (`readDailyHours`), desenhadas como linha de referencia. `null` some com a
+   * linha — quem nunca estimou nao ganha regua inventada.
+   *
+   * Nao e passada no onboarding de proposito: ali as barras sao exemplo, e
+   * cruzar a estimativa *real* com dado inventado montaria uma comparacao
+   * falsa. So a home, que le do aparelho, tem os dois lados verdadeiros.
+   */
+  estimativaHoras?: number | null;
 };
 
 const ALTURA = 132;
 const ESCALONAMENTO_MS = 70;
 
+/** Ver `alturaDaBarra`: piso pra leitura curta nao virar risco de 1px. */
+const ALTURA_MINIMA = 6;
+
 /**
- * Abaixo disso a barra nao comporta as duas linhas do rotulo, que entao sobe
- * pra cima dela. Texto espremido pra fora do proprio retangulo e pior do que
- * texto ao lado.
+ * Mais larga que isto a barra vira bloco e a capsula do topo some. A coluna
+ * continua com a largura toda — quem estreita e so a barra, centrada nela.
  */
-const ALTURA_MINIMA_PRO_VALOR = 36;
+const LARGURA_MAXIMA = 22;
+
+/**
+ * Tracos da linha da estimativa. Desenhada em pedacos e nao com
+ * `borderStyle: 'dashed'`, que o Android ignora quando so um lado tem borda.
+ */
+const TRACOS_DA_LINHA = 22;
+
+/**
+ * Volume no pe da barra. Escurece e nunca clareia: no tema claro a barra e
+ * `borderBrand` sobre branco a 3,58:1, e clarear levaria o elemento grafico
+ * abaixo do piso de 3:1 (§4). Escurecer so aumenta a relacao no claro, e no
+ * escuro sobra folga (8,12:1).
+ *
+ * A ponta transparente e preto com alfa 00, e nao `'transparent'`, pelo mesmo
+ * motivo de `paradasShimmer`: interpolar a partir de outra cor deixa franja.
+ */
+const SOMBRA_DA_BASE = ['#00000000', '#00000033'] as const;
 
 function Barra({
   dado,
@@ -51,7 +86,7 @@ function Barra({
   const theme = useTheme();
   const reduzido = useReducedMotion();
   const progresso = useSharedValue(0);
-  const alvo = maximo > 0 ? (dado.horas / maximo) * ALTURA : 0;
+  const alvo = alturaDaBarra(dado.horas, maximo, ALTURA, ALTURA_MINIMA);
 
   useEffect(() => {
     progresso.value = withDelay(
@@ -65,29 +100,24 @@ function Barra({
 
   const estilo = useAnimatedStyle(() => ({ height: progresso.value * alvo }));
 
-  // Com texto por cima, a barra deixa de ser so indicador e vira superficie de
-  // conteudo: o par vem de `surfaces.brand`, que e o unico do sistema com
-  // contraste medido (8,52:1) e que ja inverte sozinho entre os temas.
-  const preenchimento = mostrarValor ? theme.colors.surfaces.brand.fill : theme.colors.borderBrand;
-
-  const valor = formatarDuracao(dado.horas * 3600);
-  const cabeDentro = alvo >= ALTURA_MINIMA_PRO_VALOR;
-
   return (
     <View style={styles.coluna}>
-      <View style={styles.trilho}>
-        {mostrarValor && !cabeDentro && dado.horas > 0 && (
-          <Text style={[styles.valorFora, { color: theme.colors.textSecondary }]}>{valor}</Text>
-        )}
-        <Animated.View style={[styles.barra, estilo, { backgroundColor: preenchimento }]}>
-          {mostrarValor && cabeDentro && (
-            <Text style={[styles.valorDentro, { color: theme.colors.surfaces.brand.onFill }]}>
-              {valor}
-            </Text>
-          )}
+      <View style={[styles.trilho, { backgroundColor: theme.colors.bgSunken }]}>
+        <Animated.View
+          style={[styles.barra, estilo, { backgroundColor: theme.colors.borderBrand }]}
+        >
+          <LinearGradient colors={SOMBRA_DA_BASE} style={StyleSheet.absoluteFill} />
         </Animated.View>
       </View>
-      <Text style={[styles.rotulo, { color: theme.colors.textTertiary }]}>{dado.rotulo}</Text>
+
+      <View style={styles.eixo}>
+        {mostrarValor && (
+          <Text numberOfLines={1} style={[styles.valor, { color: theme.colors.textSecondary }]}>
+            {formatarDuracaoCompacta(dado.horas * 3600)}
+          </Text>
+        )}
+        <Text style={[styles.rotulo, { color: theme.colors.textTertiary }]}>{dado.rotulo}</Text>
+      </View>
     </View>
   );
 }
@@ -99,12 +129,31 @@ function Barra({
  * - **Home:** leitura real (`screenTimeSummary`), com `mostrarValor`.
  * - **Secao 3 do onboarding:** exemplo, porque ela roda *antes* de a permissao
  *   existir e ali nao ha o que medir. A legenda e o que separa "forma do dado"
- *   de "seu dado", e o valor fica fora da barra pra o numero inventado nao
- *   ganhar a assertividade de um medido.
+ *   de "seu dado", e o valor fica de fora pra o numero inventado nao ganhar a
+ *   assertividade de um medido.
+ *
+ * A duracao mora sob a barra, nunca dentro dela: dentro, ela so cabia nas
+ * barras altas e pulava pra fora nas curtas — o mesmo dado mudava de lugar de
+ * um dia pro outro. Embaixo, valor e dia formam uma linha de eixo so, e o topo
+ * da barra fica livre pra capsula.
  */
-export function BarrasTempoTela({ dados, legenda, mostrarValor = false }: Props) {
+export function BarrasTempoTela({
+  dados,
+  legenda,
+  mostrarValor = false,
+  estimativaHoras = null,
+}: Props) {
   const theme = useTheme();
-  const maximo = Math.max(...dados.map((dado) => dado.horas), 1);
+
+  // A estimativa divide a escala com as leituras (ver `escalaDoGrafico`). O
+  // preco e que uma estimativa muito acima do medido achata as barras — que e
+  // exatamente o que essa pessoa precisa ver.
+  const maximo = escalaDoGrafico(
+    dados.map((dado) => dado.horas),
+    estimativaHoras
+  );
+  const alturaEstimativa = alturaDaBarra(estimativaHoras ?? 0, maximo, ALTURA);
+  const mostrarEstimativa = alturaEstimativa > 0;
 
   return (
     <View
@@ -116,7 +165,11 @@ export function BarrasTempoTela({ dados, legenda, mostrarValor = false }: Props)
       accessibilityRole="image"
       accessibilityLabel={`${legenda}. ${dados
         .map((dado) => `${dado.rotulo}: ${descreverDuracao(dado.horas * 3600)}`)
-        .join(', ')}`}
+        .join(', ')}${
+        mostrarEstimativa
+          ? `. Você estimou ${descreverDuracao((estimativaHoras ?? 0) * 3600)} por dia`
+          : ''
+      }`}
     >
       <View style={styles.grade}>
         {dados.map((dado, indice) => (
@@ -128,8 +181,38 @@ export function BarrasTempoTela({ dados, legenda, mostrarValor = false }: Props)
             mostrarValor={mostrarValor}
           />
         ))}
+
+        {mostrarEstimativa && (
+          <View
+            pointerEvents="none"
+            style={[styles.linhaEstimativa, { top: ALTURA - alturaEstimativa }]}
+          >
+            {Array.from({ length: TRACOS_DA_LINHA }, (_, indice) => (
+              <View
+                key={indice}
+                style={[styles.traco, { backgroundColor: theme.colors.textTertiary }]}
+              />
+            ))}
+          </View>
+        )}
       </View>
-      <Text style={[styles.legenda, { color: theme.colors.textTertiary }]}>{legenda}</Text>
+
+      <View style={styles.rodape}>
+        <Text
+          style={[
+            styles.legenda,
+            mostrarEstimativa && styles.legendaComEstimativa,
+            { color: theme.colors.textTertiary },
+          ]}
+        >
+          {legenda}
+        </Text>
+        {mostrarEstimativa && (
+          <Text style={[styles.rotuloEstimativa, { color: theme.colors.textTertiary }]}>
+            Você estimou {formatarDuracaoCompacta((estimativaHoras ?? 0) * 3600)}
+          </Text>
+        )}
+      </View>
     </View>
   );
 }
@@ -144,7 +227,7 @@ const styles = StyleSheet.create({
   },
   grade: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: spacing[2],
   },
@@ -155,39 +238,62 @@ const styles = StyleSheet.create({
   },
   trilho: {
     height: ALTURA,
+    width: '100%',
+    maxWidth: LARGURA_MAXIMA,
     justifyContent: 'flex-end',
-    alignSelf: 'stretch',
-  },
-  barra: {
-    borderRadius: radius.sm,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: spacing[1],
+    borderRadius: radius.full,
     overflow: 'hidden',
   },
-  // 11/13 e nao `caption` (12/16): duas linhas de caption nao cabem numa barra
-  // curta, e o rotulo quebra sozinho no espaco de "4h 12min".
-  valorDentro: {
-    fontSize: 11,
-    lineHeight: 13,
-    fontWeight: typography.caption.fontWeight,
-    textAlign: 'center',
+  // Capsula so no topo: a base e o zero da escala e fica reta. O arredondamento
+  // de baixo quem da e a trilha, que recorta.
+  barra: {
+    borderTopLeftRadius: radius.full,
+    borderTopRightRadius: radius.full,
+    overflow: 'hidden',
   },
-  valorFora: {
-    fontSize: 11,
-    lineHeight: 13,
-    fontWeight: typography.caption.fontWeight,
-    textAlign: 'center',
-    marginBottom: spacing[1],
+  linhaEstimativa: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  traco: {
+    width: 5,
+    height: 1,
+  },
+  eixo: {
+    alignItems: 'center',
+    gap: spacing[1],
+  },
+  valor: {
+    fontSize: typography.caption.fontSize,
+    lineHeight: typography.caption.lineHeight,
+    fontWeight: '600',
+    fontVariant: ['tabular-nums'],
   },
   rotulo: {
     fontSize: typography.caption.fontSize,
     lineHeight: typography.caption.lineHeight,
     fontWeight: typography.caption.fontWeight,
   },
+  rodape: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+  },
   legenda: {
+    flex: 1,
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
     textAlign: 'center',
+  },
+  legendaComEstimativa: {
+    textAlign: 'left',
+  },
+  rotuloEstimativa: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+    fontVariant: ['tabular-nums'],
   },
 });

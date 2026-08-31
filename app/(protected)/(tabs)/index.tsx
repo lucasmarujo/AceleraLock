@@ -11,7 +11,7 @@ import { BarrasTempoTela } from '@/components/Onboarding/BarrasTempoTela';
 import { useTempoTela } from '@/components/TempoTela/useTempoTela';
 import { formatarDuracao, isoLocal } from '@/components/TempoTela/tempoTela';
 import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
-import { readUserName } from '@/state/onboardingStorage';
+import { readDailyHours, readUserName } from '@/state/onboardingStorage';
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
@@ -23,14 +23,22 @@ export default function Home() {
   const router = useRouter();
   const tempoTela = useTempoTela();
   const [nome, setNome] = useState<string | null>(null);
+  const [estimativa, setEstimativa] = useState<number | null>(null);
   const [bloqueados, setBloqueados] = useState<InstalledApp[] | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       let ativo = true;
 
-      readUserName()
-        .then((salvo) => ativo && setNome(salvo))
+      // A cada foco, e nao so na montagem: a estimativa e editavel no perfil, e
+      // a regua do grafico tem que voltar diferente de la.
+      Promise.all([readUserName(), readDailyHours()])
+        .then(([nomeSalvo, horasSalvas]) => {
+          if (ativo) {
+            setNome(nomeSalvo);
+            setEstimativa(horasSalvas);
+          }
+        })
         .catch(() => {});
 
       // Cruza a lista de bloqueados (nativo) com os apps instalados, que e de
@@ -91,7 +99,12 @@ export default function Home() {
 
         {tempoTela.estado === 'pronto' &&
           (ultimosDias.length > 0 ? (
-            <BarrasTempoTela dados={ultimosDias} legenda="Últimos dias" mostrarValor />
+            <BarrasTempoTela
+              dados={ultimosDias}
+              legenda="Últimos dias"
+              mostrarValor
+              estimativaHoras={estimativa}
+            />
           ) : (
             <EmptyState
               title="Seu histórico começa agora"

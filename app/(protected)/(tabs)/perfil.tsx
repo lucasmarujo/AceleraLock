@@ -1,10 +1,9 @@
 import { useCallback, useState } from 'react';
 import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 
 import { Avatar } from '@/components/Avatar';
-import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { ListRow } from '@/components/ListRow';
 import { Skeleton } from '@/components/Skeleton';
@@ -14,7 +13,6 @@ import { SliderHoras } from '@/components/Onboarding/SliderHoras';
 import { CalendarioTempoTela } from '@/components/TempoTela/CalendarioTempoTela';
 import { formatarDuracao } from '@/components/TempoTela/tempoTela';
 import { useTempoTela } from '@/components/TempoTela/useTempoTela';
-import AceleralockBlocker from '@/native/blocker';
 import { readDailyHours, readUserName, saveDailyHours } from '@/state/onboardingStorage';
 import { useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
 import { PREFERENCIAS, ROTULOS_PREFERENCIA } from '@/theme/preferenciaTema';
@@ -26,7 +24,6 @@ const TOP_APPS = 5;
 
 export default function Perfil() {
   const theme = useTheme();
-  const router = useRouter();
   const tempoTela = useTempoTela();
   const { permissions } = useProtectionVerdictContext();
   const { preferencia, definirPreferencia } = useThemePreference();
@@ -34,7 +31,6 @@ export default function Perfil() {
   const [nome, setNome] = useState<string | null>(null);
   const [horas, setHoras] = useState<number | null>(null);
   const [editandoHoras, setEditandoHoras] = useState(false);
-  const [desligando, setDesligando] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -56,22 +52,6 @@ export default function Perfil() {
   const alterarHoras = (valor: number) => {
     setHoras(valor);
     void saveDailyHours(valor);
-  };
-
-  // Mesma guarda da home antiga: request() substitui pedido pendente em
-  // silencio e zera o progresso acumulado, entao um toque duplo custaria a
-  // espera inteira de novo.
-  const desligarProtecao = () => {
-    if (desligando) {
-      return;
-    }
-    setDesligando(true);
-    try {
-      AceleralockBlocker.requestStopProtection();
-      router.push('/esperando');
-    } finally {
-      setDesligando(false);
-    }
   };
 
   const topApps =
@@ -234,13 +214,6 @@ export default function Perfil() {
             />
           </View>
         </View>
-
-        <Button
-          label="Desligar proteção"
-          variant="secondary"
-          loading={desligando}
-          onPress={desligarProtecao}
-        />
       </ScrollView>
     </SafeAreaView>
   );

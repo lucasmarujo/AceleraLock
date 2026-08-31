@@ -2,10 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  alturaDaBarra,
   descreverDuracao,
   diasDoMes,
+  escalaDoGrafico,
   espacosAntesDoPrimeiro,
   formatarDuracao,
+  formatarDuracaoCompacta,
   intensidadeDoDia,
   isoLocal,
   maiorLeitura,
@@ -83,4 +86,42 @@ test('maiorLeitura ignora dias nao medidos e devolve 0 quando nada foi medido', 
   ]);
   assert.equal(maiorLeitura(dias), 900);
   assert.equal(maiorLeitura(diasDoMes(new Date(2026, 7, 15), [])), 0);
+});
+
+test('formatarDuracaoCompacta encurta so o que tem hora — e mantem o resto igual', () => {
+  assert.equal(formatarDuracaoCompacta(4 * 3600 + 30 * 60), '4h30');
+  assert.equal(formatarDuracaoCompacta(4 * 3600 + 5 * 60), '4h05');
+  assert.equal(formatarDuracaoCompacta(4 * 3600), '4h');
+  assert.equal(formatarDuracaoCompacta(45 * 60), '45min');
+  assert.equal(formatarDuracaoCompacta(45), '45s');
+  assert.equal(formatarDuracaoCompacta(0), '0min');
+  assert.equal(formatarDuracaoCompacta(Number.NaN), '0min');
+});
+
+test('alturaDaBarra e proporcional e satura no maximo', () => {
+  assert.equal(alturaDaBarra(5, 10, 100), 50);
+  assert.equal(alturaDaBarra(10, 10, 100), 100);
+  assert.equal(alturaDaBarra(20, 10, 100), 100);
+});
+
+test('alturaDaBarra: leitura curta ganha piso, mas zero medido continua zero', () => {
+  assert.equal(alturaDaBarra(0.08, 7, 132, 6), 6);
+  assert.equal(alturaDaBarra(0, 7, 132, 6), 0);
+  assert.equal(alturaDaBarra(-1, 7, 132, 6), 0);
+  assert.equal(alturaDaBarra(Number.NaN, 7, 132, 6), 0);
+});
+
+test('alturaDaBarra sem escala nao desenha nada', () => {
+  assert.equal(alturaDaBarra(3, 0, 132, 6), 0);
+});
+
+test('escalaDoGrafico: a estimativa divide a escala com as leituras', () => {
+  assert.equal(escalaDoGrafico([3, 6, 4], 5), 6);
+  assert.equal(escalaDoGrafico([3, 2, 4], 9), 9);
+  assert.equal(escalaDoGrafico([3, 6, 4], null), 6);
+});
+
+test('escalaDoGrafico: sem leitura e sem estimativa a escala nao zera', () => {
+  assert.equal(escalaDoGrafico([], null), 1);
+  assert.equal(escalaDoGrafico([0, 0], null), 1);
 });
