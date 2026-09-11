@@ -18,6 +18,7 @@ import com.aceleralock.blocker.core.BlockDecider
 import com.aceleralock.blocker.core.BlockOutcome
 import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.GrantWindow
+import com.aceleralock.blocker.core.PolicyJson
 import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.PolicyReader
 import com.aceleralock.blocker.core.ProtectionLog
@@ -137,6 +138,23 @@ class BlockerService : Service() {
             }
 
             is WaitTarget.ChangeDurations -> Log.i(TAG, "espera cumprida: novas duracoes em vigor")
+            is WaitTarget.RestrictedModeOff -> {
+                // Recarrega a politica atual antes de regravar: se algum outro caminho
+                // (ex.: `setBlockedPackages` chegou via bridge enquanto a espera corria)
+                // alterou o `blockedPackages`, nao podemos perder. writePolicy faz
+                // read-modify-write e recusa politica ilegivel, entao a unica saida
+                // segura e esta: ler a politica, mudar so o flag, regravar.
+                val politica = when (val read = readPolicy(prefs())) {
+                    is PolicyRead.Absent -> BlockPolicy()
+                    is PolicyRead.Loaded -> read.policy
+                    is PolicyRead.Unreadable -> {
+                        Log.e(TAG, "politica ilegivel ao desativar modo restrito; mantendo ultima conhecida")
+                        return
+                    }
+                }
+                writePolicy(this, politica.copy(restricted = false))
+                Log.i(TAG, "espera cumprida: modo restrito desativado")
+            }
             null -> Unit
         }
     }
@@ -274,6 +292,7 @@ class BlockerService : Service() {
         fun writePolicy(context: Context, policy: BlockPolicy) {
             val json = JSONObject()
             json.put("blockedPackages", JSONArray(policy.blockedPackages.toList()))
+            json.put("restricted", policy.restricted)
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putString(KEY_POLICY, json.toString())
@@ -286,12 +305,7 @@ class BlockerService : Service() {
 
         private fun readPolicy(prefs: SharedPreferences): PolicyRead =
             PolicyReader.read(prefs.getString(KEY_POLICY, null)) { raw ->
-                val json = JSONObject(raw)
-                val blocked = mutableListOf<String>()
-                json.optJSONArray("blockedPackages")?.let { arr ->
-                    for (i in 0 until arr.length()) blocked += arr.getString(i)
-                }
-                RawPolicy(blocked)
+                PolicyJson.parse(raw)
             }
     }
 }

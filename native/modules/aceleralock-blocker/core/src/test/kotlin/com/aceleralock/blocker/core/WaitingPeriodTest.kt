@@ -226,4 +226,77 @@ class WaitingPeriodTest {
         assertNull(waiting.pending())
         assertEquals(Duration.ofMinutes(30), waiting.waitDuration())
     }
+
+    @Test
+    @DisplayName("feliz: desativar modo restrito passa pela mesma espera de 30min")
+    fun disablingRestrictedModeGoesThroughTheWait() {
+        waiting.request(WaitTarget.RestrictedModeOff)
+
+        elapse(Duration.ofMinutes(29))
+        assertNull(waiting.consumeIfReady())
+
+        elapse(Duration.ofMinutes(1))
+        assertEquals(WaitTarget.RestrictedModeOff, waiting.consumeIfReady())
+        assertNull(waiting.pending())
+    }
+
+    @Test
+    @DisplayName("regressao A1: so monot\u00f4nico avan\u00e7a a espera de RestrictedModeOff")
+    fun onlyMonotonicTimeAdvancesRestrictedModeOffWait() {
+        waiting.request(WaitTarget.RestrictedModeOff)
+
+        repeat(100) { waiting.tick() }
+
+        assertEquals(Duration.ZERO, waiting.pending()?.accumulated)
+        assertNull(waiting.consumeIfReady())
+    }
+
+    @Test
+    @DisplayName("regressao G8: reboot congela a espera de RestrictedModeOff")
+    fun rebootFreezesRestrictedModeOffWait() {
+        waiting.request(WaitTarget.RestrictedModeOff)
+        elapse(Duration.ofMinutes(15))
+
+        monotonic.reboot()
+        waiting.onServiceStart()
+        waiting.tick()
+
+        elapse(Duration.ofMinutes(14))
+        assertNull(waiting.consumeIfReady(), "o tempo fora do ar nao pode cumprir a espera")
+
+        elapse(Duration.ofMinutes(1))
+        assertEquals(WaitTarget.RestrictedModeOff, waiting.consumeIfReady())
+    }
+
+    @Test
+    @DisplayName("regressao: trocar de alvo zera o progresso, mesmo com RestrictedModeOff")
+    fun switchingTargetFromRestrictedModeOffRestarts() {
+        waiting.request(WaitTarget.RestrictedModeOff)
+        elapse(Duration.ofMinutes(20))
+
+        waiting.request(WaitTarget.StopProtection)
+
+        assertEquals(Duration.ZERO, waiting.pending()?.accumulated)
+        assertNull(waiting.consumeIfReady())
+    }
+
+    @Test
+    @DisplayName("regressao: outro alvo nao e apresentado como espera de RestrictedModeOff")
+    fun pendingUnlockForIgnoresRestrictedModeOff() {
+        waiting.request(WaitTarget.RestrictedModeOff)
+        elapse(Duration.ofMinutes(10))
+
+        assertNull(waiting.pendingUnlockFor(instagram))
+    }
+
+    @Test
+    @DisplayName("feliz: cancelar pedido de RestrictedModeOff e livre")
+    fun cancellingRestrictedModeOffIsFree() {
+        waiting.request(WaitTarget.RestrictedModeOff)
+        elapse(Duration.ofMinutes(20))
+
+        waiting.cancel()
+
+        assertNull(waiting.pending())
+    }
 }

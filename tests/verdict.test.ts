@@ -8,6 +8,7 @@ const BASE = {
   coreGranted: true,
   onboardingComplete: true,
   protectionActive: true,
+  restricted: false,
 };
 
 test('onboarding nao concluido: onboarding-incompleto mesmo com permissoes', () => {
@@ -81,4 +82,12 @@ test('so a sobreposicao concedida: ainda pede o acesso ao uso', () => {
 
 test('as duas concedidas: nada pendente', () => {
   assert.equal(nextMissingCorePermission({ usageAccess: true, overlay: true }), null);
+});
+
+test('modo restrito: nao muda o ramo do veredito (continua protegido)', () => {
+  assert.equal(computeVerdict({ ...BASE, restricted: true }), 'protegido');
+});
+
+test('modo restrito: nao esconde protecao desativada de proposito', () => {
+  assert.equal(computeVerdict({ ...BASE, restricted: true, protectionActive: false }), 'pausado');
 });

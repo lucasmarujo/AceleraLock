@@ -8,6 +8,8 @@ type ProtectionVerdictContextValue = {
   verdict: ProtectionVerdict;
   /** null enquanto nao houve sonda nativa (loading, ou plataforma sem suporte). */
   permissions: PermissionState | null;
+  /** Modo restrito persistido no nativo. false ate a primeira sonda de Android voltar. */
+  restricted: boolean;
   refresh: () => Promise<void>;
 };
 
@@ -22,10 +24,10 @@ const ProtectionVerdictContext = createContext<ProtectionVerdictContextValue | n
  * plano de scaffold evita.
  */
 export function ProtectionVerdictProvider({ children }: { children: ReactNode }) {
-  const { verdict, permissions, refresh } = useProtectionVerdict();
+  const { verdict, permissions, restricted, refresh } = useProtectionVerdict();
 
   return (
-    <ProtectionVerdictContext.Provider value={{ verdict, permissions, refresh }}>
+    <ProtectionVerdictContext.Provider value={{ verdict, permissions, restricted, refresh }}>
       {children}
     </ProtectionVerdictContext.Provider>
   );

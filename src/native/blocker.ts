@@ -39,6 +39,12 @@ type AceleralockBlockerModule = {
   /** Politica vigente. Lanca em politica ilegivel, nunca devolve lista vazia por engano. */
   blockedPackages(): string[];
   setBlockedPackages(packages: string[]): void;
+  /**
+   * Ativa ou desativa o modo restrito de forma imediata. So a desativacao pede
+   * espera (`requestDisableRestricted`); ativar e o compromisso da pessoa com o
+   * proprio futuro.
+   */
+  setRestricted(restricted: boolean): void;
   /** So vale enquanto nunca houve configuracao. Depois disso, requestDurationChange. */
   configureInitialDurations(waitMinutes: number, grantMinutes: number): boolean;
   /**
@@ -55,6 +61,7 @@ type AceleralockBlockerModule = {
   requestUnlock(packageName: string): boolean;
   requestStopProtection(): boolean;
   requestDurationChange(waitMinutes: number, grantMinutes: number): boolean;
+  requestDisableRestricted(): boolean;
   /** Cancelar e livre: desistir tem de ser barato. */
   cancelRequest(): void;
   protectionState(): ProtectionState;

@@ -8,7 +8,8 @@ import type { RemainingMsReader } from '@/components/Countdown/useCountdown';
 import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-export type PendingTarget = 'UNLOCK_APP' | 'STOP_PROTECTION' | 'CHANGE_DURATIONS';
+export type PendingTarget =
+  'UNLOCK_APP' | 'STOP_PROTECTION' | 'CHANGE_DURATIONS' | 'RESTRICTED_MODE_OFF';
 
 type Props = {
   readRemainingMs: RemainingMsReader;
@@ -77,6 +78,10 @@ const COPY: Record<PendingTarget, { title: string; body: string }> = {
   CHANGE_DURATIONS: {
     title: 'Esperando para mudar a duração',
     body: 'A nova duração vale assim que o tempo acabar.',
+  },
+  RESTRICTED_MODE_OFF: {
+    title: 'Desativando o modo restrito',
+    body: 'Assim que o tempo acabar, a lista de apps volta a poder ser editada.',
   },
 };
 

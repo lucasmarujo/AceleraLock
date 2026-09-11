@@ -1,6 +1,14 @@
 package com.aceleralock.blocker.core
 
-data class RawPolicy(val blockedPackages: List<String>)
+data class RawPolicy(
+    val blockedPackages: List<String>,
+    /**
+     * Ausente na politica persistida conta como `false`: instalacao nova e politica
+     * salva antes deste campo existir dao o mesmo default. `true` so com opt-in
+     * explicito, porque o modo restrito e a chave que tranca a edicao da lista.
+     */
+    val restricted: Boolean = false
+)
 
 /**
  * Os tres estados possiveis da leitura da politica persistida, distintos de
@@ -33,6 +41,11 @@ object PolicyReader {
             return PolicyRead.Absent
         }
         val parsed = runCatching { extract(raw) }.getOrElse { return PolicyRead.Unreadable }
-        return PolicyRead.Loaded(BlockPolicy(blockedPackages = parsed.blockedPackages.toSet()))
+        return PolicyRead.Loaded(
+            BlockPolicy(
+                blockedPackages = parsed.blockedPackages.toSet(),
+                restricted = parsed.restricted
+            )
+        )
     }
 }

@@ -7,7 +7,8 @@ export type PermissionState = {
   coreGranted: boolean;
 };
 
-export type PendingTarget = 'UNLOCK_APP' | 'STOP_PROTECTION' | 'CHANGE_DURATIONS';
+export type PendingTarget =
+  'UNLOCK_APP' | 'STOP_PROTECTION' | 'CHANGE_DURATIONS' | 'RESTRICTED_MODE_OFF';
 
 export type ProtectionState = {
   /** Flag persistida: o que o usuario decidiu, nao se o servico esta no ar agora. */
@@ -21,6 +22,12 @@ export type ProtectionState = {
   configured: boolean;
   waitMinutes: number;
   grantMinutes: number;
+  /**
+   * Modo restrito: enquanto true, a tela de escolha de apps nao e acessivel.
+   * Ativado de forma imediata; desativado so apos a espera de
+   * RESTRICTED_MODE_OFF cumprir (mesmo motor das outras esperas).
+   */
+  restricted: boolean;
   /** null quando nao ha pedido em curso. */
   pendingTarget: PendingTarget | null;
   pendingRemainingSeconds: number | null;

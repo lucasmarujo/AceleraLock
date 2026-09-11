@@ -104,6 +104,20 @@ class AceleralockBlockerModule : Module() {
             BlockerService.writePolicy(context, currentPolicy().copy(blockedPackages = packages.toSet()))
         }
 
+        /**
+         * Liga/desliga o modo restrito. Ativar e imediato (compromisso com o
+         * futuro); desativar exige a espera de RestrictedModeOff via WaitingPeriod
+         * e entra por `requestDisableRestricted`. Aqui so mudamos a flag persistida
+         * e o servico rele a politica em seguida.
+         */
+        Function("setRestricted") { restricted: Boolean ->
+            BlockerService.writePolicy(context, currentPolicy().copy(restricted = restricted))
+        }
+
+        Function("requestDisableRestricted") {
+            request(WaitTarget.RestrictedModeOff)
+        }
+
         Function("configureInitialDurations") { waitMinutes: Int, grantMinutes: Int ->
             waiting().configureInitial(
                 Duration.ofMinutes(waitMinutes.toLong()),
@@ -134,6 +148,7 @@ class AceleralockBlockerModule : Module() {
             val period = waiting()
             val pending = period.pending()
             val log = ProtectionLog(SharedPreferencesStore(context), SystemMonotonicClock)
+            val policy = readPolicySafely()
             mapOf(
                 // Flag persistida, nunca "o servico esta no ar agora": servico morto por
                 // falta de memoria diria "pausado" a quem nunca pausou.
@@ -145,6 +160,7 @@ class AceleralockBlockerModule : Module() {
                 "configured" to period.isConfigured(),
                 "waitMinutes" to period.waitDuration().toMinutes(),
                 "grantMinutes" to period.grantDuration().toMinutes(),
+                "restricted" to policy.restricted,
                 "pendingTarget" to pending?.let(::describeTarget),
                 "pendingRemainingSeconds" to pending?.remaining?.seconds,
                 "pendingReady" to (pending?.isReady ?: false)
@@ -177,6 +193,7 @@ class AceleralockBlockerModule : Module() {
             is WaitTarget.UnlockApp -> "UNLOCK_APP"
             is WaitTarget.StopProtection -> "STOP_PROTECTION"
             is WaitTarget.ChangeDurations -> "CHANGE_DURATIONS"
+            is WaitTarget.RestrictedModeOff -> "RESTRICTED_MODE_OFF"
         }
 
     private fun waiting(): WaitingPeriod =
@@ -193,6 +210,19 @@ class AceleralockBlockerModule : Module() {
         is PolicyRead.Loaded -> read.policy
         is PolicyRead.Unreadable ->
             throw IllegalStateException("politica ilegivel: gravar agora apagaria os bloqueios")
+    }
+
+    /**
+     * Leitura para a `protectionState()` exibida na UI. Devolve `restricted = false`
+     * em vez de lancar quando a politica esta ilegivel: a UI nao pode quebrar
+     * porque o arquivo de politica corrompeu — isso e problema do `writePolicy`
+     * seguinte, nao da leitura. O servico continua usando `BlockerService.readPolicy`
+     * diretamente e ja trata `Unreadable` em `applyPolicy`.
+     */
+    private fun readPolicySafely(): BlockPolicy = when (val read = BlockerService.readPolicy(context)) {
+        is PolicyRead.Absent -> BlockPolicy()
+        is PolicyRead.Loaded -> read.policy
+        is PolicyRead.Unreadable -> BlockPolicy()
     }
 
     private val context

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 import { Avatar } from '@/components/Avatar';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,6 +13,7 @@ import { SliderHoras } from '@/components/Onboarding/SliderHoras';
 import { CalendarioTempoTela } from '@/components/TempoTela/CalendarioTempoTela';
 import { formatarDuracao } from '@/components/TempoTela/tempoTela';
 import { useTempoTela } from '@/components/TempoTela/useTempoTela';
+import AceleralockBlocker from '@/native/blocker';
 import { readDailyHours, readUserName, saveDailyHours } from '@/state/onboardingStorage';
 import { useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
 import { PREFERENCIAS, ROTULOS_PREFERENCIA } from '@/theme/preferenciaTema';
@@ -25,8 +26,9 @@ const TOP_APPS = 5;
 export default function Perfil() {
   const theme = useTheme();
   const tempoTela = useTempoTela();
-  const { permissions } = useProtectionVerdictContext();
+  const { permissions, restricted, refresh } = useProtectionVerdictContext();
   const { preferencia, definirPreferencia } = useThemePreference();
+  const router = useRouter();
 
   const [nome, setNome] = useState<string | null>(null);
   const [horas, setHoras] = useState<number | null>(null);
@@ -52,6 +54,35 @@ export default function Perfil() {
   const alterarHoras = (valor: number) => {
     setHoras(valor);
     void saveDailyHours(valor);
+  };
+
+  /**
+   * Ativar e imediato (compromisso com o futuro). Desativar pede 30min via
+   * WaitingPeriod — a confirmacao do Alert nao e a espera, e so um momento
+   * de respiro antes de abrir o pedido (e para o caso da pessoa tocar sem
+   * querer). O pedido em si vai pela mesma porta de `requestStopProtection`.
+   */
+  const alternarModoRestrito = () => {
+    if (!restricted) {
+      AceleralockBlocker.setRestricted(true);
+      void refresh();
+      return;
+    }
+    Alert.alert(
+      'Desativar modo restrito?',
+      'Você vai precisar esperar 30 minutos antes da desativação valer.',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Iniciar espera',
+          onPress: () => {
+            if (AceleralockBlocker.requestDisableRestricted()) {
+              router.push('/esperando');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const topApps =
@@ -164,6 +195,37 @@ export default function Perfil() {
           </Text>
         </View>
         */}
+
+        <View style={styles.secao}>
+          <Text style={[styles.tituloSecao, { color: theme.colors.textPrimary }]}>
+            Modo restrito
+          </Text>
+          <View
+            style={[
+              styles.cartao,
+              { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
+            ]}
+          >
+            <ListRow
+              label={
+                restricted
+                  ? 'Modo restrito está ativo. A lista de apps não pode ser editada.'
+                  : 'Bloqueia a edição da lista de apps enquanto estiver ativo.'
+              }
+              value={restricted ? 'Ativo' : 'Desativado'}
+              emphasis={restricted ? 'brand' : 'default'}
+              accessory={
+                <Text
+                  accessibilityRole="button"
+                  onPress={alternarModoRestrito}
+                  style={[styles.link, { color: theme.colors.textBrand }]}
+                >
+                  {restricted ? 'Desativar' : 'Ativar'}
+                </Text>
+              }
+            />
+          </View>
+        </View>
 
         <View style={styles.secao}>
           <Text style={[styles.tituloSecao, { color: theme.colors.textPrimary }]}>Aparência</Text>

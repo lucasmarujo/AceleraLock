@@ -17,11 +17,14 @@ type AceleralockBlockerModule = {
   screenTimeSummary(): Promise<ScreenTimeSummary>;
   blockedPackages(): string[];
   setBlockedPackages(packages: string[]): void;
+  /** Ativa/desativa o modo restrito imediato. So a desativacao pede espera. */
+  setRestricted(restricted: boolean): void;
   /** So vale enquanto nunca houve configuracao. Depois disso, requestDurationChange. */
   configureInitialDurations(waitMinutes: number, grantMinutes: number): boolean;
   requestUnlock(packageName: string): boolean;
   requestStopProtection(): boolean;
   requestDurationChange(waitMinutes: number, grantMinutes: number): boolean;
+  requestDisableRestricted(): boolean;
   /** Cancelar e livre: desistir tem de ser barato. */
   cancelRequest(): void;
   protectionState(): ProtectionState;

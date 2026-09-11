@@ -242,6 +242,44 @@ a esperar por teimosia, e o que se quer é que ela comece, espere e mude de idei
 
 ### Concessão de 15 minutos, configurável pela mesma porta
 
+### Modo restrito: ligar é imediato, desligar pede 30min
+
+Configuração nova do produto. A pessoa liga o modo restrito no Perfil e, enquanto
+ele estiver ativo, a tela de escolha de apps mostra um aviso em vez da lista — nem
+ver nem editar. Ativar é imediato: é o compromisso com o próprio futuro da pessoa.
+Desativar passa pelo mesmo motor de espera monotônica de `WaitingPeriod`, com
+alvo próprio `WaitTarget.RestrictedModeOff` (kind `RESTRICTED_MODE_OFF`).
+
+A escolha de "ativar imediato, desativar com espera" não é simétrica de propósito.
+Ligar é o caso em que a pessoa decidiu antes: ela quer endurecer o bloqueio e o
+ato de ligar é o resultado dessa decisão. Desligar é o que o impulso tenta, e
+custa exatamente o mesmo tempo que custa tirar um app da lista de bloqueio ou
+desligar a proteção inteira — quem ativa o modo restrito já aceitou a regra das
+outras esperas, e tratar esta como exceção abriria um atalho. Espelha a regra
+"desligar a proteção passa pela mesma espera" acima.
+
+Estado persistido em `BlockPolicy.restricted` (no `core/`, ao lado de
+`blockedPackages`) e nunca no AsyncStorage do JS: a fonte única da configuração
+do bloqueio continua sendo o nativo, e `policy.json` ilegível continua recusando
+gravação em vez de aceitar um apagamento silencioso. A UI lê do
+`protectionState()` do nativo; `restricted` **não** vira sexto valor de
+`ProtectionVerdict` porque é chave de configuração, não chave de roteamento
+(ver `src/state/verdict.ts` — `Snapshot.restricted` existe, `computeVerdict`
+não muda de ramo com ela). O gate na tela `/apps` é uma condicional simples,
+não um `Stack.Protected`.
+
+A barreira de burla A1, A7, A11 e "um pedido por vez" valem para este alvo pelo
+mesmo motivo: `WaitingPeriod` é o motor, `RestrictedModeOff` é só mais um caso
+no `sealed interface WaitTarget`. Reboot congela a espera, adiantar relógio não
+adianta, trocar de alvo zera o progresso, cancelar é livre — todos os
+comportamentos já provados em `WaitingPeriodTest` (novos cenários em
+`disablingRestrictedModeGoesThroughTheWait`, `onlyMonotonicTimeAdvancesRestrictedModeOffWait`,
+`rebootFreezesRestrictedModeOffWait`, `switchingTargetFromRestrictedModeOffRestarts`,
+`pendingUnlockForIgnoresRestrictedModeOff`, `cancellingRestrictedModeOffIsFree`).
+
+A matriz de burla ganha uma linha nova no Grupo A (A12) — ver
+`docs/qa/matriz-cenarios-burla.md`.
+
 ### A concessão não é uma lista, é um saldo
 
 Antes, concessão era entrada em `BlockPolicy` com `grantEndsAt` em relógio de

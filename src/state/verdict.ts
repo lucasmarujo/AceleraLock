@@ -23,6 +23,14 @@ export type Snapshot = {
    * proposito (decisao do supervisor, rodada das telas de espera).
    */
   protectionActive: boolean;
+  /**
+   * Modo restrito persistido no nativo (BlockPolicy.restricted). NAO entra
+   * no veredito: e uma chave de configuracao, nao uma chave de roteamento.
+   * Quem precisa dele (tela de escolha de apps, perfil) le direto do nativo
+   * — adicionar um sexto valor de `ProtectionVerdict` reintroduziria gating
+   * manual nas telas, coisa que a secao 4.5 do AGENTS proibe.
+   */
+  restricted: boolean;
 };
 
 export function computeVerdict(snapshot: Snapshot): ProtectionVerdict {

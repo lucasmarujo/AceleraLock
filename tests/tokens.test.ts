@@ -38,7 +38,8 @@ function matiz(hex: string): number {
   const max = Math.max(r, g, b);
   const delta = max - Math.min(r, g, b);
   if (delta === 0) return NaN;
-  const setor = max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
+  const setor =
+    max === r ? ((g - b) / delta) % 6 : max === g ? (b - r) / delta + 2 : (r - g) / delta + 4;
   return (setor * 60 + 360) % 360;
 }
 

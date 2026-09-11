@@ -27,6 +27,14 @@ sealed interface WaitTarget {
     data object StopProtection : WaitTarget
 
     data class ChangeDurations(val newWait: Duration, val newGrant: Duration) : WaitTarget
+
+    /**
+     * Desativar o modo restrito passa pela mesma espera. Ativar e imediato:
+     * ver docs/decisoes.md (entradas "Atrito local, depois do pivo" e a nova
+     * entrada do modo restrito) — ligar e compromisso com o proprio futuro,
+     * desligar e o que o impulso tenta furar.
+     */
+    data object RestrictedModeOff : WaitTarget
 }
 
 data class PendingWait(val target: WaitTarget, val accumulated: Duration, val required: Duration) {
@@ -174,6 +182,7 @@ class WaitingPeriod(
             KIND_UNLOCK_APP -> payload?.takeIf { it.isNotBlank() }?.let(WaitTarget::UnlockApp)
             KIND_STOP_PROTECTION -> WaitTarget.StopProtection
             KIND_CHANGE_DURATIONS -> decodeDurations(payload)
+            KIND_RESTRICTED_MODE_OFF -> WaitTarget.RestrictedModeOff
             else -> null
         }
     }
@@ -192,6 +201,7 @@ class WaitingPeriod(
         is WaitTarget.UnlockApp -> KIND_UNLOCK_APP
         is WaitTarget.StopProtection -> KIND_STOP_PROTECTION
         is WaitTarget.ChangeDurations -> KIND_CHANGE_DURATIONS
+        is WaitTarget.RestrictedModeOff -> KIND_RESTRICTED_MODE_OFF
     }
 
     private fun payloadOf(target: WaitTarget): String? = when (target) {
@@ -199,6 +209,7 @@ class WaitingPeriod(
         is WaitTarget.StopProtection -> null
         is WaitTarget.ChangeDurations ->
             "${target.newWait.toMillis()}$PAYLOAD_SEPARATOR${target.newGrant.toMillis()}"
+        is WaitTarget.RestrictedModeOff -> null
     }
 
     private companion object {
@@ -214,5 +225,6 @@ class WaitingPeriod(
         const val KIND_UNLOCK_APP = "UNLOCK_APP"
         const val KIND_STOP_PROTECTION = "STOP_PROTECTION"
         const val KIND_CHANGE_DURATIONS = "CHANGE_DURATIONS"
+        const val KIND_RESTRICTED_MODE_OFF = "RESTRICTED_MODE_OFF"
     }
 }

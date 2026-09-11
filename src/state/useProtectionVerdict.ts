@@ -14,6 +14,11 @@ export function useProtectionVerdict() {
   // uma segunda sonda em outro momento poderia mostrar um estado de
   // permissao que o veredito ja nao acredita mais.
   const [permissions, setPermissions] = useState<PermissionState | null>(null);
+  // Declarado no escopo da funcao: `refresh` (que atribui) e async, e o return
+  // le `restricted` no escopo de fora. Mantido em estado (e nao em ref) porque
+  // o React precisa reagendar a UI quando o flag muda — `setRestricted` seria
+  // o proximo passo se a UI passar a ouvir isso em vez de reler o nativo.
+  const [restricted, setRestricted] = useState(false);
   const previousVerdict = useRef<ProtectionVerdict>('loading');
 
   const refresh = useCallback(async () => {
@@ -23,18 +28,24 @@ export function useProtectionVerdict() {
       const platformSupported = Platform.OS === 'android' || Platform.OS === 'ios';
       let coreGranted = false;
       let protectionActive = true;
+      let restrictedValue = false;
       if (platformSupported) {
         const state = AceleralockBlocker.probePermissions();
+        const protection = AceleralockBlocker.protectionState();
         coreGranted = state.coreGranted;
-        protectionActive = AceleralockBlocker.protectionState().protectionActive;
+        protectionActive = protection.protectionActive;
+        restrictedValue = protection.restricted;
         setPermissions(state);
       }
+
+      setRestricted(restrictedValue);
 
       const next = computeVerdict({
         platformSupported,
         coreGranted,
         onboardingComplete,
         protectionActive,
+        restricted: restrictedValue,
       });
       previousVerdict.current = next;
       setVerdict(next);
@@ -62,5 +73,5 @@ export function useProtectionVerdict() {
     return () => subscription.remove();
   }, [refresh]);
 
-  return { verdict, permissions, refresh };
+  return { verdict, permissions, restricted, refresh };
 }
