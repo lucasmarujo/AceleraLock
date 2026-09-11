@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
-const BADGE = require('../../assets/png/mark/lock-3d-trail-1024.png');
+const BADGE = require('../../assets/icon-1024.png');
 const ACELERADEV = require('../../assets/aceleradev-logo.png');
 
 /**
@@ -14,13 +14,13 @@ const ACELERADEV = require('../../assets/aceleradev-logo.png');
  * É uma tela do app, não a imagem da splash nativa, porque o lockup não cabe
  * lá: a splash do Android 12+ recorta o que mostra num círculo e aceita um
  * ícone só — texto e uma segunda logo não sobrevivem ao recorte. A splash
- * nativa mostra só a marca (`assets/png/android/adaptive/foreground-1024.png`,
- * que já vem com a folga dessa máscara) e esta tela continua a partir dela, no
- * mesmo fundo, pra transição não piscar.
+ * nativa mostra o mesmo ícone (`assets/icon-1024.png`, com o `imageWidth` do
+ * app.json já dimensionado pra squircle caber nessa máscara) e esta tela
+ * continua a partir dela, no mesmo fundo, pra transição não piscar.
  *
- * Sem `<Svg>` de propósito: o app não tem react-native-svg. `assets/svg/` tem
- * as fontes vetoriais da marca; aqui entra o PNG equivalente — a variante com
- * rastro, que é a que carrega o gesto de velocidade do redesenho.
+ * Sem `<Svg>` de propósito: o app não tem react-native-svg. O ícone já chega
+ * composto — fundo turquesa e cantos próprios —, então **um asset serve os
+ * dois temas**: lê tanto sobre o canvas claro quanto sobre o escuro.
  */
 export function SplashScreen() {
   const theme = useTheme();

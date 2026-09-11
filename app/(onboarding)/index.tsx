@@ -17,7 +17,7 @@ import { Button } from '@/components/Button';
 import { readOnboardingComplete } from '@/state/onboardingStorage';
 import { brand, duration, easing, neutral, radius, spacing, typography } from '@/theme/tokens';
 
-const BADGE = require('../../assets/png/mark/lock-3d-trail-1024.png');
+const BADGE = require('../../assets/icon-1024.png');
 
 const BADGE_SIZE = 168;
 const ANEL_SIZE = 200;

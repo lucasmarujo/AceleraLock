@@ -3,6 +3,7 @@ ios/
 .expo/
 node_modules/
 assets/
+assets.old/
 
 # Docs sao prosa escrita a mao: o Prettier reflui paragrafo e tabela, e o
 # resultado e um diff enorme sem ganho de leitura.

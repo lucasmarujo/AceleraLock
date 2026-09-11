@@ -25,20 +25,22 @@ function readPngHeader(relative: string) {
 }
 
 /**
- * Os ícones deixaram de ser gerados por script Python no repo (redesenho de
- * 2026-08-30, commit `77ef62b`): agora chegam prontos em `assets/png/**` e
- * `assets/svg/**`. Os testes que liam constantes do gerador morreram com ele —
- * o que sobra, e que continua sendo o que quebra o build de verdade, é: o
- * app.json aponta pra arquivo que existe, com a geometria que cada slot da
- * plataforma exige.
+ * Os ícones não são gerados por script no repo: chegam prontos do design em
+ * `assets/`. O que sobra pra travar aqui, e que continua sendo o que quebra o
+ * build de verdade, é: o app.json aponta pra arquivo que existe, com a
+ * geometria que cada slot da plataforma exige.
+ *
+ * O export novo entrega só o ícone composto (squircle com fundo embutido). As
+ * camadas do adaptive em `assets/android/adaptive/` são derivadas dele: o
+ * foreground é a mesma arte reduzida a 72% com o degradê replicado até a
+ * borda, pra máscara do launcher cortar degradê e nunca o cadeado.
  */
 
-const ANDROID_MIPMAP = 'assets/png/android/mipmap';
+const ANDROID_MIPMAP = 'assets/android/res';
 
 test('todo ícone referenciado pelo app.json existe e é quadrado 1024', () => {
   const referenced = [
     appJson.expo.icon,
-    appJson.expo.android.adaptiveIcon.backgroundImage,
     appJson.expo.android.adaptiveIcon.foregroundImage,
     appJson.expo.android.adaptiveIcon.monochromeImage,
   ];
@@ -48,16 +50,25 @@ test('todo ícone referenciado pelo app.json existe e é quadrado 1024', () => {
   }
 });
 
-test('foreground e monochrome do adaptive têm alfa — quem preenche o fundo é a camada de trás', () => {
-  for (const reference of [
-    appJson.expo.android.adaptiveIcon.foregroundImage,
-    appJson.expo.android.adaptiveIcon.monochromeImage,
-  ]) {
-    assert.equal(readPngHeader(reference).hasAlpha, true, reference);
-  }
+test('foreground do adaptive sangra até a borda; só o monochrome tem alfa', () => {
+  // O foreground carrega o degradê do próprio ícone, então precisa ser opaco:
+  // um PNG sem canal alfa não tem como abrir buraco no canto sob a máscara de
+  // quadrado arredondado, que é mais larga que a circular e chega perto deles.
+  // Se voltar a ter alfa, o `iconBackground` navy vaza nos cantos.
+  assert.equal(
+    readPngHeader(appJson.expo.android.adaptiveIcon.foregroundImage).hasAlpha,
+    false,
+    appJson.expo.android.adaptiveIcon.foregroundImage
+  );
+  // O monochrome é o oposto: é só silhueta, quem pinta é o tint do launcher.
+  assert.equal(
+    readPngHeader(appJson.expo.android.adaptiveIcon.monochromeImage).hasAlpha,
+    true,
+    appJson.expo.android.adaptiveIcon.monochromeImage
+  );
 });
 
-test('escada de densidades do launcher Android: 48dp redondo em cada dpi', () => {
+test('escada de densidades do launcher Android: 48dp em cada dpi', () => {
   // O `expo prebuild` gera a mipmap a partir do adaptive icon, mas o conjunto
   // exportado pelo design acompanha a escada pronta — se faltar um degrau, é
   // export incompleto, e o sintoma no aparelho é ícone borrado só numa
@@ -69,26 +80,33 @@ test('escada de densidades do launcher Android: 48dp redondo em cada dpi', () =>
     [144, 'xxhdpi'],
     [192, 'xxxhdpi'],
   ] as const) {
-    const reference = `${ANDROID_MIPMAP}/icon-round-${size}.png`;
+    const reference = `${ANDROID_MIPMAP}/mipmap-${dp}/ic_launcher.png`;
     const header = readPngHeader(reference);
     assert.deepEqual([header.width, header.height], [size, size], `${reference} (${dp})`);
   }
 });
 
 test('ícone da Play Store é 512×512', () => {
-  const header = readPngHeader('assets/png/android/playstore-icon-512.png');
+  const header = readPngHeader('assets/android/playstore-icon.png');
   assert.deepEqual([header.width, header.height], [512, 512]);
 });
 
-test('ícone da App Store é 1024×1024', () => {
-  const header = readPngHeader('assets/png/ios/icon-1024.png');
+test('ícone de loja é 1024×1024 e opaco — é por isso que há dois mestres', () => {
+  // `expo.icon` não pode ser a squircle recortada: o Expo achata o alfa do
+  // ícone iOS sobre branco (`removeTransparency` em withIosIcons) e o iOS
+  // aplica a máscara *dele* por cima, então canto transparente vira cunha
+  // branca na home. O mestre de loja sangra até a borda e é o sistema que
+  // arredonda; `assets/icon-1024.png`, com os cantos, fica pra splash, tela
+  // de marca, onboarding e overlay, onde é o app que desenha o recorte.
+  const header = readPngHeader(appJson.expo.icon);
   assert.deepEqual([header.width, header.height], [1024, 1024]);
+  assert.equal(header.hasAlpha, false, appJson.expo.icon);
 });
 
 test('fundo do adaptive icon continua sendo o tema da marca, não hex solto', () => {
-  // `backgroundImage` é o campo que o Android usa; `backgroundColor` fica como
-  // fallback pra quem não compõe as duas camadas. Os dois precisam concordar
-  // com o token, senão o ícone muda de fundo dependendo do launcher.
+  // Não há `backgroundImage`: o foreground é opaco e cobre a camada de trás.
+  // `backgroundColor` fica como fallback declarado (vira `@color/iconBackground`
+  // no XML do adaptive) e por isso ainda precisa concordar com o token.
   assert.equal(appJson.expo.android.adaptiveIcon.backgroundColor, brand.tema);
 });
 

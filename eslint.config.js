@@ -7,6 +7,14 @@ const expo = require('eslint-config-expo/flat');
 module.exports = [
   ...expo,
   {
-    ignores: ['android/**', 'ios/**', '.expo/**', 'node_modules/**', 'assets/**', 'backend.bkp/**'],
+    ignores: [
+      'android/**',
+      'ios/**',
+      '.expo/**',
+      'node_modules/**',
+      'assets/**',
+      'assets.old/**',
+      'backend.bkp/**',
+    ],
   },
 ];

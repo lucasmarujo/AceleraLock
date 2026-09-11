@@ -353,7 +353,7 @@ Antes de mexer na camada `android/`: leia
 | Agregação de tempo de tela | `core/.../ScreenTime*.kt` |
 | Adapter de overlay/foreground/service | `android/.../BlockerService.kt`, `OverlayPresenter.kt`, `ForegroundAppDetector.kt` |
 | Config plugin (CNG) | `native/plugins/withAceleralockBlocker.js` |
-| Marca/ícones | `assets/svg/`, `assets/png/mark/`, `assets/png/lockup/` |
+| Marca/ícones | `assets/icon-square-1024.png` (lojas), `assets/icon-1024.png` (app), `assets/android/adaptive/` |
 | Porquê de cada decisão | `docs/decisoes.md` |
 | Cenários de burla | `docs/qa/matriz-cenarios-burla.md` |
 | Roteiro de validação em aparelho | `docs/qa/roteiro-validacao-aparelho.md` |

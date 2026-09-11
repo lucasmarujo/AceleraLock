@@ -1,10 +1,8 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/png/lockup/lockup-dark-2200.png">
-  <source media="(prefers-color-scheme: light)" srcset="assets/png/lockup/lockup-light-2200.png">
-  <img alt="AceleraLock" src="assets/png/lockup/lockup-light-2200.png" width="560">
-</picture>
+<img alt="AceleraLock" src="assets/icon-1024.png" width="132">
+
+<h1>AceleraLock</h1>
 
 <br>
 
@@ -342,11 +340,18 @@ native/
                             primeiro plano, overlay, coleta de uso, ponte Expo.
   plugins/                  Config plugin que liga o core ao prebuild.
 assets/
-  svg/ png/                 Marca do AceleraLock: mark, wordmark, lockups, ícones
-                            de loja, adaptive icon e favicons.
+  icon-square-1024.png      Mestre de loja: sangra até a borda, sem alfa. É o
+                            `icon` do app.json; iOS e Android arredondam sozinhos.
+  icon-1024.png             O mesmo ícone já recortado. Splash nativa, tela de
+                            marca, onboarding e overlay — onde o recorte é nosso.
+  android/ ios/             Export do design por plataforma: conjunto do Xcode,
+                            escada de mipmap, ícone da Play Store e as camadas
+                            do adaptive derivadas do ícone.
   aceleradev-logo.svg       Marca da comunidade AceleraDev.
 docs/                       Produto, design system, decisões e QA.
 tests/                      Testes JS puros (node:test).
+assets.old/                 Histórico: marca anterior (mark, wordmark, lockups,
+                            favicons). Nada no app aponta pra cá.
 backend.bkp/                Histórico: backend Spring Boot e infra Docker/blue-green
                             da arquitetura com servidor. Não roda.
 ```
@@ -425,11 +430,17 @@ O inventário completo, com o porquê de cada item, está no fim de
 ## Marca e design system
 
 <div align="center">
-  <img alt="Mark do AceleraLock" src="assets/png/mark/lock-3d-512.png" width="120">
+  <img alt="Ícone do AceleraLock" src="assets/icon-1024.png" width="120">
 </div>
 
-A marca vive em [`assets/`](assets/) em SVG (fonte) e PNG (derivados): mark, wordmark,
-lockups claro/escuro/mono, ícone de loja, adaptive icon do Android e favicons.
+A marca vive em [`assets/`](assets/): o ícone composto em dois mestres —
+`icon-square-1024.png` (sangra até a borda, pras lojas arredondarem) e
+`icon-1024.png` (já recortado, pro que o app desenha) — mais o conjunto do Xcode,
+a escada de mipmap do Android e o ícone da Play Store. As camadas do adaptive icon
+(`assets/android/adaptive/`) são derivadas do próprio ícone: a mesma arte a 72% com
+o degradê replicado até a borda, pra máscara do launcher cortar degradê e nunca o
+cadeado. A marca anterior ficou em [`assets.old/`](assets.old/) e não é mais
+referenciada.
 
 Os tokens de cor estão em [`src/theme/tokens.ts`](src/theme/tokens.ts), com contraste
 revalidado contra WCAG e coberto por teste. A regra é do sistema, não coincidência de

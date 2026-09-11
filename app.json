@@ -8,7 +8,7 @@
     "platforms": ["ios", "android"],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "icon": "./assets/png/ios/icon-1024.png",
+    "icon": "./assets/icon-square-1024.png",
     "ios": {
       "bundleIdentifier": "com.aceleralock.app",
       "supportsTablet": false,
@@ -23,9 +23,8 @@
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
         "backgroundColor": "#04141c",
-        "backgroundImage": "./assets/png/android/adaptive/background-1024.png",
-        "foregroundImage": "./assets/png/android/adaptive/foreground-1024.png",
-        "monochromeImage": "./assets/png/mark/lock-solid-white-1024.png"
+        "foregroundImage": "./assets/android/adaptive/foreground-1024.png",
+        "monochromeImage": "./assets/android/adaptive/monochrome-1024.png"
       }
     },
     "plugins": [
@@ -34,11 +33,11 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#F6F7F8",
-          "image": "./assets/png/android/adaptive/foreground-1024.png",
-          "imageWidth": 220,
+          "image": "./assets/icon-1024.png",
+          "imageWidth": 132,
           "dark": {
             "backgroundColor": "#04141c",
-            "image": "./assets/png/android/adaptive/foreground-1024.png"
+            "image": "./assets/icon-1024.png"
           }
         }
       ],
