@@ -1,0 +1,1324 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AceleraLock — Política de Privacidade e Termos de Uso</title>
+    <meta
+      name="description"
+      content="Política de Privacidade e Termos de Uso do AceleraLock — bloqueio de apps que roda 100% no aparelho, sem backend, sem cadastro e sem nuvem."
+    />
+    <meta name="theme-color" content="#F6F7F8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#04141c" media="(prefers-color-scheme: dark)" />
+    <style>
+      :root {
+        --bg-canvas: #f6f7f8;
+        --bg-surface: #ffffff;
+        --bg-sunken: #eceef1;
+        --bg-brand-subtle: #e6f9f9;
+        --text-primary: #14181d;
+        --text-secondary: #4c535e;
+        --text-tertiary: #6c7480;
+        --text-brand: #037476;
+        --border-default: #dde1e6;
+        --border-strong: #c2c8d0;
+        --border-brand: #039796;
+        --focus-ring: #039796;
+        --brand-fill: #04141c;
+        --brand-on-fill: #03c3bf;
+        --amber-text: #7c4f0c;
+        --amber-border: #e7b369;
+        --amber-subtle: #fbf1e2;
+
+        --space-1: 4px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 20px;
+        --space-6: 24px;
+        --space-8: 32px;
+        --space-10: 40px;
+        --space-12: 48px;
+        --space-16: 64px;
+
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --radius-full: 999px;
+
+        --duration-fast: 150ms;
+        --easing-standard: cubic-bezier(0.2, 0, 0, 1);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg-canvas: #04141c;
+          --bg-surface: #0b1a22;
+          --bg-sunken: #04121a;
+          --bg-brand-subtle: #04262c;
+          --text-primary: #f6f7f8;
+          --text-secondary: #c2c8d0;
+          --text-tertiary: #98a0ab;
+          --text-brand: #03c3bf;
+          --border-default: #2e3c42;
+          --border-strong: #49545a;
+          --border-brand: #03c3bf;
+          --focus-ring: #03c3bf;
+          --brand-fill: #03c3bf;
+          --brand-on-fill: #04141c;
+          --amber-text: #e7b369;
+          --amber-border: #c9871f;
+          --amber-subtle: #1e1912;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg-canvas);
+        color: var(--text-primary);
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+          sans-serif;
+        font-size: 17px;
+        line-height: 24px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--text-brand);
+        text-decoration-thickness: 1px;
+        text-underline-offset: 2px;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--focus-ring);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+      }
+
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: var(--space-2);
+        background: var(--bg-surface);
+        color: var(--text-primary);
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-strong);
+      }
+
+      .skip-link:focus {
+        left: var(--space-4);
+        z-index: 20;
+      }
+
+      /* ---------- Header ---------- */
+
+      header.topo {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: var(--bg-canvas);
+        border-bottom: 1px solid var(--border-default);
+      }
+
+      .topo-conteudo {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--space-3) var(--space-5);
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-3) var(--space-5);
+        justify-content: space-between;
+      }
+
+      .marca {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-3);
+        text-decoration: none;
+        color: inherit;
+        font-size: 20px;
+        line-height: 26px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+      }
+
+      .marca-selo {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius-md);
+        background: var(--brand-fill);
+        color: var(--brand-on-fill);
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+
+      .marca-selo svg {
+        width: 18px;
+        height: 18px;
+        display: block;
+      }
+
+      .marca em {
+        font-style: normal;
+        color: var(--text-brand);
+      }
+
+      nav.abas {
+        display: flex;
+        gap: var(--space-1);
+        background: var(--bg-sunken);
+        padding: var(--space-1);
+        border-radius: var(--radius-full);
+      }
+
+      nav.abas a {
+        text-decoration: none;
+        color: var(--text-secondary);
+        font-size: 15px;
+        line-height: 20px;
+        font-weight: 600;
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--radius-full);
+        white-space: nowrap;
+        transition:
+          background var(--duration-fast) var(--easing-standard),
+          color var(--duration-fast) var(--easing-standard);
+      }
+
+      nav.abas a:hover {
+        color: var(--text-primary);
+      }
+
+      nav.abas a[aria-current='page'] {
+        background: var(--brand-fill);
+        color: var(--brand-on-fill);
+      }
+
+      /* ---------- Layout ---------- */
+
+      main {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--space-10) var(--space-5) var(--space-16);
+      }
+
+      section[hidden] {
+        display: none;
+      }
+
+      .cabecalho-doc {
+        margin-bottom: var(--space-8);
+      }
+
+      .selo {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        background: var(--bg-brand-subtle);
+        color: var(--text-brand);
+        border: 1px solid var(--border-brand);
+        border-radius: var(--radius-full);
+        padding: var(--space-1) var(--space-3);
+        font-size: 12px;
+        line-height: 16px;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        font-size: 34px;
+        line-height: 40px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        margin: var(--space-4) 0 var(--space-3);
+      }
+
+      .subtitulo {
+        color: var(--text-secondary);
+        font-size: 17px;
+        line-height: 24px;
+        margin: 0;
+        max-width: 62ch;
+      }
+
+      .meta {
+        color: var(--text-tertiary);
+        font-size: 13px;
+        line-height: 18px;
+        margin-top: var(--space-4);
+      }
+
+      h2 {
+        font-size: 22px;
+        line-height: 28px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        margin: var(--space-10) 0 var(--space-3);
+        scroll-margin-top: 96px;
+      }
+
+      h3 {
+        font-size: 17px;
+        line-height: 24px;
+        font-weight: 600;
+        margin: var(--space-6) 0 var(--space-2);
+      }
+
+      p,
+      li {
+        color: var(--text-secondary);
+        max-width: 68ch;
+      }
+
+      p {
+        margin: 0 0 var(--space-4);
+      }
+
+      ul,
+      ol {
+        margin: 0 0 var(--space-4);
+        padding-left: var(--space-5);
+      }
+
+      li {
+        margin-bottom: var(--space-2);
+      }
+
+      strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+        font-size: 0.88em;
+        background: var(--bg-sunken);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-sm);
+        padding: 1px 6px;
+        color: var(--text-primary);
+      }
+
+      /* ---------- Blocos ---------- */
+
+      .sumario {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        margin-bottom: var(--space-8);
+      }
+
+      .sumario h2 {
+        margin: 0 0 var(--space-3);
+        font-size: 15px;
+        line-height: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-tertiary);
+      }
+
+      .sumario ol {
+        margin: 0;
+        padding-left: var(--space-5);
+        columns: 2;
+        column-gap: var(--space-8);
+      }
+
+      .sumario li {
+        break-inside: avoid;
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      .destaque {
+        background: var(--bg-brand-subtle);
+        border: 1px solid var(--border-brand);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+        margin: var(--space-6) 0 var(--space-8);
+      }
+
+      .destaque p:last-child {
+        margin-bottom: 0;
+      }
+
+      .atencao {
+        background: var(--amber-subtle);
+        border: 1px solid var(--amber-border);
+        border-left-width: 4px;
+        border-radius: var(--radius-md);
+        padding: var(--space-4) var(--space-5);
+        margin: var(--space-6) 0;
+      }
+
+      .atencao p {
+        margin-bottom: 0;
+      }
+
+      .atencao strong {
+        color: var(--amber-text);
+      }
+
+      .tabela-rolagem {
+        overflow-x: auto;
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        background: var(--bg-surface);
+        margin: var(--space-4) 0 var(--space-6);
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        min-width: 520px;
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: var(--space-3) var(--space-4);
+        border-bottom: 1px solid var(--border-default);
+        vertical-align: top;
+        color: var(--text-secondary);
+      }
+
+      th {
+        background: var(--bg-sunken);
+        color: var(--text-primary);
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .cartoes {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: var(--space-4);
+        margin: var(--space-4) 0 var(--space-6);
+      }
+
+      .cartao {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-default);
+        border-radius: var(--radius-lg);
+        padding: var(--space-5);
+      }
+
+      .cartao h3 {
+        margin-top: 0;
+      }
+
+      .cartao p {
+        margin-bottom: 0;
+        font-size: 15px;
+        line-height: 20px;
+      }
+
+      /* ---------- Rodapé ---------- */
+
+      footer {
+        border-top: 1px solid var(--border-default);
+        background: var(--bg-surface);
+      }
+
+      .rodape-conteudo {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: var(--space-8) var(--space-5);
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4) var(--space-8);
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .rodape-conteudo p {
+        margin: 0;
+        font-size: 13px;
+        line-height: 18px;
+        color: var(--text-tertiary);
+        max-width: 46ch;
+      }
+
+      .rodape-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-5);
+        font-size: 13px;
+        line-height: 18px;
+      }
+
+      @media (max-width: 640px) {
+        main {
+          padding: var(--space-8) var(--space-4) var(--space-12);
+        }
+
+        .topo-conteudo {
+          padding: var(--space-3) var(--space-4);
+          justify-content: center;
+        }
+
+        nav.abas {
+          width: 100%;
+          justify-content: center;
+        }
+
+        nav.abas a {
+          flex: 1;
+          text-align: center;
+          padding: var(--space-2) var(--space-3);
+        }
+
+        h1 {
+          font-size: 28px;
+          line-height: 34px;
+        }
+
+        h2 {
+          font-size: 20px;
+          line-height: 26px;
+          scroll-margin-top: 140px;
+        }
+
+        .sumario ol {
+          columns: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+
+    <header class="topo">
+      <div class="topo-conteudo">
+        <a class="marca" href="#privacidade">
+          <span class="marca-selo" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="4" y="10" width="16" height="11" rx="3" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+          </span>
+          <span>Acelera<em>Lock</em></span>
+        </a>
+
+        <nav class="abas" aria-label="Documentos legais">
+          <a href="#privacidade" data-aba="privacidade">Privacidade</a>
+          <a href="#termos" data-aba="termos">Termos de Uso</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <!-- ============================ PRIVACIDADE ============================ -->
+      <section id="privacidade" aria-labelledby="titulo-privacidade">
+        <div class="cabecalho-doc">
+          <span class="selo">Privacidade</span>
+          <h1 id="titulo-privacidade">Política de Privacidade</h1>
+          <p class="subtitulo">
+            O AceleraLock é um app de bloqueio de aplicativos que roda
+            <strong>100% no aparelho</strong>: sem backend, sem cadastro, sem nuvem. Esta
+            política explica, sem rodeio, o que o app lê, o que ele guarda, onde guarda e o
+            que nunca sai do seu celular.
+          </p>
+          <p class="meta">
+            Versão 0.1.0 · Última atualização: 11 de setembro de 2026 · Aplicável ao app
+            AceleraLock para Android e iOS (<code>com.aceleralock.app</code>).
+          </p>
+        </div>
+
+        <div class="destaque">
+          <p>
+            <strong>Resumo honesto:</strong> não existe servidor do AceleraLock. Não há
+            conta, login, e-mail, telefone, anúncio, analytics ou SDK de rastreamento. Tudo
+            o que o app aprende sobre o seu uso fica no armazenamento privado do app, no seu
+            aparelho — e desaparece quando você limpa os dados ou desinstala.
+          </p>
+        </div>
+
+        <nav class="sumario" aria-label="Sumário da Política de Privacidade">
+          <h2>Nesta página</h2>
+          <ol>
+            <li><a href="#p-responsavel">Quem é o responsável</a></li>
+            <li><a href="#p-nao-fazemos">O que o app não faz</a></li>
+            <li><a href="#p-dados">Dados tratados e onde ficam</a></li>
+            <li><a href="#p-permissoes">Permissões do sistema</a></li>
+            <li><a href="#p-tempo-tela">Tempo de tela e histórico</a></li>
+            <li><a href="#p-compartilhamento">Compartilhamento com terceiros</a></li>
+            <li><a href="#p-bases">Bases legais e seus direitos</a></li>
+            <li><a href="#p-apagar">Como apagar tudo</a></li>
+            <li><a href="#p-seguranca">Segurança e limites declarados</a></li>
+            <li><a href="#p-menores">Crianças e adolescentes</a></li>
+            <li><a href="#p-mudancas">Mudanças nesta política</a></li>
+            <li><a href="#p-contato">Contato</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="p-responsavel">1. Quem é o responsável</h2>
+        <p>
+          O AceleraLock é um projeto de código aberto, licenciado sob MIT, mantido pela
+          comunidade AceleraDev e publicado em
+          <a
+            href="https://github.com/lucasmarujo/AceleraLock"
+            rel="noopener noreferrer"
+            target="_blank"
+            >github.com/lucasmarujo/AceleraLock</a
+          >.
+        </p>
+        <p>
+          Como o app não transmite dados pessoais para nenhum servidor do projeto, o
+          tratamento acontece inteiramente sob o seu controle, no seu aparelho. Na prática,
+          para os dados de uso descritos aqui, <strong>quem opera o tratamento é você</strong>:
+          o app é a ferramenta, e a mantenedora do projeto não tem acesso técnico a nada do
+          que ele guarda.
+        </p>
+
+        <h2 id="p-nao-fazemos">2. O que o app não faz</h2>
+        <ul>
+          <li>
+            <strong>Não pede cadastro.</strong> Sem conta, sem e-mail, sem senha, sem login
+            social.
+          </li>
+          <li><strong>Não tem servidor.</strong> Não existe API do AceleraLock para onde enviar dados.</li>
+          <li>
+            <strong>Não usa analytics nem telemetria.</strong> Nenhum evento de uso é medido
+            remotamente.
+          </li>
+          <li>
+            <strong>Não exibe anúncios</strong> e não embarca SDKs de publicidade ou de
+            perfilamento.
+          </li>
+          <li>
+            <strong>Não vende, aluga nem compartilha</strong> dados com terceiros — não há
+            dados coletados para isso.
+          </li>
+          <li>
+            <strong>Não lê o conteúdo</strong> dos seus aplicativos: nem mensagens, nem
+            telas, nem teclado. O app sabe apenas <em>qual</em> aplicativo está em primeiro
+            plano, não o que acontece dentro dele.
+          </li>
+          <li>
+            <strong>Não acessa</strong> contatos, localização, câmera, microfone, fotos,
+            agenda ou arquivos.
+          </li>
+        </ul>
+        <div class="atencao">
+          <p>
+            <strong>Uma ressalva técnica, para não mentir por omissão:</strong> a permissão
+            <code>android.permission.INTERNET</code> aparece declarada no pacote porque é
+            embutida pelo framework React Native / Expo usado na construção do app. O
+            AceleraLock não faz requisições de rede em uso normal, e o código é aberto —
+            isso é verificável linha a linha no repositório.
+          </p>
+        </div>
+
+        <h2 id="p-dados">3. Dados tratados e onde ficam</h2>
+        <p>
+          Tudo abaixo é gravado no armazenamento privado do app —
+          <code>SharedPreferences</code> (camada nativa) e <code>AsyncStorage</code> (camada
+          de interface) no Android, e o contêiner do app no iOS. Nada disso é enviado para
+          fora do aparelho.
+        </p>
+        <div class="tabela-rolagem">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Dado</th>
+                <th scope="col">Para que serve</th>
+                <th scope="col">Retenção</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Lista de aplicativos escolhidos para bloqueio</td>
+                <td>
+                  Decidir se a tela de bloqueio aparece quando aquele app vai para o primeiro
+                  plano
+                </td>
+                <td>Até você remover o app da lista ou desinstalar</td>
+              </tr>
+              <tr>
+                <td>Durações configuradas (espera e concessão)</td>
+                <td>
+                  Definir quanto tempo custa pedir um desbloqueio e quanto dura a liberação
+                </td>
+                <td>Até você alterar ou desinstalar</td>
+              </tr>
+              <tr>
+                <td>Pedido de desbloqueio em andamento</td>
+                <td>
+                  Contar a espera. A contagem usa tempo monotônico do sistema
+                  (<code>elapsedRealtime</code>), não a hora do relógio
+                </td>
+                <td>Até cumprir, cancelar ou desinstalar</td>
+              </tr>
+              <tr>
+                <td>Concessão ativa (saldo de tempo liberado)</td>
+                <td>
+                  Permitir o uso do app liberado enquanto houver saldo. O saldo só diminui
+                </td>
+                <td>Apagada ao terminar, ao reiniciar o aparelho ou ao desinstalar</td>
+              </tr>
+              <tr>
+                <td>Estado da proteção (ligada ou pausada) e sinal de atividade do serviço</td>
+                <td>Saber se a proteção está ativa e detectar quando o serviço foi interrompido</td>
+                <td>Até desinstalar</td>
+              </tr>
+              <tr>
+                <td>
+                  Registro de interrupções (tempo total sem proteção e contagem de
+                  interrupções não mensuráveis)
+                </td>
+                <td>
+                  Mostrar para você, com honestidade, quando a proteção ficou fora do ar
+                </td>
+                <td>Até desinstalar</td>
+              </tr>
+              <tr>
+                <td>Histórico diário de tempo de tela (total por dia)</td>
+                <td>Montar o gráfico e o calendário de uso do aparelho</td>
+                <td>
+                  <strong>90 dias corridos</strong> — dias mais antigos são apagados
+                  automaticamente
+                </td>
+              </tr>
+              <tr>
+                <td>Nome de tratamento (como você quer ser chamado)</td>
+                <td>
+                  Saudação na tela inicial. É apelido, não identidade — pode ser qualquer
+                  coisa
+                </td>
+                <td>Até você alterar ou desinstalar</td>
+              </tr>
+              <tr>
+                <td>Estimativa de horas por dia informada no onboarding</td>
+                <td>
+                  Servir de régua no gráfico de tempo de tela. Não dispara bloqueio nem
+                  alerta
+                </td>
+                <td>Até você alterar ou desinstalar</td>
+              </tr>
+              <tr>
+                <td>Preferência de tema e marcação de onboarding concluído</td>
+                <td>Lembrar da aparência escolhida e não repetir a configuração inicial</td>
+                <td>Até desinstalar</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <strong
+            >No iOS, o identificador do app bloqueado nunca sai do aparelho — nem para o
+            próprio AceleraLock.</strong
+          >
+          O Family Controls devolve um <code>ApplicationToken</code> opaco, e o
+          <code>bundleIdentifier</code> é indisponível por decisão da Apple. O alvo do
+          bloqueio é uma referência opaca, não o nome do aplicativo.
+        </p>
+
+        <h2 id="p-permissoes">4. Permissões do sistema</h2>
+        <p>
+          Cada permissão existe por um motivo específico e é pedida no onboarding, com
+          explicação, antes de ser usada. Você pode revogá-las a qualquer momento nas
+          configurações do sistema — o app então volta a dizer que está incompleto, em vez
+          de fingir que está protegendo.
+        </p>
+        <h3>Android</h3>
+        <div class="tabela-rolagem">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Permissão</th>
+                <th scope="col">Por que é necessária</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>PACKAGE_USAGE_STATS</code><br />(Acesso ao uso)</td>
+                <td>
+                  Saber qual aplicativo está em primeiro plano, para decidir o bloqueio, e
+                  ler o tempo de tela diário. Não dá acesso ao conteúdo dos apps
+                </td>
+              </tr>
+              <tr>
+                <td><code>SYSTEM_ALERT_WINDOW</code><br />(Sobrepor a outros apps)</td>
+                <td>Exibir a tela de bloqueio por cima do aplicativo bloqueado</td>
+              </tr>
+              <tr>
+                <td>
+                  <code>FOREGROUND_SERVICE</code> e
+                  <code>FOREGROUND_SERVICE_SPECIAL_USE</code>
+                </td>
+                <td>Manter a proteção funcionando com o app fechado</td>
+              </tr>
+              <tr>
+                <td><code>POST_NOTIFICATIONS</code></td>
+                <td>
+                  Exibir a notificação obrigatória do serviço em primeiro plano — é ela que
+                  deixa visível que a proteção está no ar
+                </td>
+              </tr>
+              <tr>
+                <td><code>RECEIVE_BOOT_COMPLETED</code></td>
+                <td>Religar a proteção depois de reiniciar o aparelho</td>
+              </tr>
+              <tr>
+                <td><code>REQUEST_IGNORE_BATTERY_OPTIMIZATIONS</code></td>
+                <td>
+                  Pedir isenção da otimização de bateria para que o sistema não mate o
+                  serviço. Conceder é opcional e é decisão sua
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <h3>iOS</h3>
+        <p>
+          O bloqueio usa <strong>Family Controls / Tempo de Uso</strong>, com autorização
+          concedida por você no próprio sistema. A seleção de aplicativos acontece dentro de
+          uma tela da Apple (<code>FamilyActivityPicker</code>), e o AceleraLock recebe
+          apenas referências opacas — nunca a lista de nomes.
+        </p>
+
+        <h2 id="p-tempo-tela">5. Tempo de tela e histórico</h2>
+        <p>
+          O Android mantém a granularidade diária de uso por poucos dias. Para que o
+          calendário mensal não fique permanentemente vazio, o AceleraLock grava, no próprio
+          aparelho, o total diário que leu enquanto o dado ainda existia.
+        </p>
+        <ul>
+          <li>
+            O histórico <strong>nasce raso</strong>: na primeira execução ele tem só o que o
+            sistema ainda guardava (cerca de 7 dias). Não há como inventar o passado
+            anterior à instalação.
+          </li>
+          <li>
+            <strong
+              >Um dia sem leitura é registrado como ausência de medição, nunca como
+              zero.</strong
+            >
+            Zero significa "não usou o celular"; ausência de dado é outra coisa, e exibir as
+            duas iguais seria mentira.
+          </li>
+          <li>
+            O histórico guarda <strong>totais por dia</strong>, não o detalhe por
+            aplicativo, e é podado automaticamente após 90 dias.
+          </li>
+        </ul>
+
+        <h2 id="p-compartilhamento">6. Compartilhamento com terceiros</h2>
+        <p>
+          <strong>Nenhum.</strong> O app não envia dados para o projeto, para parceiros ou
+          para provedores de infraestrutura, porque não há infraestrutura.
+        </p>
+        <p>
+          O que foge do nosso alcance é a distribuição: se você instalou o app pela Google
+          Play ou pela App Store, essas lojas tratam os próprios dados de conta, download e
+          diagnóstico segundo as políticas delas, não esta. O mesmo vale para relatórios de
+          falha coletados pelo sistema operacional fora do app.
+        </p>
+
+        <h2 id="p-bases">7. Bases legais e seus direitos (LGPD)</h2>
+        <p>
+          Na medida em que a Lei nº 13.709/2018 (LGPD) se aplica, o tratamento local
+          descrito aqui se apoia no <strong>consentimento</strong> que você dá ao conceder as
+          permissões e escolher os aplicativos bloqueados, e na
+          <strong>execução da funcionalidade</strong> que você solicitou ao instalar o app.
+        </p>
+        <p>
+          Como nada sai do aparelho, o exercício dos seus direitos é direto e não depende de
+          pedido a ninguém:
+        </p>
+        <div class="cartoes">
+          <div class="cartao">
+            <h3>Acesso e confirmação</h3>
+            <p>Tudo o que o app guarda está visível nas telas de início, apps e perfil.</p>
+          </div>
+          <div class="cartao">
+            <h3>Correção</h3>
+            <p>Nome, estimativa de horas, durações e lista de apps são editáveis no app.</p>
+          </div>
+          <div class="cartao">
+            <h3>Eliminação</h3>
+            <p>Limpar os dados do app ou desinstalar apaga tudo, na hora e sem cópia.</p>
+          </div>
+          <div class="cartao">
+            <h3>Portabilidade e revogação</h3>
+            <p>
+              Não há transferência a revogar; revogar uma permissão do sistema encerra o
+              tratamento correspondente.
+            </p>
+          </div>
+        </div>
+
+        <h2 id="p-apagar">8. Como apagar tudo</h2>
+        <ol>
+          <li>
+            <strong>Android:</strong> Configurações → Apps → AceleraLock → Armazenamento →
+            <em>Limpar dados</em>; ou desinstale o app.
+          </li>
+          <li>
+            <strong>iOS:</strong> remova o app; opcionalmente revogue a autorização de Tempo
+            de Uso em Ajustes.
+          </li>
+        </ol>
+        <p>
+          Em qualquer dos casos, a configuração de bloqueio, o histórico de tempo de tela e
+          as preferências vão junto. Não existe backup nosso para restaurar — e é assim de
+          propósito.
+        </p>
+
+        <h2 id="p-seguranca">9. Segurança e limites declarados</h2>
+        <p>
+          Os dados ficam no armazenamento privado do aplicativo, protegido pelo isolamento
+          entre apps do sistema operacional, e não incluem credenciais, tokens de acesso ou
+          identificadores pessoais.
+        </p>
+        <div class="atencao">
+          <p>
+            <strong>O teto é declarado, não escondido:</strong> quem tem acesso físico ao
+            aparelho desbloqueado pode desinstalar o app ou forçar a parada dele pelas
+            configurações — e, nos dois casos, a proteção cai. O AceleraLock
+            <strong>mede e mostra</strong> essas interrupções em vez de tentar impedi-las.
+            Impedir a própria remoção exigiria privilégios de administrador do aparelho, o
+            que foi vetado no projeto: além de violar políticas das lojas, transformaria uma
+            ferramenta pedida por você em algo que se comporta como malware.
+          </p>
+        </div>
+
+        <h2 id="p-menores">10. Crianças e adolescentes</h2>
+        <p>
+          O AceleraLock é destinado ao
+          <strong>autocontrole do próprio dono do aparelho</strong> e não coleta dados de
+          ninguém — o que vale igualmente para menores de idade. O app não é um serviço de
+          controle parental com monitoramento remoto: não há painel, não há relatório
+          enviado a terceiros e não há como acompanhar o uso de outra pessoa à distância.
+          Quando instalado no aparelho de um adolescente, a configuração deve ser feita com o
+          conhecimento dele.
+        </p>
+
+        <h2 id="p-mudancas">11. Mudanças nesta política</h2>
+        <p>
+          Alterações relevantes são publicadas nesta página, com a data de atualização no
+          topo, e acompanham o histórico público do repositório. Se alguma versão futura
+          passar a transmitir qualquer dado para fora do aparelho, isso será dito aqui de
+          forma explícita e pedido de forma explícita — não como mudança silenciosa de
+          texto.
+        </p>
+
+        <h2 id="p-contato">12. Contato</h2>
+        <p>
+          Dúvidas, pedidos ou relatos de problema de privacidade podem ser abertos
+          publicamente em
+          <a
+            href="https://github.com/lucasmarujo/AceleraLock/issues"
+            rel="noopener noreferrer"
+            target="_blank"
+            >github.com/lucasmarujo/AceleraLock/issues</a
+          >. O código-fonte completo está disponível para auditoria no mesmo repositório.
+        </p>
+      </section>
+
+      <!-- ============================== TERMOS ============================== -->
+      <section id="termos" aria-labelledby="titulo-termos" hidden>
+        <div class="cabecalho-doc">
+          <span class="selo">Termos</span>
+          <h1 id="titulo-termos">Termos de Uso</h1>
+          <p class="subtitulo">
+            O AceleraLock coloca <strong>fricção deliberada</strong> entre você e o
+            aplicativo que está comendo o seu dia. Estes termos descrevem o que o app faz, o
+            que ele deliberadamente não faz e sob quais condições você o utiliza.
+          </p>
+          <p class="meta">
+            Versão 0.1.0 · Última atualização: 11 de setembro de 2026 · Software livre sob
+            licença MIT.
+          </p>
+        </div>
+
+        <div class="destaque">
+          <p>
+            <strong>O princípio do produto:</strong> abrir um app bloqueado não é impossível
+            — é <em>caro</em>. É fricção, não prisão, e a diferença é deliberada. Quem usa
+            isto é alguém que pediu ajuda contra o próprio impulso, não um invasor de quem o
+            app se defende.
+          </p>
+        </div>
+
+        <nav class="sumario" aria-label="Sumário dos Termos de Uso">
+          <h2>Nesta página</h2>
+          <ol>
+            <li><a href="#t-aceitacao">Aceitação dos termos</a></li>
+            <li><a href="#t-oque-e">O que o AceleraLock é</a></li>
+            <li><a href="#t-funciona">Como a fricção funciona</a></li>
+            <li><a href="#t-licenca">Licença e gratuidade</a></li>
+            <li><a href="#t-requisitos">Requisitos e permissões</a></li>
+            <li><a href="#t-limites">Limites técnicos declarados</a></li>
+            <li><a href="#t-uso-aceitavel">Uso aceitável</a></li>
+            <li><a href="#t-saude">Não é aconselhamento de saúde</a></li>
+            <li><a href="#t-propriedade">Propriedade intelectual</a></li>
+            <li><a href="#t-garantias">Isenção de garantias</a></li>
+            <li><a href="#t-responsabilidade">Limitação de responsabilidade</a></li>
+            <li><a href="#t-alteracoes">Alterações e descontinuação</a></li>
+            <li><a href="#t-legislacao">Legislação aplicável</a></li>
+            <li><a href="#t-contato">Contato</a></li>
+          </ol>
+        </nav>
+
+        <h2 id="t-aceitacao">1. Aceitação dos termos</h2>
+        <p>
+          Ao instalar ou usar o AceleraLock, você concorda com estes Termos de Uso e com a
+          <a href="#privacidade">Política de Privacidade</a>. Se não concordar com algum
+          ponto, a alternativa é simples e sempre disponível: não instale, ou desinstale o
+          aplicativo.
+        </p>
+
+        <h2 id="t-oque-e">2. O que o AceleraLock é</h2>
+        <p>
+          É um aplicativo gratuito e de código aberto que ajuda você a reduzir o uso de
+          aplicativos escolhidos por você mesmo, exibindo uma tela de bloqueio quando eles
+          são abertos e cobrando uma espera para liberá-los.
+        </p>
+        <ul>
+          <li>
+            <strong>Roda inteiramente no seu aparelho.</strong> Sem conta, sem servidor, sem
+            sincronização.
+          </li>
+          <li>
+            <strong>Não é ferramenta de vigilância.</strong> Não há painel remoto, relatório
+            enviado a terceiros ou acompanhamento à distância.
+          </li>
+          <li>
+            <strong>Não é software de segurança nem antivírus,</strong> e não protege o
+            aparelho contra ninguém.
+          </li>
+          <li>
+            <strong>Não impede a própria remoção.</strong> Desinstalar está sempre
+            disponível, por decisão de projeto.
+          </li>
+        </ul>
+
+        <h2 id="t-funciona">3. Como a fricção funciona</h2>
+        <p>
+          As regras abaixo são o produto, não efeitos colaterais. Ao usar o app, você
+          concorda com elas:
+        </p>
+        <div class="tabela-rolagem">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Ação</th>
+                <th scope="col">Custo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Abrir um app bloqueado</td>
+                <td>Tela de bloqueio imediata, sem botão de escape</td>
+              </tr>
+              <tr>
+                <td>Pedir desbloqueio</td>
+                <td>Espera acumulada, contada em tempo monotônico do sistema</td>
+              </tr>
+              <tr>
+                <td>Desligar a proteção</td>
+                <td>Passa pela <strong>mesma</strong> espera</td>
+              </tr>
+              <tr>
+                <td>Reduzir a duração da espera</td>
+                <td>Passa pela <strong>mesma</strong> espera</td>
+              </tr>
+              <tr>
+                <td>Desistir do pedido</td>
+                <td><strong>Grátis</strong> — desistir é o resultado desejado</td>
+              </tr>
+              <tr>
+                <td>Remover um app da lista de bloqueados</td>
+                <td>Livre — proteger é escolha sua, e voltar atrás não é punido</td>
+              </tr>
+              <tr>
+                <td>Apps críticos (telefone, emergência)</td>
+                <td>Nunca bloqueados</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Complementos que decorrem disso: há
+          <strong>um pedido de desbloqueio por vez</strong>; a liberação é um
+          <strong>saldo que só diminui</strong>, nunca uma chave permanente; e reiniciar o
+          aparelho encerra a liberação em curso, preservando a espera já cumprida.
+        </p>
+
+        <h2 id="t-licenca">4. Licença e gratuidade</h2>
+        <p>
+          O AceleraLock é distribuído sob a <strong>licença MIT</strong>. Você pode usar,
+          copiar, modificar e redistribuir o software nos termos dessa licença, disponível
+          no repositório do projeto.
+        </p>
+        <p>
+          O app é <strong>gratuito</strong>: não há assinatura, compra dentro do aplicativo,
+          versão paga ou cobrança de qualquer natureza. Consequentemente, não há política de
+          reembolso — não há pagamento.
+        </p>
+
+        <h2 id="t-requisitos">5. Requisitos e permissões</h2>
+        <p>
+          O funcionamento depende de permissões do sistema que só você pode conceder (acesso
+          ao uso, sobreposição de telas, notificações, execução em segundo plano e, no iOS,
+          autorização de Tempo de Uso). Você reconhece que:
+        </p>
+        <ul>
+          <li>
+            Sem essas permissões o bloqueio <strong>não funciona</strong>, e o app dirá isso
+            em vez de aparentar proteção.
+          </li>
+          <li>
+            Revogar uma permissão a qualquer momento é seu direito e desliga a funcionalidade
+            correspondente.
+          </li>
+          <li>
+            Otimizações agressivas de bateria do fabricante do aparelho podem interromper o
+            serviço; o app registra e mostra essas interrupções.
+          </li>
+        </ul>
+
+        <h2 id="t-limites">6. Limites técnicos declarados</h2>
+        <div class="atencao">
+          <p>
+            <strong>Desinstalar derrota tudo.</strong> Forçar a parada do app pelas
+            configurações do sistema é ainda mais barato: o Android coloca o app em estado
+            interrompido, onde nem o religamento após reinício acontece — a proteção fica
+            desligada até você abrir o app novamente. Isso é um limite conhecido e assumido,
+            não um defeito oculto.
+          </p>
+        </div>
+        <ul>
+          <li>
+            O app <strong>não substitui</strong> força de vontade, acompanhamento
+            profissional ou acordo com outra pessoa.
+          </li>
+          <li>
+            Em plataformas sem o recurso de bloqueio necessário, o app informa que não é
+            suportado em vez de degradar em silêncio.
+          </li>
+          <li>
+            Aplicativos críticos permanecem acessíveis por decisão de projeto: nenhuma
+            configuração bloqueia chamadas de emergência.
+          </li>
+          <li>
+            Alterar o relógio do aparelho não encurta esperas: as contagens usam tempo
+            monotônico, não hora de parede.
+          </li>
+        </ul>
+
+        <h2 id="t-uso-aceitavel">7. Uso aceitável</h2>
+        <p>Você concorda em <strong>não</strong>:</p>
+        <ul>
+          <li>
+            Instalar ou configurar o app no aparelho de outra pessoa
+            <strong>sem o conhecimento e o consentimento dela</strong>, ou usá-lo como
+            instrumento de coerção, vigilância ou controle sobre terceiros.
+          </li>
+          <li>
+            Usar o app para impedir que alguém acesse comunicação de emergência ou recursos
+            de segurança do aparelho.
+          </li>
+          <li>
+            Distribuir versões modificadas que se apresentem como o AceleraLock oficial, ou
+            que removam os avisos de licença exigidos pela MIT.
+          </li>
+          <li>
+            Usar o app de forma que viole leis aplicáveis ou as políticas das lojas de
+            aplicativos.
+          </li>
+        </ul>
+        <p>
+          O produto é desenhado para quem pediu ajuda contra o próprio impulso. Usá-lo contra
+          a vontade de outra pessoa é usá-lo fora do propósito para o qual foi construído.
+        </p>
+
+        <h2 id="t-saude">8. Não é aconselhamento de saúde</h2>
+        <p>
+          O AceleraLock é uma ferramenta de organização pessoal. Ele não diagnostica, não
+          trata e não previne qualquer condição de saúde, incluindo transtornos relacionados
+          ao uso de tecnologia. Se o uso de aplicativos estiver causando sofrimento
+          significativo, procure um profissional de saúde qualificado.
+        </p>
+
+        <h2 id="t-propriedade">9. Propriedade intelectual</h2>
+        <p>
+          O código-fonte é licenciado sob MIT. Os nomes, logotipos e identidade visual do
+          <strong>AceleraLock</strong> e da comunidade <strong>AceleraDev</strong> são marcas
+          dos respectivos titulares e não são cobertos pela licença do código: forks e
+          versões modificadas não devem usar essas marcas de modo a sugerir vínculo, endosso
+          ou origem oficial.
+        </p>
+        <p>
+          Nomes e ícones de aplicativos de terceiros exibidos na tela de seleção pertencem
+          aos respectivos desenvolvedores e são lidos do próprio aparelho apenas para
+          apresentação.
+        </p>
+
+        <h2 id="t-garantias">10. Isenção de garantias</h2>
+        <p>
+          O software é fornecido <strong>"no estado em que se encontra"</strong>, sem
+          garantias de qualquer natureza, expressas ou implícitas, incluindo — mas não se
+          limitando a — garantias de comercialização, adequação a uma finalidade específica
+          e não violação, conforme os termos da licença MIT.
+        </p>
+        <p>
+          Em particular, não garantimos que o bloqueio funcionará de forma ininterrupta em
+          todo aparelho, fabricante ou versão de sistema operacional, nem que ele impedirá
+          todo e qualquer uso indesejado.
+        </p>
+
+        <h2 id="t-responsabilidade">11. Limitação de responsabilidade</h2>
+        <p>
+          Na máxima extensão permitida pela legislação aplicável, os autores e mantenedores
+          do projeto não respondem por danos diretos, indiretos, incidentais, especiais ou
+          consequenciais decorrentes do uso ou da impossibilidade de uso do software —
+          incluindo perda de produtividade, perda dos dados locais do app, compromisso
+          perdido por causa de um aplicativo bloqueado ou falha do bloqueio em um momento
+          crítico.
+        </p>
+        <p>
+          Você é responsável por escolher quais aplicativos bloqueia e por quanto tempo, e
+          por manter acessível o que precisa acessar.
+        </p>
+
+        <h2 id="t-alteracoes">12. Alterações e descontinuação</h2>
+        <p>
+          Estes termos podem ser atualizados; a versão vigente é sempre a publicada nesta
+          página, com a data no topo. Por se tratar de projeto comunitário, o
+          desenvolvimento pode ser pausado ou descontinuado a qualquer momento, sem aviso
+          prévio individual — e, como tudo roda localmente, um app já instalado continua
+          funcionando independentemente disso.
+        </p>
+
+        <h2 id="t-legislacao">13. Legislação aplicável</h2>
+        <p>
+          Estes termos são regidos pelas leis da
+          <strong>República Federativa do Brasil</strong>, em especial o Código de Defesa do
+          Consumidor, o Marco Civil da Internet (Lei nº 12.965/2014) e a LGPD (Lei nº
+          13.709/2018). Fica eleito o foro do domicílio do usuário para dirimir
+          controvérsias, quando aplicável.
+        </p>
+
+        <h2 id="t-contato">14. Contato</h2>
+        <p>
+          Dúvidas, sugestões e relatos de problema devem ser abertos em
+          <a
+            href="https://github.com/lucasmarujo/AceleraLock/issues"
+            rel="noopener noreferrer"
+            target="_blank"
+            >github.com/lucasmarujo/AceleraLock/issues</a
+          >.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <div class="rodape-conteudo">
+        <p>
+          AceleraLock · Projeto open source sob licença MIT · Construído com a comunidade
+          AceleraDev
+        </p>
+        <div class="rodape-links">
+          <a href="#privacidade">Política de Privacidade</a>
+          <a href="#termos">Termos de Uso</a>
+          <a href="https://github.com/lucasmarujo/AceleraLock" rel="noopener noreferrer" target="_blank"
+            >Código-fonte</a
+          >
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      const abas = document.querySelectorAll('nav.abas a');
+      const secoes = {
+        privacidade: document.getElementById('privacidade'),
+        termos: document.getElementById('termos'),
+      };
+
+      function mostrar(alvo) {
+        Object.entries(secoes).forEach(([nome, secao]) => {
+          secao.hidden = nome !== alvo;
+        });
+        abas.forEach((aba) => {
+          if (aba.dataset.aba === alvo) {
+            aba.setAttribute('aria-current', 'page');
+          } else {
+            aba.removeAttribute('aria-current');
+          }
+        });
+        document.title =
+          alvo === 'termos'
+            ? 'AceleraLock — Termos de Uso'
+            : 'AceleraLock — Política de Privacidade';
+      }
+
+      // Âncoras internas carregam o prefixo da própria tela (p- / t-), então a
+      // mesma função resolve tanto a aba quanto o link direto para uma seção.
+      function daHash() {
+        const hash = location.hash.slice(1);
+        return hash === 'termos' || hash.startsWith('t-') ? 'termos' : 'privacidade';
+      }
+
+      addEventListener('hashchange', () => {
+        mostrar(daHash());
+        const destino = document.getElementById(location.hash.slice(1));
+        if (destino) {
+          destino.scrollIntoView({ block: 'start' });
+        }
+      });
+
+      mostrar(daHash());
+
+      // ponytail: hot reload só em localhost — polling do Last-Modified, sem dependência.
+      if (['localhost', '127.0.0.1'].includes(location.hostname)) {
+        let assinatura = null;
+        setInterval(async () => {
+          try {
+            const resposta = await fetch(location.pathname, {
+              method: 'HEAD',
+              cache: 'no-store',
+            });
+            const atual = `${resposta.headers.get('last-modified')}|${resposta.headers.get('etag')}`;
+            if (assinatura && atual !== assinatura) {
+              location.reload();
+            }
+            assinatura = atual;
+          } catch {
+            /* servidor reiniciando: tenta de novo no próximo tick */
+          }
+        }, 1000);
+      }
+    </script>
+  </body>
+</html>
