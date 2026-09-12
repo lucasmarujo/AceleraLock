@@ -7,6 +7,14 @@ import {
   ehComandoDeEntrega,
 } from '../.claude/hooks/ci-local.mjs';
 
+test('regressao: importar o hook nao dispara o despacho de modos', () => {
+  // O modulo le process.argv no topo. Sem a guarda de entry point, um argv que
+  // nao case com modo nenhum chamaria process.exit(1) e derrubaria esta suite.
+  assert.equal(typeof classificarCaminho, 'function');
+  assert.equal(typeof ehComandoDeEntrega, 'function');
+  assert.equal(typeof ehArtefatoDePrebuild, 'function');
+});
+
 test('feliz: arquivo de src/ e de app/ obriga o ciclo JS', () => {
   assert.equal(classificarCaminho('src/theme/tokens.ts'), 'js');
   assert.equal(classificarCaminho('app/(protected)/(tabs)/perfil.tsx'), 'js');

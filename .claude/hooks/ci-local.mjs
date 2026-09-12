@@ -480,7 +480,17 @@ const MODOS = {
 const modo = process.argv[2];
 const MODOS_MANUAIS = new Set(['--verificar', '--contar']);
 
-if (modo in MODOS) {
+// So age quando o arquivo e o proprio entry point. Sem esta guarda, importar as
+// funcoes puras (tests/hookCiLocal.test.ts faz isso) executaria o despacho com
+// o argv de quem importou — e um argv que nao case com modo nenhum derruba o
+// processo inteiro com exit(1), levando a suite junto.
+const ehEntryPoint =
+  typeof process.argv[1] === 'string' &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+
+if (!ehEntryPoint) {
+  // importado: so exporta
+} else if (modo in MODOS) {
   process.exit(MODOS[modo](MODOS_MANUAIS.has(modo) ? {} : lerEntrada()));
 } else if (modo) {
   process.stderr.write('Modo desconhecido: ' + modo + '. Use ' + Object.keys(MODOS).join(' | ') + '\n');
