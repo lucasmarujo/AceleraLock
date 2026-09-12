@@ -14,3 +14,7 @@ expo-env.d.ts
 
 # Cache do Python dos geradores de asset (assets/brand/*.py).
 __pycache__/
+
+# Estado do CI local (.claude/hooks/ci-local.mjs) e overrides pessoais.
+.claude/.estado-ci.json
+.claude/settings.local.json

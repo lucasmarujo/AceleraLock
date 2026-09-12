@@ -324,12 +324,12 @@ Itens onde a integração nunca rodou num aparelho de verdade:
 | Agregação de tempo de tela (`core/`) | ✅ testada em JVM |
 | Onboarding, seleção de apps, telas | ✅ implementados |
 | CI | ✅ verde |
-| **Camada `android/` compilando** | ⚠️ **nunca compilou** |
+| Camada `android/` compilando | ✅ compila (`./android/gradlew :aceleralock-blocker:compileDebugKotlin`) |
 | **Sobrevivência do serviço em fabricante agressivo** | ⚠️ **não medida** |
 | **Force-stop verificado em aparelho** | ⚠️ **não medido** |
 | `performance.now()` no Hermes | ⚠️ não verificado em aparelho |
 | Build do APK no CI | ⚠️ desativado (sem assinatura) |
-| iOS | ❌ não existe |
+| iOS | ⚠️ implementado (Swift + Family Controls), **sem teste e fora do CI** |
 
 Antes de mexer na camada `android/`: leia
 [`docs/qa/roteiro-validacao-aparelho.md`](docs/qa/roteiro-validacao-aparelho.md).
