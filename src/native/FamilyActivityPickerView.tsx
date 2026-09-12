@@ -9,7 +9,10 @@ type FamilyActivityPickerViewProps = {
 
 const NativeView: ComponentType<FamilyActivityPickerViewProps> | null =
   Platform.OS === 'ios'
-    ? requireNativeViewManager<FamilyActivityPickerViewProps>('AceleralockBlocker', 'FamilyActivityPickerExpoView')
+    ? requireNativeViewManager<FamilyActivityPickerViewProps>(
+        'AceleralockBlocker',
+        'FamilyActivityPickerExpoView'
+      )
     : null;
 
 export function FamilyActivityPickerView(props: FamilyActivityPickerViewProps) {
