@@ -48,14 +48,6 @@
     ]
   },
   "permissions": {
-    "deny": [
-      "Edit(./android/**)",
-      "Write(./android/**)",
-      "Edit(./ios/**)",
-      "Write(./ios/**)",
-      "Edit(./.expo/**)",
-      "Write(./.expo/**)"
-    ],
     "allow": [
       "Bash(node .claude/hooks/ci-local.mjs:*)",
       "Bash(npm run verify)",

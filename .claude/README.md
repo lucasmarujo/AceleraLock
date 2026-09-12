@@ -49,12 +49,18 @@ avisa e segue** — não trava a sessão por falta de ferramenta.
   `testLogging { events("failed") }`, então build verde não imprime contagem — é por isso
   que os números nos docs vivem defasados.
 
-## Permissões
+## Proteção das pastas geradas
 
-O `deny` impede `Edit`/`Write` em `android/`, `ios/` e `.expo/` **da raiz**: são geradas
-por `expo prebuild` e qualquer edição some no próximo. É a armadilha nº 3 do `AGENTS.md`,
-até aqui sustentada só por documentação. `native/modules/aceleralock-blocker/android/`
-continua editável — aquilo é fonte, não artefato.
+Editar `android/` ou `ios/` da raiz é a armadilha nº 3 do `AGENTS.md`: são geradas por
+`expo prebuild` e a edição some na próxima. Até aqui isso era sustentado só por
+documentação.
+
+A regra vive no `--guarda-arquivo`, e não na lista declarativa do harness, por um motivo
+concreto: este repositório tem **duas** pastas `android/` com donos opostos — a da raiz é
+artefato descartável, e `native/modules/aceleralock-blocker/android/` é fonte do módulo
+nativo, que precisa continuar editável. Um padrão de caminho sobre `android/` casa as
+duas. Distinguir exige comparar o caminho relativo à raiz do repositório, o que só dá para
+fazer em código — e está coberto por `tests/hookCiLocal.test.ts`.
 
 ## Desligar
 
