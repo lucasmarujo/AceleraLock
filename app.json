@@ -19,6 +19,7 @@
     },
     "android": {
       "package": "com.aceleralock.app",
+      "versionCode": 1,
       "allowBackup": true,
       "softwareKeyboardLayoutMode": "resize",
       "adaptiveIcon": {
@@ -41,7 +42,8 @@
           }
         }
       ],
-      "./native/plugins/withAceleralockBlocker"
+      "./native/plugins/withAceleralockBlocker",
+      "./native/plugins/withReleaseSigning"
     ],
     "experiments": {
       "typedRoutes": true

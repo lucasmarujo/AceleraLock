@@ -288,7 +288,29 @@ npm install
 | `npm run format` | Prettier |
 | `npm run android` | Development build no aparelho ou emulador |
 | `npm run prebuild` | Regenera `android/` a partir do config plugin |
+| `npm run build:aab` | Prebuild limpo + AAB de release assinado para a Play Console |
 | `npm run test:kotlin` | Testes do `core` (exige `gradle` no PATH) |
+
+### Publicando na Play Store
+
+```bash
+npm run build:aab
+# → android/app/build/outputs/bundle/release/app-release.aab
+```
+
+O AAB sai assinado com a **chave de upload** em `credentials/android/upload-keystore.jks`,
+com alias e senhas em [`credentials.json`](credentials.json). Os dois são versionados de
+propósito: qualquer pessoa do time gera um bundle que a Play aceita. Quem liga a chave ao
+build é o config plugin [`native/plugins/withReleaseSigning.js`](native/plugins/withReleaseSigning.js).
+Por isso a assinatura sobrevive ao `prebuild --clean`.
+
+> [!IMPORTANT]
+> **Suba o `versionCode` em `app.json` antes de cada envio.** A Play recusa um número que
+> já recebeu. O `version` vira o `versionName` exibido na loja.
+
+A chave de upload não é a chave que assina o app no aparelho. Essa fica com o Google
+(Play App Signing). Se o `.jks` vazar ou for perdido, peça a redefinição da chave de
+upload na Play Console (Integridade do app → Assinatura do app).
 
 ---
 
@@ -418,7 +440,7 @@ anterior deste README.
 | Sobrevivência do serviço em fabricante agressivo | ⚠️ Não medida |
 | Force-stop verificado em aparelho | ⚠️ Não medido — prioridade máxima quando `android/` compilar |
 | `performance.now()` no Hermes | ⚠️ Não verificado em aparelho |
-| Build do APK no CI | ⚠️ Desativado até haver assinatura e destino de distribuição |
+| Build do APK no CI | ⚠️ Desativado. A assinatura existe (`npm run build:aab`), mas o build ainda é local |
 | Módulo nativo de iOS | ❌ Não existe — hoje iOS é plataforma não suportada |
 | Entitlement Apple para Family Controls | ❌ Não solicitado |
 

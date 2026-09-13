@@ -9,6 +9,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "prebuild": "expo prebuild",
+    "build:aab": "node scripts/build-aab.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --test --import tsx tests/*.test.ts",
     "lint": "eslint .",
