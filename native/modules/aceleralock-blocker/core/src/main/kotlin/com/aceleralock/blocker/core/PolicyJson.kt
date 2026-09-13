@@ -9,7 +9,7 @@ package com.aceleralock.blocker.core
  * tenha teste em JVM (AGENTS.md §2). O adaptador Android entrega a string
  * e usa o `RawPolicy` resultante; qualquer mudanca de formato cai no teste.
  */
-internal object PolicyJson {
+object PolicyJson {
 
     fun parse(raw: String): RawPolicy {
         val limpo = raw.trim()
