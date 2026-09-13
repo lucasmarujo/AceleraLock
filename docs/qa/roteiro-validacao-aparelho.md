@@ -191,7 +191,7 @@ Dois blocos (5 e 6) precisam de **horas** rodando para dar resposta. Não são o
 **Por que só aparelho prova:** depende do serviço de backup do Google de verdade, `allowBackup: true` já está declarado em `app.json`, e a matriz (`docs/qa/matriz-cenarios-burla.md`, B6/B7) trata isso como aberto — "não assumir que funciona até confirmar".
 
 **Passo a passo:**
-1. Configurar o app (lista de bloqueio, durações), usar por tempo suficiente para o backup automático do Android rodar pelo menos uma vez (isso não é imediato — pode levar até 24h dependendo do sistema; se houver um jeito de forçar via `adb shell bmgr backupnow com.aceleralock.app`, mais rápido).
+1. Configurar o app (lista de bloqueio, durações), usar por tempo suficiente para o backup automático do Android rodar pelo menos uma vez (isso não é imediato — pode levar até 24h dependendo do sistema; se houver um jeito de forçar via `adb shell bmgr backupnow dev.marujo.appblocker`, mais rápido).
 2. Desinstalar o app.
 3. Reinstalar (mesma conta Google logada no aparelho).
 4. Abrir o app sem configurar nada, e conferir se a lista de bloqueio/durações voltou sozinha, ou se o app pede onboarding do zero.

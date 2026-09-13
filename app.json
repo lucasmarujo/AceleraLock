@@ -18,7 +18,7 @@
       }
     },
     "android": {
-      "package": "com.aceleralock.app",
+      "package": "dev.marujo.appblocker",
       "versionCode": 1,
       "allowBackup": true,
       "softwareKeyboardLayoutMode": "resize",

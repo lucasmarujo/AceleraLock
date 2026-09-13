@@ -66,6 +66,10 @@ test('template do Expo mudou: falha no prebuild em vez de gerar AAB com chave de
   assert.throws(() => aplicarAssinaturaRelease('android {\n}\n'), /withReleaseSigning/);
 });
 
+test('regressao: pacote android e o registrado na Play Console, senao o upload e recusado', () => {
+  assert.equal(appJson.expo.android.package, 'dev.marujo.appblocker');
+});
+
 test('o app.json registra o plugin de assinatura', () => {
   assert.ok(appJson.expo.plugins.includes('./native/plugins/withReleaseSigning'));
 });
