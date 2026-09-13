@@ -13,5 +13,7 @@ package com.aceleralock.blocker.core
  */
 data class BlockPolicy(
     val blockedPackages: Set<String> = emptySet(),
-    val restricted: Boolean = false
+    val restricted: Boolean = false,
+    /** Ja normalizados por [SiteMatcher.hostOf]. Ver [SiteMatcher]. */
+    val blockedDomains: Set<String> = emptySet()
 )

@@ -1,17 +1,19 @@
 import { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import { AppIconGrid } from '@/components/AppIconGrid';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
+import { ListRow } from '@/components/ListRow';
 import { Skeleton } from '@/components/Skeleton';
 import { BarrasTempoTela } from '@/components/Onboarding/BarrasTempoTela';
 import { useTempoTela } from '@/components/TempoTela/useTempoTela';
 import { formatarDuracao, isoLocal } from '@/components/TempoTela/tempoTela';
 import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
 import { readDailyHours, readUserName } from '@/state/onboardingStorage';
+import { useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
@@ -25,6 +27,8 @@ export default function Home() {
   const [nome, setNome] = useState<string | null>(null);
   const [estimativa, setEstimativa] = useState<number | null>(null);
   const [bloqueados, setBloqueados] = useState<InstalledApp[] | null>(null);
+  const [sites, setSites] = useState<string[] | null>(null);
+  const { permissions } = useProtectionVerdictContext();
 
   useFocusEffect(
     useCallback(() => {
@@ -59,11 +63,31 @@ export default function Home() {
         }
       })();
 
+      (async () => {
+        try {
+          const dominios = AceleralockBlocker.blockedDomains();
+          if (ativo) {
+            setSites(dominios);
+          }
+        } catch (error) {
+          console.warn('[Home] falha ao ler sites bloqueados', error);
+          if (ativo) {
+            setSites([]);
+          }
+        }
+      })();
+
       return () => {
         ativo = false;
       };
     }, [])
   );
+
+  const sitesDesligados =
+    Platform.OS === 'android' &&
+    permissions?.accessibility === false &&
+    sites !== null &&
+    sites.length > 0;
 
   const ultimosDias = tempoTela.estado === 'pronto' ? ultimosSeteDias(tempoTela.resumo.days) : [];
 
@@ -133,6 +157,43 @@ export default function Home() {
             label="Escolher apps bloqueados"
             variant="secondary"
             onPress={() => router.push('/apps')}
+          />
+        </View>
+
+        <View style={styles.secao}>
+          <Text style={[styles.tituloSecao, { color: theme.colors.textPrimary }]}>
+            Sites bloqueados
+          </Text>
+
+          {sites === null && <Skeleton width="100%" height={44} />}
+
+          {sites !== null &&
+            (sites.length > 0 ? (
+              <View>
+                {sites.map((dominio) => (
+                  <ListRow key={dominio} label={dominio} onPress={() => router.push('/sites')} />
+                ))}
+              </View>
+            ) : (
+              <EmptyState
+                title="Nenhum site bloqueado ainda"
+                message="Bloqueie também a versão web do que rouba seu tempo."
+              />
+            ))}
+
+          {/* Lista cheia com o servico desligado nao pode parecer protecao: nenhum
+              desses sites esta sendo bloqueado agora. */}
+          {sitesDesligados && (
+            <Text style={[styles.corpo, { color: theme.colors.textDanger }]}>
+              Estes sites não estão sendo bloqueados: ative a acessibilidade em Escolher sites
+              bloqueados.
+            </Text>
+          )}
+
+          <Button
+            label="Escolher sites bloqueados"
+            variant="secondary"
+            onPress={() => router.push('/sites')}
           />
         </View>
       </ScrollView>

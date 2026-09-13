@@ -27,6 +27,17 @@ class PolicyReaderTest {
     }
 
     @Test
+    @DisplayName("feliz: politica valida carrega os dominios bloqueados")
+    fun loadsBlockedDomains() {
+        val read = PolicyReader.read("qualquer") {
+            RawPolicy(emptyList(), blockedDomains = listOf("instagram.com", "instagram.com"))
+        }
+
+        val loaded = read as PolicyRead.Loaded
+        assertEquals(setOf("instagram.com"), loaded.policy.blockedDomains)
+    }
+
+    @Test
     @DisplayName("erro: politica inteira ilegivel e Unreadable, nao politica vazia")
     fun unreadableWhenSyntaxFails() {
         val read = PolicyReader.read("{ isto nao e json") { error("sintaxe invalida") }

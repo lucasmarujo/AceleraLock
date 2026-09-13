@@ -286,11 +286,13 @@ Consequências operacionais:
 2. **Adicionar biblioteca de UI.** `StyleSheet` do RN resolve o inventário
    inteiro (ver `docs/decisoes.md` §Design system).
 3. **Mexer em `android/` à mão.** Vai pro prebuild e some.
-4. **Tentar impedir a desinstalação / usar Device Admin / AccessibilityService.**
+4. **Tentar impedir a desinstalação / usar Device Admin.**
    Foi vetado: app que impede a própria remoção cai em *Deceptive Behavior*
    do Google Play e vira malware aos olhos de quem instalou. A resposta do
-   produto é **medir e mostrar**, não impedir. `docs/decisoes.md` tem a
-   resposta completa.
+   produto é **medir e mostrar**, não impedir. AccessibilityService existe
+   **só** no `SiteAccessibilityService`, para ler a barra de endereço de
+   navegadores listados — não estenda o uso dele para detectar app ou
+   impedir qualquer coisa. `docs/decisoes.md` tem a resposta completa.
 5. **Salvar concessão encerrada** ("pra histórico"). Cada liberação já obtida
    viraria chave permanente resgatável com relógio favorável.
 6. **Permitir esperas em paralelo.** A fricção custaria trinta minutos uma
@@ -330,6 +332,8 @@ Itens onde a integração nunca rodou num aparelho de verdade:
 | `performance.now()` no Hermes | ⚠️ não verificado em aparelho |
 | Build do APK no CI | ⚠️ desativado (sem assinatura) |
 | iOS | ⚠️ implementado (Swift + Family Controls), **sem teste e fora do CI** |
+| Bloqueio de sites: regra (`SiteMatcher`, `core/`) | ✅ testada em JVM |
+| **Bloqueio de sites: view ids da barra de endereço e filtro web do iOS** | ⚠️ **não validados em aparelho** |
 
 Antes de mexer na camada `android/`: leia
 [`docs/qa/roteiro-validacao-aparelho.md`](docs/qa/roteiro-validacao-aparelho.md).

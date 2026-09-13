@@ -2,6 +2,7 @@ import Foundation
 
 struct RawPolicy {
     let blockedPackages: [String]
+    var blockedDomains: [String] = []
 }
 
 enum PolicyRead {
@@ -14,6 +15,9 @@ enum PolicyReader {
     static func read(_ raw: String?, extract: (String) -> RawPolicy?) -> PolicyRead {
         guard let raw else { return .absent }
         guard let parsed = extract(raw) else { return .unreadable }
-        return .loaded(BlockPolicy(blockedPackages: Set(parsed.blockedPackages)))
+        return .loaded(BlockPolicy(
+            blockedPackages: Set(parsed.blockedPackages),
+            blockedDomains: Set(parsed.blockedDomains)
+        ))
     }
 }

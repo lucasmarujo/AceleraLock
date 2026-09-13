@@ -3,6 +3,7 @@ package com.aceleralock.blocker
 import com.aceleralock.blocker.core.BlockPolicy
 import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.ProtectionLog
+import com.aceleralock.blocker.core.SiteMatcher
 import com.aceleralock.blocker.core.WaitTarget
 import com.aceleralock.blocker.core.WaitingPeriod
 import expo.modules.kotlin.modules.Module
@@ -31,6 +32,7 @@ class AceleralockBlockerModule : Module() {
                 "overlay" to state.overlay,
                 "batteryExempt" to state.batteryExempt,
                 "notifications" to state.notifications,
+                "accessibility" to state.accessibility,
                 "coreGranted" to state.coreGranted
             )
         }
@@ -102,6 +104,20 @@ class AceleralockBlockerModule : Module() {
 
         Function("setBlockedPackages") { packages: Array<String> ->
             BlockerService.writePolicy(context, currentPolicy().copy(blockedPackages = packages.toSet()))
+        }
+
+        Function("blockedDomains") {
+            currentPolicy().blockedDomains.toList()
+        }
+
+        /**
+         * Renormaliza mesmo com a UI ja tendo normalizado: e a mesma funcao que
+         * compara com a barra de endereco, e o PolicyJson so le sem unescape porque
+         * dominio gravado nunca carrega barra nem aspas. Entrada invalida e descartada.
+         */
+        Function("setBlockedDomains") { domains: Array<String> ->
+            val normalizados = domains.mapNotNull(SiteMatcher::hostOf).toSet()
+            BlockerService.writePolicy(context, currentPolicy().copy(blockedDomains = normalizados))
         }
 
         /**

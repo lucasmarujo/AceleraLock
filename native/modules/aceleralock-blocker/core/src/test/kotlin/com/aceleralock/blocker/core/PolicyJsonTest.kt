@@ -39,6 +39,24 @@ class PolicyJsonTest {
     }
 
     @Test
+    @DisplayName("feliz: parseia blockedDomains sem confundir com blockedPackages")
+    fun parsesBlockedDomains() {
+        val raw = """{"blockedPackages":["$instagram"],"blockedDomains":["instagram.com","tiktok.com"],"restricted":false}"""
+        val parsed = PolicyJson.parse(raw)
+        assertEquals(listOf(instagram), parsed.blockedPackages)
+        assertEquals(listOf("instagram.com", "tiktok.com"), parsed.blockedDomains)
+    }
+
+    @Test
+    @DisplayName("regressao: politica salva antes dos sites carrega sem nenhum dominio")
+    fun missingBlockedDomainsDefaultsToEmpty() {
+        val raw = """{"blockedPackages":["$instagram"],"restricted":true}"""
+        val parsed = PolicyJson.parse(raw)
+        assertEquals(emptyList(), parsed.blockedDomains)
+        assertEquals(listOf(instagram), parsed.blockedPackages)
+    }
+
+    @Test
     @DisplayName("borda: arquivo vazio / corrompido lanca e PolicyReader vira Unreadable")
     fun malformedThrows() {
         assertFailsWith<Exception> { PolicyJson.parse("{") }

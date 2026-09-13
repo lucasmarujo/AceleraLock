@@ -42,6 +42,24 @@
                 android:value="Bloqueio de aplicativos escolhidos pelo proprio usuario, com deteccao continua de app em primeiro plano." />
         </service>
 
+        <!--
+          Opcional: sem ele so o bloqueio de sites para. Mesmo processo do
+          BlockerService, pelo mesmo motivo acima: o endereco lido e entregue em
+          memoria, sem disco e sem intent.
+        -->
+        <service
+            android:name=".SiteAccessibilityService"
+            android:exported="false"
+            android:label="@string/aceleralock_site_accessibility_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/aceleralock_site_accessibility" />
+        </service>
+
         <receiver
             android:name=".BootReceiver"
             android:exported="false">

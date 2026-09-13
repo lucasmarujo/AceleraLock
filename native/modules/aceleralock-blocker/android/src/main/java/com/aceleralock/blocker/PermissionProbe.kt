@@ -1,6 +1,7 @@
 package com.aceleralock.blocker
 
 import android.app.AppOpsManager
+import android.content.ComponentName
 import android.content.Context
 import android.os.Build
 import android.os.PowerManager
@@ -11,9 +12,13 @@ data class PermissionState(
     val usageAccess: Boolean,
     val overlay: Boolean,
     val batteryExempt: Boolean,
-    val notifications: Boolean
+    val notifications: Boolean,
+    val accessibility: Boolean
 ) {
-    /** A1 + A2 sao as essenciais: sem elas o app nao bloqueia nada. */
+    /**
+     * A1 + A2 sao as essenciais: sem elas o app nao bloqueia nada. Acessibilidade
+     * fica de fora: sem ela so o bloqueio de sites para, e os apps seguem bloqueados.
+     */
     val coreGranted: Boolean get() = usageAccess && overlay
 }
 
@@ -23,8 +28,17 @@ class PermissionProbe(private val context: Context) {
         usageAccess = hasUsageAccess(),
         overlay = Settings.canDrawOverlays(context),
         batteryExempt = isIgnoringBatteryOptimizations(),
-        notifications = hasNotificationPermission()
+        notifications = hasNotificationPermission(),
+        accessibility = isSiteAccessibilityEnabled()
     )
+
+    private fun isSiteAccessibilityEnabled(): Boolean {
+        val habilitados = Settings.Secure.getString(
+            context.contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
+        ) ?: return false
+        val nosso = ComponentName(context, SiteAccessibilityService::class.java)
+        return habilitados.split(':').any { ComponentName.unflattenFromString(it) == nosso }
+    }
 
     private fun hasUsageAccess(): Boolean {
         val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager ?: return false

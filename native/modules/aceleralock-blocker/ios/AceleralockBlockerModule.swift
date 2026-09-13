@@ -28,6 +28,7 @@ public class AceleralockBlockerModule: Module {
                 "overlay": true,
                 "batteryExempt": true,
                 "notifications": true,
+                "accessibility": familyControlsAuthorized,
                 "coreGranted": familyControlsAuthorized
             ]
         }
@@ -89,6 +90,15 @@ public class AceleralockBlockerModule: Module {
             }
         }
 
+        Function("blockedDomains") { () -> [String] in
+            ManagedSettingsManager.shared.blockedWebDomains()
+        }
+
+        Function("setBlockedDomains") { (domains: [String]) in
+            let normalizados = Set(domains.compactMap { SiteMatcher.hostOf($0) })
+            ManagedSettingsManager.shared.applyWebDomains(normalizados.sorted())
+        }
+
         Function("configureInitialDurations") { (waitMinutes: Int, grantMinutes: Int) -> Bool in
             self.waiting().configureInitial(
                 wait: TimeInterval(waitMinutes * 60),
@@ -146,6 +156,8 @@ public class AceleralockBlockerModule: Module {
                 if let selection = ManagedSettingsManager.shared.currentSelection() {
                     ManagedSettingsManager.shared.applyShields(selection)
                 }
+                let manager = ManagedSettingsManager.shared
+                manager.applyWebDomains(manager.blockedWebDomains())
                 self.startMonitoring()
             }
         }

@@ -13,10 +13,19 @@ enum class AllowReason {
 
 data class BlockVerdict(
     val outcome: BlockOutcome,
-    val allowReason: AllowReason? = null
+    val allowReason: AllowReason? = null,
+    /** Preenchido so quando o motivo do bloqueio e o site aberto, nao o app. */
+    val blockedHost: String? = null
 ) {
     val shouldDrawOverlay: Boolean get() = outcome == BlockOutcome.BLOCK
 }
+
+/**
+ * O que a barra de endereco de um navegador mostrava, e de qual navegador. O pacote
+ * vem junto porque a leitura e assincrona a deteccao de primeiro plano: endereco
+ * lido no Chrome nao pode bloquear o app que a pessoa abriu depois.
+ */
+data class BrowserAddress(val packageName: String, val text: String)
 
 /**
  * Decisao de bloqueio. Sem ancora de servidor: nao ha com que ancorar. Mas nao ha
@@ -33,10 +42,20 @@ class BlockDecider {
         packageName: String,
         policy: BlockPolicy,
         criticalPackages: Set<String>,
-        activeGrant: String?
+        activeGrant: String?,
+        browserAddress: BrowserAddress? = null
     ): BlockVerdict {
         if (packageName in criticalPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.CRITICAL_APP)
+        }
+        // Antes da concessao, de proposito: concessao e do navegador como app, e
+        // liberar o Chrome nao pode virar liberar todo site da lista.
+        val blockedHost = browserAddress
+            ?.takeIf { it.packageName == packageName }
+            ?.let { SiteMatcher.hostOf(it.text) }
+            ?.takeIf { SiteMatcher.blocks(it, policy.blockedDomains) }
+        if (blockedHost != null) {
+            return BlockVerdict(BlockOutcome.BLOCK, blockedHost = blockedHost)
         }
         if (packageName !in policy.blockedPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.NOT_A_TARGET)

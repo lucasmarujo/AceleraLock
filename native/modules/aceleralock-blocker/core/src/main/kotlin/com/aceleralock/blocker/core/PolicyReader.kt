@@ -7,7 +7,9 @@ data class RawPolicy(
      * salva antes deste campo existir dao o mesmo default. `true` so com opt-in
      * explicito, porque o modo restrito e a chave que tranca a edicao da lista.
      */
-    val restricted: Boolean = false
+    val restricted: Boolean = false,
+    /** Ausente conta como lista vazia: politica salva antes dos sites existirem. */
+    val blockedDomains: List<String> = emptyList()
 )
 
 /**
@@ -44,7 +46,8 @@ object PolicyReader {
         return PolicyRead.Loaded(
             BlockPolicy(
                 blockedPackages = parsed.blockedPackages.toSet(),
-                restricted = parsed.restricted
+                restricted = parsed.restricted,
+                blockedDomains = parsed.blockedDomains.toSet()
             )
         )
     }

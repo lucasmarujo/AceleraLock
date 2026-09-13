@@ -9,6 +9,7 @@ final class ManagedSettingsManager {
 
     private static let keyTokensData = "blocked.tokens_data"
     private static let keyTokenLabels = "blocked.token_labels"
+    private static let keyWebDomains = "blocked.web_domains"
 
     private init() {}
 
@@ -16,6 +17,19 @@ final class ManagedSettingsManager {
         store.shield.applications = selection.applicationTokens
         store.shield.applicationCategories = .specific(selection.categoryTokens)
         saveSelection(selection)
+    }
+
+    // O match de dominio e do sistema: quem desenha a tela de bloqueio no Safari e
+    // a pagina de restricao do iOS, nao um shield nosso.
+    func applyWebDomains(_ domains: [String]) {
+        store.webContent.blockedByFilter = domains.isEmpty
+            ? nil
+            : .specific(Set(domains.map { WebDomain(domain: $0) }))
+        UserDefaults(suiteName: appGroup)?.set(domains, forKey: Self.keyWebDomains)
+    }
+
+    func blockedWebDomains() -> [String] {
+        UserDefaults(suiteName: appGroup)?.stringArray(forKey: Self.keyWebDomains) ?? []
     }
 
     func removeShieldForToken(_ token: ApplicationToken) {
@@ -27,6 +41,7 @@ final class ManagedSettingsManager {
     func clearAll() {
         store.shield.applications = nil
         store.shield.applicationCategories = nil
+        store.webContent.blockedByFilter = nil
     }
 
     func currentSelection() -> FamilyActivitySelection? {

@@ -19,6 +19,8 @@ type Props = {
   returnKeyType?: ReturnKeyTypeOptions;
   onSubmitEditing?: () => void;
   autoCapitalize?: TextInputProps['autoCapitalize'];
+  keyboardType?: TextInputProps['keyboardType'];
+  autoCorrect?: boolean;
 };
 
 const HEIGHT = 52;
@@ -42,6 +44,8 @@ export function TextField({
   returnKeyType,
   onSubmitEditing,
   autoCapitalize,
+  keyboardType,
+  autoCorrect,
 }: Props) {
   const theme = useTheme();
   const [focused, setFocused] = useState(false);
@@ -64,6 +68,8 @@ export function TextField({
         returnKeyType={returnKeyType}
         onSubmitEditing={onSubmitEditing}
         autoCapitalize={autoCapitalize}
+        keyboardType={keyboardType}
+        autoCorrect={autoCorrect}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         maxFontSizeMultiplier={1.3}

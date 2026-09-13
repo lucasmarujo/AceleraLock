@@ -210,11 +210,20 @@ class BlockerService : Service() {
             return
         }
         val foreground = detector.currentForegroundPackage() ?: return
-        val verdict = decider.decide(foreground, policy, criticalPackages, grants.activePackage())
+        // Sem tick imediato quando a barra muda: vale o mesmo poll dos apps. Se o
+        // aparelho mostrar a pagina chegando a carregar, o SiteAccessibilityService
+        // ganha um aviso ao servico.
+        val verdict = decider.decide(
+            foreground, policy, criticalPackages, grants.activePackage(),
+            SiteAccessibilityService.lastAddress
+        )
 
         if (verdict.outcome == BlockOutcome.BLOCK) {
-            overlay.show(foreground) { context ->
-                BlockScreenView(context, foreground)
+            // Host na chave: trocar de um site bloqueado para outro no mesmo navegador
+            // tem de reconstruir a view, senao o titulo fica com o site anterior.
+            val chave = verdict.blockedHost?.let { "$foreground|$it" } ?: foreground
+            overlay.show(chave) { context ->
+                BlockScreenView(context, foreground, verdict.blockedHost)
             }
         } else {
             overlay.hide()
@@ -293,6 +302,7 @@ class BlockerService : Service() {
             val json = JSONObject()
             json.put("blockedPackages", JSONArray(policy.blockedPackages.toList()))
             json.put("restricted", policy.restricted)
+            json.put("blockedDomains", JSONArray(policy.blockedDomains.toList()))
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putString(KEY_POLICY, json.toString())

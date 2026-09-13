@@ -28,7 +28,8 @@ import android.widget.TextView
  */
 class BlockScreenView(
     context: Context,
-    private val blockedPackage: String
+    private val blockedPackage: String,
+    private val blockedHost: String? = null
 ) : LinearLayout(context) {
 
     init {
@@ -55,7 +56,7 @@ class BlockScreenView(
     }
 
     private fun titleText(): View = TextView(context).apply {
-        text = appLabel()
+        text = (blockedHost ?: appLabel())
             ?.let { context.getString(R.string.aceleralock_block_title, it) }
             ?: context.getString(R.string.aceleralock_block_title_unknown)
         setTextColor(color(R.color.aceleralock_text_primary))

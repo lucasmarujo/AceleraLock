@@ -39,6 +39,10 @@ type AceleralockBlockerModule = {
   /** Politica vigente. Lanca em politica ilegivel, nunca devolve lista vazia por engano. */
   blockedPackages(): string[];
   setBlockedPackages(packages: string[]): void;
+  /** Dominios ja normalizados. Lanca em politica ilegivel, como `blockedPackages`. */
+  blockedDomains(): string[];
+  /** O nativo renormaliza e descarta entrada invalida; ver `src/state/blockedSites.ts`. */
+  setBlockedDomains(domains: string[]): void;
   /**
    * Ativa ou desativa o modo restrito de forma imediata. So a desativacao pede
    * espera (`requestDisableRestricted`); ativar e o compromisso da pessoa com o

@@ -56,4 +56,55 @@ class BlockDeciderTest {
 
         assertEquals(BlockOutcome.BLOCK, verdict.outcome)
     }
+
+    private val chrome = "com.android.chrome"
+    private val sites = BlockPolicy(blockedDomains = setOf("instagram.com"))
+
+    @Test
+    @DisplayName("barreira D5: site bloqueado aberto no navegador em foco e bloqueado")
+    fun blocksBlockedSiteInForegroundBrowser() {
+        val address = BrowserAddress(chrome, "https://m.instagram.com/reels")
+
+        val verdict = decider.decide(chrome, sites, emptySet(), null, address)
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+        assertEquals("m.instagram.com", verdict.blockedHost)
+    }
+
+    @Test
+    @DisplayName("feliz: site fora da lista no navegador nao e bloqueado")
+    fun allowsOtherSite() {
+        val verdict = decider.decide(chrome, sites, emptySet(), null, BrowserAddress(chrome, "wikipedia.org"))
+
+        assertEquals(BlockOutcome.ALLOW, verdict.outcome)
+        assertEquals(AllowReason.NOT_A_TARGET, verdict.allowReason)
+    }
+
+    @Test
+    @DisplayName("regressao: endereco lido de outro navegador nao bloqueia o app em foco")
+    fun staleAddressFromOtherPackageIsIgnored() {
+        val address = BrowserAddress(chrome, "instagram.com")
+
+        val verdict = decider.decide("com.whatsapp", sites, emptySet(), null, address)
+
+        assertEquals(BlockOutcome.ALLOW, verdict.outcome)
+    }
+
+    @Test
+    @DisplayName("barreira 2: app critico nunca recebe overlay, mesmo com endereco bloqueado")
+    fun criticalAppWinsOverBlockedSite() {
+        val verdict = decider.decide(chrome, sites, setOf(chrome), null, BrowserAddress(chrome, "instagram.com"))
+
+        assertEquals(AllowReason.CRITICAL_APP, verdict.allowReason)
+    }
+
+    @Test
+    @DisplayName("regressao: concessao do navegador como app nao libera site bloqueado")
+    fun grantForBrowserDoesNotUnlockSite() {
+        val policy = sites.copy(blockedPackages = setOf(chrome))
+
+        val verdict = decider.decide(chrome, policy, emptySet(), chrome, BrowserAddress(chrome, "instagram.com"))
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+    }
 }

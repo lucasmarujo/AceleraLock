@@ -30,15 +30,19 @@ pivô o servidor sumiu, mas a restrição continua governando o lado iOS.
 
 ### Bloqueio forte, sem travar a desinstalação
 
-Sem Device Admin e sem AccessibilityService no Android. Device Admin foi **vetado
-pelo usuário**.
+Sem Device Admin no Android. Device Admin foi **vetado pelo usuário**.
 
 Motivo duplo. Política do Google Play: app que impede a própria remoção cai em
 *Deceptive Behavior*. E produto: um app que não se deixa desinstalar vira malware
 e perde a confiança de quem instalou.
 
-O custo é medido e aceito: sem AccessibilityService a detecção de app em primeiro
-plano é reativa, entre 0,5 e 2 segundos. A escolha é fricção, não prisão.
+A detecção de **app** em primeiro plano continua sem AccessibilityService, e o custo
+é medido e aceito: reativa, entre 0,5 e 2 segundos. A escolha é fricção, não prisão.
+
+**(mudou, 2026-09-13)** AccessibilityService entrou, para uma coisa só: ler a barra de
+endereço de navegadores listados, no bloqueio de sites. Não detecta app, não desenha
+overlay, não impede desinstalação e é opcional — fora do onboarding e de
+`coreGranted`. Ver "Bloqueio de sites".
 
 ### Onboarding inescapável
 
@@ -375,6 +379,52 @@ cursor persistido separa os dois sem ambiguidade. O intervalo fora do ar tem
 tratamento **oposto** nos dois mecanismos, pelo mesmo critério conservador: é
 **descontado** da concessão (nada estava bloqueado, a pessoa já usou aquele tempo) e
 **congelado** na espera (a espera demora mais, nunca menos).
+
+---
+
+## Bloqueio de sites (2026-09-13)
+
+### Domínio e subdomínios, nunca caminho
+
+`instagram.com` bloqueia também `www.`, `m.` e `l.instagram.com`. Caminho de URL
+(`youtube.com/shorts`) fica de fora: o filtro do iOS só enxerga domínio, e a barra do
+navegador no Android costuma mostrar só o domínio fora de foco. Prometer caminho num
+lado só seria regra diferente por plataforma.
+
+A regra mora em `SiteMatcher` no `core/`, e a mesma função normaliza o que a pessoa
+digita e o que a barra mostra. `src/state/blockedSites.ts` repete a normalização só para
+a tela recusar entrada na hora; o nativo renormaliza ao gravar.
+
+### Android lê a barra de endereço por AccessibilityService
+
+Decisão do usuário, contra o que este documento dizia. `UsageStatsManager` só entrega o
+pacote, e o Chrome é um pacote só para todos os sites. A alternativa avaliada foi VPN
+local com filtro DNS: ocupa o único slot de VPN do aparelho, é contornada por DNS
+privado e não diz com precisão quando desenhar o overlay.
+
+O serviço é restrito por `packageNames` a Chrome, Samsung Internet, Firefox, Edge e
+Brave — o sistema nem entrega evento de outro app. O endereço fica só em memória:
+gravar seria histórico de navegação, e o produto não guarda isso. O serviço também não
+inicia o `BlockerService`, senão um evento de navegador religaria proteção pausada.
+
+Custos aceitos: declaração de uso no Play Console com divulgação em destaque (a tela
+`sites.tsx` explica o que é lido **antes** de mandar para as Configurações), view ids
+que mudam entre versões dos navegadores e só quebram em aparelho, e "configurações
+restritas" a liberar à mão no Android 13+ fora da Play.
+
+### iOS delega o bloqueio ao sistema
+
+`ManagedSettings.webContent.blockedByFilter = .specific(...)` com os domínios
+digitados. Quem desenha a tela é a página de restrição do iOS, não um shield nosso. Por
+isso o espelho Swift de `SiteMatcher` e do `BlockDecider` existe (sincronia do
+`core/`), mas não está no caminho de decisão do iOS.
+
+### Sem concessão e sem espera por site
+
+Adicionar e remover site é livre, como na lista de apps. Não existe pedido de
+desbloqueio de site: `requestUnlock` ainda não tem tela nem para apps. E a concessão do
+navegador como app **não** libera os sites da lista — liberar o Chrome não pode virar
+liberar todo site bloqueado.
 
 ---
 

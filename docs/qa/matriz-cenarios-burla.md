@@ -36,7 +36,7 @@ O adversário é **o próprio dono do aparelho** (sem mudança):
 
 Restrições de arquitetura já fixadas pelo usuário:
 
-- Android: `UsageStatsManager` + overlay (`SYSTEM_ALERT_WINDOW`). **Sem** Device Admin. **Sem** AccessibilityService.
+- Android: `UsageStatsManager` + overlay (`SYSTEM_ALERT_WINDOW`). **Sem** Device Admin. AccessibilityService **só** para ler a barra de endereço no bloqueio de sites *(mudou, 2026-09-13)*.
 - iOS: Family Controls / Screen Time (`ManagedSettings` + `DeviceActivityMonitor`). Sem MDM supervisionado.
 - **(mudou)** ~~Cooldown cronometrado no servidor + aprovação de parceiro de confiança~~ → espera cronometrada **local**, tempo monotônico, sem árbitro externo.
 - **(novo)** Sem backend, sem conta, sem parceiro, sem rede envolvida na decisão de bloquear/desbloquear.
@@ -142,7 +142,19 @@ Todas as linhas C1-C10 mantêm o **mesmo rótulo** da v1.0 — a defesa (foregro
 
 ## D. Caminhos laterais até o app bloqueado
 
-**Sem mudança nenhuma nesta seção.** O motor de detecção (`UsageStatsManager`, pacote em foreground) nunca dependeu de servidor, conta ou parceiro — D1-D14 e D-lat da v1.0 valem exatamente como estavam. Ver v1.0 (`backend.bkp/qa/matriz-cenarios-burla.md`) para a tabela completa; não duplicado aqui por não ter mudado uma linha sequer.
+O motor de detecção de app (`UsageStatsManager`, pacote em foreground) nunca dependeu de servidor, conta ou parceiro — D1-D14 e D-lat da v1.0 valem como estavam, **exceto D5**, que muda com o bloqueio de sites. A v1.0 saiu da árvore; está no histórico do git (`backend.bkp/qa/matriz-cenarios-burla.md`, antes de `3ab4ea8`).
+
+Linhas de web *(novas, 2026-09-13)*. A regra (`SiteMatcher` + `BlockDecider`) está `[provada em JVM]`; a leitura da barra de endereço não foi verificada em aparelho.
+
+| # | Vetor | Reprodução | Esperado (v2.0) | Classe | Plat. |
+|---|---|---|---|---|---|
+| D5 | Versão web no navegador | Abrir `instagram.com` no Chrome | Bloqueia se o domínio estiver na lista de sites: overlay no Android (acessibilidade ligada), página de restrição no iOS. Subdomínio (`m.`, `l.`) também. Sem o domínio na lista, segue passando. | Mitigável | AMBOS |
+| D5a | Aba anônima | Abrir o site numa aba anônima | A barra de endereço é a mesma; bloqueia igual. | Bloqueável | AND |
+| D5b | Navegador fora da lista | Abrir o site no Opera, DuckDuckGo, Kiwi etc. | O serviço não recebe evento desses pacotes. Mitigação: bloquear o navegador como app. | Impossível de impedir | AND |
+| D5c | Desligar a acessibilidade | Configurações → Acessibilidade → desligar o serviço | Sites param de bloquear; apps seguem. A home avisa que os sites da lista não estão sendo bloqueados — medir e mostrar. | Impossível de impedir | AND |
+| D5d | Proxy, tradutor ou IP direto | `translate.goog`, proxy web, IP do servidor | O host na barra é outro. | Impossível de impedir | AMBOS |
+| D5e | WebView dentro de outro app | Link aberto no navegador interno de um app | Não é navegador listado; o endereço não é lido. | Impossível de impedir | AND |
+| D5f | Endereço de outro navegador vaza para o app seguinte | Sair do Chrome num site bloqueado e abrir outro app | O endereço carrega o pacote de origem e só vale com esse pacote em foco. `[provado em JVM]` | Bloqueável | AND |
 
 ---
 
@@ -199,7 +211,7 @@ A maior parte é intocada (Family Controls sempre foi API local do dispositivo).
 | I5 | Granularidade do `DeviceActivitySchedule` | Sem mudança — shield contínuo, não depende do schedule. | Mitigável | iOS |
 | I6 | Bypass de shield conhecido entre versões de iOS | Sem mudança — risco inerente à API do sistema. | Mitigável | iOS |
 | I7 | Segundo device no mesmo Apple ID | Ver D14. Sem mudança. | Impossível de impedir | iOS |
-| I8 | Web no Safari | Ver D5. Sem mudança. | Impossível de impedir | iOS |
+| I8 | Web no Safari | **(mudou, 2026-09-13)** Domínio da lista de sites vai para `ManagedSettings.webContent`; o sistema bloqueia no Safari e nos navegadores WebKit. Cobertura de subdomínio não verificada em aparelho. Ver D5. | Bloqueável [não verificado em aparelho] | iOS |
 
 ---
 

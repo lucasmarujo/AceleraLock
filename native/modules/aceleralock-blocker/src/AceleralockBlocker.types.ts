@@ -3,6 +3,12 @@ export type PermissionState = {
   overlay: boolean;
   batteryExempt: boolean;
   notifications: boolean;
+  /**
+   * Servico de acessibilidade que le a barra de endereco (Android). Fora de
+   * `coreGranted`: sem ele so o bloqueio de sites para. No iOS acompanha o
+   * Family Controls, que e quem aplica o filtro de sites.
+   */
+  accessibility: boolean;
   /** A1 + A2: sem elas o app nao bloqueia nada. */
   coreGranted: boolean;
 };

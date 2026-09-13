@@ -164,6 +164,28 @@ Dois blocos (5 e 6) precisam de **horas** rodando para dar resposta. Não são o
 
 ---
 
+## Prioridade 7 — bloqueio de sites: a barra de endereço é lida de verdade *(novo, 2026-09-13)*
+
+**Por que só aparelho prova:** a regra (`SiteMatcher`, `BlockDecider`) está provada em JVM, mas os view ids da barra de endereço em `SiteAccessibilityService.kt` são dos navegadores de outra empresa e mudam entre versões. Se estiverem errados, nada quebra: o site só não bloqueia.
+
+**Passo a passo:**
+1. Build de desenvolvimento fora da Play, Android 13+: Informações do app → menu ⋮ → "Permitir configurações restritas". Sem isso o sistema não deixa ligar o serviço.
+2. Na home, Escolher sites bloqueados → ler o cartão de acessibilidade → Ativar nas Configurações → ligar "AceleraLock: bloqueio de sites".
+3. Adicionar `instagram.com`, salvar.
+4. Abrir `instagram.com` no Chrome, Samsung Internet, Firefox, Edge e Brave. Repetir com `m.instagram.com` e numa aba anônima.
+5. No overlay, "Fechar". Reabrir o navegador (a aba segue no site).
+6. Trocar de aba para `wikipedia.org`.
+7. Pausar a proteção (com a espera) e abrir o site de novo.
+8. Desligar o serviço de acessibilidade e voltar à home.
+
+**Observar:** tempo até o overlay e se a página chega a carregar; o título do overlay; o que a home mostra no passo 8.
+
+**Reprova se:** algum dos cinco navegadores não bloquear (anotar a versão do navegador — é o view id); o overlay ficar ao trocar para um site livre; o `BlockerService` voltar a rodar no passo 7; a home não avisar no passo 8.
+
+**iOS (mesmo roteiro, sem acessibilidade):** adicionar o domínio e abrir no Safari e no Chrome iOS, inclusive `m.instagram.com`. Esperado: página de restrição do sistema. Reprova se o subdomínio passar.
+
+---
+
 ## Bônus — investigação aberta da matriz: Auto Backup restaura `SharedPreferences` na reinstalação?
 
 **Por que só aparelho prova:** depende do serviço de backup do Google de verdade, `allowBackup: true` já está declarado em `app.json`, e a matriz (`docs/qa/matriz-cenarios-burla.md`, B6/B7) trata isso como aberto — "não assumir que funciona até confirmar".
@@ -182,4 +204,4 @@ Dois blocos (5 e 6) precisam de **horas** rodando para dar resposta. Não são o
 
 ## Depois de terminar
 
-Não inventar mais cenário nenhum além destes seis blocos + o bônus — é o filtro que o `supervisor` pediu: só o que aparelho prova e JVM não. Reportar resultado por bloco, com o achado mais sério (esperançosamente nenhum) destacado primeiro, principalmente qualquer coisa da Prioridade 4 — é onde uma suposição errada seria mais cara e mais silenciosa.
+Não inventar mais cenário nenhum além destes sete blocos + o bônus — é o filtro que o `supervisor` pediu: só o que aparelho prova e JVM não. Reportar resultado por bloco, com o achado mais sério (esperançosamente nenhum) destacado primeiro, principalmente qualquer coisa da Prioridade 4 — é onde uma suposição errada seria mais cara e mais silenciosa.

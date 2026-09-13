@@ -2,8 +2,9 @@ package com.aceleralock.blocker.core
 
 /**
  * Parser minimo do JSON persistido, sem `org.json` (Android-only) e sem
- * dependencia nova no `core/`. O formato e proprio do app: dois campos
- * (`blockedPackages` array de strings, `restricted` boolean) e nada mais.
+ * dependencia nova no `core/`. O formato e proprio do app: tres campos
+ * (`blockedPackages` e `blockedDomains` arrays de strings, `restricted` boolean)
+ * e nada mais.
  *
  * Extracao pura para que o contrato "o que vai pro disco e o que sai dele"
  * tenha teste em JVM (AGENTS.md §2). O adaptador Android entrega a string
@@ -21,7 +22,8 @@ object PolicyJson {
         }
         val blocked = readStringArray(raw, "blockedPackages")
         val restricted = readBoolean(raw, "restricted")
-        return RawPolicy(blockedPackages = blocked, restricted = restricted)
+        val domains = readStringArray(raw, "blockedDomains")
+        return RawPolicy(blockedPackages = blocked, restricted = restricted, blockedDomains = domains)
     }
 
     private fun readStringArray(raw: String, key: String): List<String> {
@@ -49,7 +51,8 @@ object PolicyJson {
     // O grupo externo captura o conteudo; o interno so repete o alternador. Sem
     // o externo nao ha como pegar a string sem as aspas, porque o `*` fica fora
     // do grupo e groupValues[1] traria apenas o ultimo caractere.
-    // Escape nao e desfeito: package name Android e [a-zA-Z0-9._], nunca carrega
-    // aspas ou barra invertida. Formato com texto livre exigiria unescape aqui.
+    // Escape nao e desfeito: package name Android e [a-zA-Z0-9._] e dominio chega
+    // normalizado por SiteMatcher ([a-z0-9.-]), nenhum carrega aspas, barra ou barra
+    // invertida. Formato com texto livre exigiria unescape aqui.
     private val REGEX_STRING = Regex("\"(([^\"\\\\]|\\\\.)*)\"")
 }
