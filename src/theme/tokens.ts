@@ -37,6 +37,8 @@ export const brand = {
   turquesaPressedDark: '#03a09e',
   /** t=0.15 em direcao a `turquesa` — pressed do primario claro (invertido). */
   temaPressedLight: '#042e34',
+  /** t=0.20 em direcao a `turquesa` — topo do degrade das boas-vindas. */
+  temaTurquesa: '#04373d',
   /**
    * As duas pontas do gradiente do anel da logo do AceleraDev
    * (`assets/aceleradev-logo.svg`), medidas do proprio arquivo: azul embaixo
@@ -69,9 +71,7 @@ export const temaNeutral = {
   950: '#04121A',
   /** t=0.026 em direcao ao branco — par de `neutral.900`. */
   900: '#0B1A22',
-  /** t=0.083 — par de `neutral.800`. Sem consumidor: `bg.surfaceRaised` do
-   *  §1.2 ainda nao existe em codigo. Fica pra quem for implementa-lo nao
-   *  voltar pro neutro puro. */
+  /** t=0.083 — par de `neutral.800`. `bgHeroRaised` no claro, `bgHero` no escuro. */
   800: '#19282F',
   /** t=0.169 — par de `neutral.700`. */
   700: '#2E3C42',
@@ -95,6 +95,12 @@ export const amber = {
   550: '#b37718',
   600: '#A56C13',
   700: '#7C4F0C',
+  /**
+   * Fundo do aviso no tema escuro (`bgWarningSubtle`). `amber.50` acenderia
+   * sobre o canvas escuro; este e o ambar escurecido ate a luma dos fundos do
+   * tema, e `amber.300` por cima passa de 8:1.
+   */
+  900: '#2E2210',
 } as const;
 
 export const red = {
@@ -129,6 +135,36 @@ export const radius = {
 } as const;
 
 /**
+ * docs/design-system.md §1.6. Existia so na doc ate o redesign (2026-10-11),
+ * quando a barra de salvar e a sheet passaram a flutuar. Sombra (iOS) e
+ * `elevation` (Android) andam juntas: mesma intencao, API de cada plataforma.
+ * No escuro a sombra some — quem flutua la tambem leva borda.
+ */
+export const elevation = {
+  1: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  2: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 6,
+  },
+  3: {
+    shadowColor: '#000000',
+    shadowOpacity: 0.18,
+    shadowRadius: 28,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 12,
+  },
+} as const;
+
+/**
  * docs/design-system.md §1.7. Existiam so na doc ate agora — nao havia
  * animacao nenhuma no app pra consumi-los. Easing sai como tupla e nao como
  * string CSS porque quem consome e `Easing.bezier(...easing.standard)` do
@@ -152,11 +188,15 @@ export const easing = {
 type TextStyleToken = {
   fontSize: number;
   lineHeight: number;
-  fontWeight: '400' | '500' | '600' | '700';
+  fontWeight: '400' | '500' | '600' | '700' | '800';
 };
 
 export const typography: Record<string, TextStyleToken> = {
+  /** Numero-heroi de um cartao (tempo de tela de hoje) e manchete das boas-vindas. */
+  metric: { fontSize: 44, lineHeight: 48, fontWeight: '800' },
   display: { fontSize: 34, lineHeight: 40, fontWeight: '700' },
+  /** Titulo de tela — o `title1` com o peso de manchete do redesign. */
+  heading: { fontSize: 28, lineHeight: 34, fontWeight: '800' },
   title1: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
   title2: { fontSize: 22, lineHeight: 28, fontWeight: '600' },
   title3: { fontSize: 20, lineHeight: 26, fontWeight: '600' },
@@ -186,6 +226,24 @@ type SemanticTokens = {
     borderStrong: string;
     borderBrand: string;
     focusRing: string;
+    /**
+     * Superficie "hero": o unico momento de tinta da tela (status da protecao,
+     * cronometro). No claro e a propria `brand.tema`; no escuro o canvas ja e
+     * `brand.tema`, entao o hero sobe um degrau pra nao sumir no fundo.
+     */
+    bgHero: string;
+    bgHeroRaised: string;
+    borderHero: string;
+    textOnHero: string;
+    textOnHeroSecondary: string;
+    textOnHeroBrand: string;
+    /** Atrito sobre o hero (cronometro, cadeado ligado). Ambar, nunca vermelho. */
+    textOnHeroFriction: string;
+    /** Aviso com solucao (DS §3.11): ambar. Vermelho continua so pra erro. */
+    bgWarningSubtle: string;
+    borderWarning: string;
+    textWarning: string;
+    iconWarning: string;
     surfaces: {
       brand: Surface;
       danger: Surface;
@@ -211,6 +269,17 @@ export const lightTheme: SemanticTokens = {
     borderStrong: neutral[300],
     borderBrand: brand.turquesaIconLight,
     focusRing: brand.turquesaIconLight,
+    bgHero: brand.tema,
+    bgHeroRaised: temaNeutral[800],
+    borderHero: temaNeutral[700],
+    textOnHero: neutral[0],
+    textOnHeroSecondary: neutral[300],
+    textOnHeroBrand: brand.turquesa,
+    textOnHeroFriction: amber[300],
+    bgWarningSubtle: amber[50],
+    borderWarning: amber[300],
+    textWarning: amber[700],
+    iconWarning: amber[550],
     surfaces: {
       // B: primario invertido no claro — fundo quase-preto, rotulo turquesa.
       brand: { fill: brand.tema, onFill: brand.turquesa, pressedFill: brand.temaPressedLight },
@@ -238,6 +307,17 @@ export const darkTheme: SemanticTokens = {
     borderStrong: temaNeutral[600],
     borderBrand: brand.turquesa,
     focusRing: brand.turquesa,
+    bgHero: temaNeutral[800],
+    bgHeroRaised: temaNeutral[700],
+    borderHero: temaNeutral[600],
+    textOnHero: neutral[50],
+    textOnHeroSecondary: neutral[300],
+    textOnHeroBrand: brand.turquesa,
+    textOnHeroFriction: amber[300],
+    bgWarningSubtle: amber[900],
+    borderWarning: amber[700],
+    textWarning: amber[300],
+    iconWarning: amber[300],
     surfaces: {
       brand: { fill: brand.turquesa, onFill: brand.tema, pressedFill: brand.turquesaPressedDark },
       danger: { fill: red[500], onFill: neutral[0], pressedFill: red[600] },

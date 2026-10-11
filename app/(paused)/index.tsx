@@ -1,11 +1,18 @@
-import { Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { Button } from '@/components/Button';
-import AceleralockBlocker from '@/native/blocker';
+import { IconeApp } from '@/components/IconeApp';
+import { resumoLiberados } from '@/components/Inicio/inicio';
+import { TelaDeEstado } from '@/components/TelaDeEstado';
+import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
 import { useProtectionVerdictContext } from '@/state/ProtectionVerdictContext';
-import { spacing, typography } from '@/theme/tokens';
+import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
+
+const ICONES_NA_PILHA = 3;
+
+type Lista = { apps: InstalledApp[]; sites: number };
 
 /**
  * Veredito 'pausado' (src/state/verdict.ts): configurado, permissao ok, mas
@@ -17,45 +24,96 @@ import { useTheme } from '@/theme/useTheme';
 export default function Paused() {
   const theme = useTheme();
   const { refresh } = useProtectionVerdictContext();
+  const [lista, setLista] = useState<Lista | null>(null);
+
+  useEffect(() => {
+    let ativo = true;
+    (async () => {
+      try {
+        const pacotes = new Set(AceleralockBlocker.blockedPackages());
+        const sites = AceleralockBlocker.blockedDomains().length;
+        const apps = await AceleralockBlocker.installedApps();
+        if (ativo) {
+          setLista({ apps: apps.filter((app) => pacotes.has(app.packageName)), sites });
+        }
+      } catch (error) {
+        console.warn('[Paused] falha ao ler a lista de bloqueados', error);
+      }
+    })();
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const handleActivate = () => {
     AceleralockBlocker.start();
     refresh();
   };
 
+  const resumo = lista ? resumoLiberados(lista.apps.length, lista.sites) : null;
+
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: spacing[4],
-        padding: spacing[6],
-        backgroundColor: theme.colors.bgCanvas,
-      }}
+    <TelaDeEstado
+      icon="shield-outline"
+      title="Proteção desligada"
+      message="Você pediu para desligar e cumpriu a espera. Nada está bloqueado agora."
+      action={<Button label="Reativar proteção" onPress={handleActivate} />}
+      caption="Reativar é imediato. A lista continua a mesma."
     >
-      <Text
-        style={{
-          fontSize: typography.title3.fontSize,
-          lineHeight: typography.title3.lineHeight,
-          fontWeight: typography.title3.fontWeight,
-          textAlign: 'center',
-          color: theme.colors.textPrimary,
-        }}
-      >
-        A proteção está desligada.
-      </Text>
-      <Text
-        style={{
-          fontSize: typography.body.fontSize,
-          lineHeight: typography.body.lineHeight,
-          textAlign: 'center',
-          color: theme.colors.textSecondary,
-        }}
-      >
-        Foi um pedido seu, cumprido depois da espera. Nada está bloqueado agora.
-      </Text>
-      <Button label="Ativar proteção" onPress={handleActivate} />
-    </SafeAreaView>
+      {lista && resumo && (
+        <View
+          style={[
+            styles.cartao,
+            { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
+          ]}
+        >
+          {lista.apps.length > 0 && (
+            <View style={styles.pilha} accessibilityElementsHidden importantForAccessibility="no">
+              {lista.apps.slice(0, ICONES_NA_PILHA).map((app, indice) => (
+                <View key={app.packageName} style={indice > 0 && styles.sobreposto}>
+                  <IconeApp iconUri={app.iconUri} tamanho={32} contorno={theme.colors.bgSurface} />
+                </View>
+              ))}
+            </View>
+          )}
+          <View style={styles.textos}>
+            <Text style={[styles.titulo, { color: theme.colors.textPrimary }]}>{resumo}</Text>
+            <Text style={[styles.detalhe, { color: theme.colors.textSecondary }]}>
+              Voltam a ser bloqueados ao reativar
+            </Text>
+          </View>
+        </View>
+      )}
+    </TelaDeEstado>
   );
 }
+
+const styles = StyleSheet.create({
+  cartao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[4],
+    padding: spacing[4],
+    borderRadius: radius.lg,
+    borderWidth: 1,
+  },
+  pilha: {
+    flexDirection: 'row',
+  },
+  sobreposto: {
+    marginLeft: -spacing[2],
+  },
+  textos: {
+    flex: 1,
+    gap: 2,
+  },
+  titulo: {
+    fontSize: typography.callout.fontSize,
+    lineHeight: typography.callout.lineHeight,
+    fontWeight: '700',
+  },
+  detalhe: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+  },
+});

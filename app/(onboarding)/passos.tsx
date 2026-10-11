@@ -43,7 +43,7 @@ export default function OnboardingPassos() {
     };
   }, []);
 
-  useFocusBackHandler(passo, inicial, setPasso, () => router.back());
+  const voltar = useVoltarUmPasso(passo, inicial, setPasso, () => router.back());
 
   if (passo === null || inicial === null) {
     return null;
@@ -56,17 +56,19 @@ export default function OnboardingPassos() {
         passoInicial={inicial}
         passo={passo}
         onPasso={(proximo) => setPasso(proximo)}
+        onVoltar={passo > inicial || router.canGoBack() ? voltar : null}
       />
     </>
   );
 }
 
 /**
- * O voltar fisico anda uma secao pra tras. Na primeira secao do caminho desta
- * pessoa, sai pra tela de boas-vindas. `gestureEnabled: false` cobre o swipe:
- * so o botao volta, e sempre pelo mesmo caminho.
+ * O voltar (fisico ou a seta do cabecalho) anda uma secao pra tras. Na primeira
+ * secao do caminho desta pessoa, sai pra tela de boas-vindas.
+ * `gestureEnabled: false` cobre o swipe: so os dois botoes voltam, e sempre
+ * pelo mesmo caminho.
  */
-function useFocusBackHandler(
+function useVoltarUmPasso(
   passo: Passo | null,
   inicial: Passo | null,
   setPasso: (passo: Passo) => void,
@@ -88,4 +90,6 @@ function useFocusBackHandler(
     const subscription = BackHandler.addEventListener('hardwareBackPress', aoVoltar);
     return () => subscription.remove();
   }, [aoVoltar]);
+
+  return aoVoltar;
 }

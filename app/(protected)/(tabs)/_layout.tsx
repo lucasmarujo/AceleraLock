@@ -1,37 +1,41 @@
 import { useCallback } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Tabs, useFocusEffect, useRouter } from 'expo-router';
 
 import AceleralockBlocker from '@/native/blocker';
-import { spacing, typography } from '@/theme/tokens';
+import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 /**
- * Duas abas. O design system (§3.20) pede "3-4 destinos" — aqui sao dois, por
- * decisao de produto: o app faz uma coisa, e inventar um terceiro destino so
- * pra cumprir a faixa seria menu com item de enfeite. A linha da doc foi
- * atualizada junto, pra isto ser decisao registrada e nao desvio silencioso.
- *
- * Primeiro uso de `@expo/vector-icons` no projeto: a lib ja estava instalada e
- * nunca importada, e tab bar sem icone nao existe.
+ * Altura da barra sem o inset de baixo. Comporta o indicador de 32 do item
+ * ativo (Material 3) mais o rotulo: menos que isso e o rotulo corta.
  */
-/** Altura da barra sem contar a area de sistema embaixo. */
-const ALTURA_BARRA = 56;
+const ALTURA_BARRA = 64;
 
 /**
- * Folga extra alem do inset do sistema. Sem ela a nossa barra encosta na barra
- * de navegacao do Android e as duas leem como uma faixa so — o gesto de voltar
- * fica a poucos pixels do rotulo "Perfil".
+ * Folga entre o rotulo e a borda inferior. Sem ela, em aparelho com navegacao
+ * por gestos o inset e pequeno e o rotulo fica colado na barra do sistema.
  */
 const RESPIRO = 5;
 
+type IconeDaAba = {
+  ativo: keyof typeof Ionicons.glyphMap;
+  inativo: keyof typeof Ionicons.glyphMap;
+};
+
+/**
+ * Tres destinos desde o redesign (2026-10-11, docs/decisoes.md): Bloqueios
+ * deixou de ser tela empilhada aberta por botoes da Inicio e virou aba —
+ * e o que o app faz, e o modo restrito mora la, junto da lista que ele trava.
+ */
 export default function TabsLayout() {
   const theme = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
-  // Sobe do antigo (protected)/index.tsx: o desvio vale para as duas abas, nao
+  // Sobe do antigo (protected)/index.tsx: o desvio vale para todas as abas, nao
   // so pra home. Quem tem pedido pendente nao fica navegando pelo app como se
   // nada estivesse em curso.
   useFocusEffect(
@@ -43,12 +47,40 @@ export default function TabsLayout() {
     }, [router])
   );
 
+  const icone = ({ ativo, inativo }: IconeDaAba) =>
+    function IconeDaAbaComFoco({ focused }: { focused: boolean }) {
+      return (
+        <View
+          style={[styles.indicador, focused && { backgroundColor: theme.colors.bgBrandSubtle }]}
+        >
+          <Ionicons
+            name={focused ? ativo : inativo}
+            size={22}
+            color={focused ? theme.colors.textBrand : theme.colors.textTertiary}
+          />
+        </View>
+      );
+    };
+
+  const rotulo = ({ focused, children }: { focused: boolean; children: string }) => (
+    <Text
+      style={[
+        styles.rotulo,
+        {
+          color: focused ? theme.colors.textPrimary : theme.colors.textSecondary,
+          fontWeight: focused ? '700' : '500',
+        },
+      ]}
+    >
+      {children}
+    </Text>
+  );
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.textBrand,
-        tabBarInactiveTintColor: theme.colors.textTertiary,
+        tabBarLabel: rotulo,
         tabBarStyle: {
           backgroundColor: theme.colors.bgSurface,
           borderTopColor: theme.colors.borderDefault,
@@ -56,32 +88,49 @@ export default function TabsLayout() {
           // so `paddingBottom` deixaria o rotulo pra fora da barra.
           height: ALTURA_BARRA + insets.bottom + RESPIRO,
           paddingBottom: insets.bottom + RESPIRO,
-          paddingTop: spacing[1],
+          paddingTop: spacing[3],
         },
-        tabBarLabelStyle: {
-          fontSize: typography.caption.fontSize,
-          fontWeight: typography.caption.fontWeight,
-        },
+        tabBarItemStyle: styles.item,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Início',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="shield-checkmark-outline" color={color} size={size} />
-          ),
+          tabBarIcon: icone({ ativo: 'home', inativo: 'home-outline' }),
         }}
       />
       <Tabs.Screen
-        name="perfil"
+        name="bloqueios"
         options={{
-          title: 'Perfil',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" color={color} size={size} />
-          ),
+          title: 'Bloqueios',
+          tabBarIcon: icone({ ativo: 'shield-checkmark', inativo: 'shield-outline' }),
+        }}
+      />
+      <Tabs.Screen
+        name="ajustes"
+        options={{
+          title: 'Ajustes',
+          tabBarIcon: icone({ ativo: 'options', inativo: 'options-outline' }),
         }}
       />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  item: {
+    gap: spacing[1],
+  },
+  indicador: {
+    width: 64,
+    height: 32,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rotulo: {
+    fontSize: typography.caption.fontSize,
+    lineHeight: typography.caption.lineHeight,
+  },
+});

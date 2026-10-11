@@ -19,7 +19,7 @@ const POLL_MS = 2000;
 export default function Esperando() {
   const router = useRouter();
   const { refresh } = useProtectionVerdictContext();
-  const pendingTarget = AceleralockBlocker.protectionState().pendingTarget;
+  const { pendingTarget, waitMinutes } = AceleralockBlocker.protectionState();
 
   useEffect(() => {
     if (!pendingTarget) {
@@ -51,6 +51,7 @@ export default function Esperando() {
   return (
     <WaitingScreen
       pendingTarget={pendingTarget}
+      totalMs={waitMinutes * 60_000}
       readRemainingMs={() =>
         (AceleralockBlocker.protectionState().pendingRemainingSeconds ?? 0) * 1000
       }

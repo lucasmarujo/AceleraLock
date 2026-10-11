@@ -33,6 +33,36 @@ export function formatRemainingShort(remainingMs: number): string {
 }
 
 /**
+ * Número grande do cronômetro: "18:24", e "1:05:09" a partir de uma hora — a
+ * espera é configurável, então o formato não pode assumir que cabe em minutos.
+ * Arredonda pra cima pelo mesmo motivo do rótulo: "00:00" só quando acabou.
+ */
+export function formatRemainingClock(remainingMs: number): string {
+  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const ss = String(seconds).padStart(2, '0');
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${ss}`;
+  }
+  return `${String(minutes).padStart(2, '0')}:${ss}`;
+}
+
+/**
+ * Quanto da espera já passou (0..1), pra barra de progresso (§2.4). É desenho,
+ * não verdade: o total vem da duração configurada hoje, e um pedido feito com
+ * outra duração pode não bater — por isso clampado nas duas pontas, e por isso
+ * a barra nunca é o único indicador (número e rótulo continuam do lado).
+ */
+export function fracaoDecorrida(remainingMs: number, totalMs: number): number {
+  if (!Number.isFinite(totalMs) || totalMs <= 0 || !Number.isFinite(remainingMs)) {
+    return 0;
+  }
+  return Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
+}
+
+/**
  * Rótulo de leitor de tela — não pode mudar a cada segundo (§2.5: abusivo
  * com VoiceOver/TalkBack). Quem chama passa o mesmo `remainingMs` arredondado
  * pro bucket de 15s (roundToAnnouncementBucket), não o valor cru do tick.

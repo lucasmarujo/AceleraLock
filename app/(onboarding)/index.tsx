@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { BackHandler, Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -6,7 +7,6 @@ import Animated, {
   useReducedMotion,
   useSharedValue,
   withDelay,
-  withRepeat,
   withTiming,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,20 +15,34 @@ import { Stack, useRouter } from 'expo-router';
 
 import { Button } from '@/components/Button';
 import { readOnboardingComplete } from '@/state/onboardingStorage';
-import { brand, duration, easing, neutral, radius, spacing, typography } from '@/theme/tokens';
+import {
+  brand,
+  duration,
+  easing,
+  neutral,
+  radius,
+  spacing,
+  temaNeutral,
+  typography,
+} from '@/theme/tokens';
 
 const BADGE = require('../../assets/icon-1024.png');
 
-const BADGE_SIZE = 168;
-const ANEL_SIZE = 200;
-const PULSO_MS = 2600;
+const BADGE_SIZE = 88;
+
+const PROMESSAS: { icone: keyof typeof Ionicons.glyphMap; texto: string }[] = [
+  { icone: 'shield-outline', texto: 'Bloqueia os apps e sites que você escolher' },
+  { icone: 'hourglass-outline', texto: 'Mudar de ideia pode pedir uma espera' },
+  { icone: 'phone-portrait-outline', texto: 'Tudo fica no seu celular. Sem conta.' },
+];
 
 /**
  * Superficie de marca *fixa*: e a unica tela do app que nao responde ao
- * `useColorScheme`. O degrade vai do turquesa ao tema nas duas pontas
- * (`brand.turquesa` -> `brand.tema`, docs/design-system.md §1.1), entao o
- * contraste de texto so fecha com neutros claros — trocar por token semantico
- * de tema quebraria a leitura no claro. Nao "consertar" pra seguir o tema.
+ * `useColorScheme`. Desde o redesign (2026-10-11) o degrade e escuro nas duas
+ * pontas (`brand.temaTurquesa` -> `brand.tema`): o turquesa claro de antes
+ * deixava o texto branco do topo abaixo de 4.5:1. O contraste so fecha com
+ * neutros claros — trocar por token semantico de tema quebraria a leitura no
+ * claro. Nao "consertar" pra seguir o tema.
  *
  * O primario tambem escapa da inversao clara/escura de `surfaces.brand` pelo
  * mesmo motivo, via a prop `surface` do `Button`.
@@ -56,35 +70,6 @@ function useEntrada(atrasoMs: number, reduzido: boolean) {
     opacity: progresso.value,
     transform: [{ translateY: (1 - progresso.value) * 12 }],
   }));
-}
-
-function Anel({ atrasoMs, reduzido }: { atrasoMs: number; reduzido: boolean }) {
-  const pulso = useSharedValue(0);
-
-  useEffect(() => {
-    if (reduzido) {
-      return;
-    }
-    pulso.value = withDelay(
-      atrasoMs,
-      withRepeat(
-        withTiming(1, { duration: PULSO_MS, easing: Easing.bezier(...easing.decelerate) }),
-        -1,
-        false
-      )
-    );
-  }, [atrasoMs, pulso, reduzido]);
-
-  const estilo = useAnimatedStyle(() => ({
-    opacity: (1 - pulso.value) * 0.45,
-    transform: [{ scale: 1 + pulso.value * 1.2 }],
-  }));
-
-  if (reduzido) {
-    return null;
-  }
-
-  return <Animated.View pointerEvents="none" style={[styles.anel, estilo]} />;
 }
 
 export default function OnboardingBoasVindas() {
@@ -118,38 +103,29 @@ export default function OnboardingBoasVindas() {
     // Primeiro passo do grupo: nao ha passo anterior pra voltar, entao engolir
     // aqui e inambiguo (nunca "as vezes navega, as vezes fecha o app"). Decisao
     // herdada do fluxo antigo — o voltar fisico nunca fecha o app sozinho, quem
-    // sai do onboarding sai pelo link "Sair" abaixo do CTA.
+    // sai do onboarding sai pelo link "Sair do app" abaixo do CTA.
     const subscription = BackHandler.addEventListener('hardwareBackPress', () => true);
     return () => subscription.remove();
   }, []);
 
-  const estiloTitulo = useEntrada(500, reduzido);
-  const estiloSubtitulo = useEntrada(620, reduzido);
-  const estiloCta = useEntrada(740, reduzido);
   const estiloBadge = useEntrada(0, reduzido);
+  const estiloTitulo = useEntrada(120, reduzido);
+  const estiloPromessas = useEntrada(260, reduzido);
+  const estiloCta = useEntrada(400, reduzido);
 
   return (
     <View style={styles.raiz}>
       <Stack.Screen options={{ gestureEnabled: false }} />
       <LinearGradient
-        colors={[brand.turquesa, brand.tema]}
+        colors={[brand.temaTurquesa, brand.tema]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 0, y: 0.7 }}
         style={StyleSheet.absoluteFill}
       />
 
       {primeiraVez && (
         <SafeAreaView style={styles.conteudo}>
-          <Animated.View style={[styles.cabecalho, estiloTitulo]}>
-            <Text style={styles.titulo}>Bem-vindo ao AceleraLock</Text>
-          </Animated.View>
-          <Animated.Text style={[styles.subtitulo, estiloSubtitulo]}>
-            Tome controle sobre o seu tempo de tela
-          </Animated.Text>
-
-          <Animated.View style={[styles.palco, estiloBadge]}>
-            <Anel atrasoMs={0} reduzido={reduzido} />
-            <Anel atrasoMs={PULSO_MS / 2} reduzido={reduzido} />
+          <Animated.View style={estiloBadge}>
             <Image
               source={BADGE}
               style={styles.badge}
@@ -159,21 +135,50 @@ export default function OnboardingBoasVindas() {
             />
           </Animated.View>
 
+          <Animated.View style={[styles.cabecalho, estiloTitulo]}>
+            <Text style={styles.marca}>ACELERALOCK</Text>
+            <Text accessibilityRole="header" style={styles.titulo}>
+              Faça o impulso esperar.
+            </Text>
+            <Text style={styles.subtitulo}>
+              Escolha os apps que roubam seu tempo. Quando bater a vontade de abrir, o AceleraLock
+              fica no caminho.
+            </Text>
+          </Animated.View>
+
+          <Animated.View style={[styles.promessas, estiloPromessas]}>
+            {PROMESSAS.map((promessa) => (
+              <View key={promessa.texto} style={styles.promessa}>
+                <View style={styles.iconePromessa}>
+                  <Ionicons name={promessa.icone} size={18} color={brand.turquesa} />
+                </View>
+                <Text style={styles.textoPromessa}>{promessa.texto}</Text>
+              </View>
+            ))}
+          </Animated.View>
+
+          <View style={styles.espaco} />
+
           <Animated.View style={[styles.rodape, estiloCta]}>
             <Button
-              label="Vamos começar"
+              label="Começar"
               surface={SUPERFICIE_MARCA}
               onPress={() => router.push('/passos')}
             />
             {/*
               Mesma porta de saida do fluxo antigo (era o link do
               `OnboardingStepScreen`): subordinada ao CTA de proposito, sem
-              virar `Button`, pra nao competir com "Vamos começar". So Android
+              virar `Button`, pra nao competir com "Começar". So Android
               — nao existe API publica de auto-encerramento no iOS.
             */}
             {Platform.OS === 'android' && (
-              <Pressable accessibilityRole="button" onPress={() => BackHandler.exitApp()}>
-                <Text style={styles.sair}>Sair</Text>
+              <Pressable
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => BackHandler.exitApp()}
+                style={styles.sair}
+              >
+                <Text style={styles.textoSair}>Sair do app</Text>
               </Pressable>
             )}
           </Animated.View>
@@ -190,52 +195,77 @@ const styles = StyleSheet.create({
   },
   conteudo: {
     flex: 1,
-    alignItems: 'center',
-    padding: spacing[6],
-  },
-  cabecalho: {
+    paddingHorizontal: spacing[6],
     paddingTop: spacing[8],
-  },
-  titulo: {
-    fontSize: typography.display.fontSize,
-    lineHeight: typography.display.lineHeight,
-    fontWeight: typography.display.fontWeight,
-    textAlign: 'center',
-    color: neutral[0],
-  },
-  subtitulo: {
-    marginTop: spacing[3],
-    fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
-    textAlign: 'center',
-    color: neutral[200],
-  },
-  palco: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  anel: {
-    position: 'absolute',
-    width: ANEL_SIZE,
-    height: ANEL_SIZE,
-    borderRadius: radius.full,
-    borderWidth: 2,
-    borderColor: neutral[0],
+    paddingBottom: spacing[4],
+    gap: spacing[6],
   },
   badge: {
     width: BADGE_SIZE,
     height: BADGE_SIZE,
+    borderRadius: radius.xl,
+  },
+  cabecalho: {
+    gap: spacing[3],
+  },
+  marca: {
+    fontSize: typography.caption.fontSize,
+    lineHeight: typography.caption.lineHeight,
+    fontWeight: '700',
+    letterSpacing: 2,
+    color: brand.turquesa,
+  },
+  titulo: {
+    fontSize: typography.metric.fontSize,
+    lineHeight: typography.metric.lineHeight,
+    fontWeight: typography.metric.fontWeight,
+    letterSpacing: -1,
+    color: neutral[0],
+  },
+  subtitulo: {
+    fontSize: typography.body.fontSize,
+    lineHeight: typography.body.lineHeight,
+    color: neutral[300],
+  },
+  promessas: {
+    gap: spacing[4],
+  },
+  promessa: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[3],
+  },
+  iconePromessa: {
+    width: 36,
+    height: 36,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: temaNeutral[800],
+  },
+  textoPromessa: {
+    flex: 1,
+    fontSize: typography.callout.fontSize,
+    lineHeight: typography.callout.lineHeight,
+    color: neutral[0],
+  },
+  espaco: {
+    flex: 1,
   },
   rodape: {
     alignSelf: 'stretch',
-    alignItems: 'center',
-    gap: spacing[4],
+    gap: spacing[2],
   },
   sair: {
+    alignSelf: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: spacing[4],
+  },
+  textoSair: {
     color: neutral[300],
-    textDecorationLine: 'underline',
-    fontSize: typography.footnote.fontSize,
-    lineHeight: typography.footnote.lineHeight,
+    fontSize: typography.callout.fontSize,
+    lineHeight: typography.callout.lineHeight,
+    fontWeight: '600',
   },
 });

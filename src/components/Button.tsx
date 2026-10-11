@@ -30,7 +30,7 @@ type Props = {
   surface?: Surface;
 };
 
-const HEIGHT: Record<ButtonSize, number> = { lg: 52, md: 44 };
+const HEIGHT: Record<ButtonSize, number> = { lg: 56, md: 44 };
 
 function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, surface?: Surface) {
   switch (variant) {

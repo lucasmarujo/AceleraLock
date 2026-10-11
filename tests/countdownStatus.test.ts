@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 
 import {
   deriveCountdownStatus,
+  formatRemainingClock,
   formatRemainingForScreenReader,
   formatRemainingShort,
+  fracaoDecorrida,
   roundToAnnouncementBucket,
 } from '../src/components/Countdown/countdownStatus';
 
@@ -50,4 +52,35 @@ test('roundToAnnouncementBucket agrupa em janelas de 15s, nunca desce', () => {
   assert.equal(roundToAnnouncementBucket(61_000), 75_000);
   assert.equal(roundToAnnouncementBucket(75_000), 75_000);
   assert.equal(roundToAnnouncementBucket(1_000), 15_000);
+});
+
+test('formatRemainingClock: minutos e segundos com dois dígitos', () => {
+  assert.equal(formatRemainingClock(18 * 60_000 + 24_000), '18:24');
+  assert.equal(formatRemainingClock(45_000), '00:45');
+});
+
+test('formatRemainingClock: a partir de uma hora mostra as horas, sem estourar os minutos', () => {
+  assert.equal(formatRemainingClock(65 * 60_000 + 9_000), '1:05:09');
+});
+
+test('formatRemainingClock arredonda pra cima — 00:00 só quando a espera acabou', () => {
+  assert.equal(formatRemainingClock(500), '00:01');
+  assert.equal(formatRemainingClock(0), '00:00');
+  assert.equal(formatRemainingClock(-3_000), '00:00');
+});
+
+test('fracaoDecorrida: proporção do que já passou', () => {
+  assert.equal(fracaoDecorrida(15 * 60_000, 30 * 60_000), 0.5);
+  assert.equal(fracaoDecorrida(30 * 60_000, 30 * 60_000), 0);
+  assert.equal(fracaoDecorrida(0, 30 * 60_000), 1);
+});
+
+test('regressao: fracaoDecorrida clampa quando o pedido foi feito com outra duração', () => {
+  assert.equal(fracaoDecorrida(45 * 60_000, 30 * 60_000), 0);
+  assert.equal(fracaoDecorrida(-1_000, 30 * 60_000), 1);
+});
+
+test('fracaoDecorrida sem total válido não desenha progresso', () => {
+  assert.equal(fracaoDecorrida(10_000, 0), 0);
+  assert.equal(fracaoDecorrida(10_000, Number.NaN), 0);
 });

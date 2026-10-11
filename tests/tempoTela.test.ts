@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 import {
   alturaDaBarra,
+  compararComEstimativa,
+  descreverComparacao,
   descreverDuracao,
   diasDoMes,
   escalaDoGrafico,
@@ -12,6 +14,7 @@ import {
   intensidadeDoDia,
   isoLocal,
   maiorLeitura,
+  semanaAteHoje,
 } from '../src/components/TempoTela/tempoTela';
 
 test('formatarDuracao: horas com minutos, horas cheias, so minutos, so segundos', () => {
@@ -124,4 +127,86 @@ test('escalaDoGrafico: a estimativa divide a escala com as leituras', () => {
 test('escalaDoGrafico: sem leitura e sem estimativa a escala nao zera', () => {
   assert.equal(escalaDoGrafico([], null), 1);
   assert.equal(escalaDoGrafico([0, 0], null), 1);
+});
+
+test('semanaAteHoje: sete dias de calendario terminando hoje, ultimo rotulado Hoje', () => {
+  const sabado = new Date(2026, 9, 10);
+  const semana = semanaAteHoje([], sabado);
+  assert.equal(semana.length, 7);
+  assert.deepEqual(
+    semana.map((dia) => dia.rotulo),
+    ['D', 'S', 'T', 'Q', 'Q', 'S', 'Hoje']
+  );
+  assert.equal(semana[0].data, '2026-10-04');
+  assert.equal(semana[6].data, '2026-10-10');
+  assert.equal(semana[6].hoje, true);
+  assert.equal(semana.filter((dia) => dia.hoje).length, 1);
+});
+
+test('regressao: dia sem leitura fica null na semana, nunca zero e nunca some', () => {
+  const sabado = new Date(2026, 9, 10);
+  const semana = semanaAteHoje(
+    [
+      { date: '2026-10-04', seconds: 3600 },
+      { date: '2026-10-06', seconds: 0 },
+    ],
+    sabado
+  );
+  assert.equal(semana[0].segundos, 3600);
+  assert.equal(semana[1].segundos, null);
+  assert.equal(semana[2].segundos, 0);
+});
+
+test('semanaAteHoje atravessa a virada do mes sem pular dia', () => {
+  const semana = semanaAteHoje([], new Date(2026, 9, 2));
+  assert.deepEqual(
+    semana.map((dia) => dia.data),
+    [
+      '2026-09-26',
+      '2026-09-27',
+      '2026-09-28',
+      '2026-09-29',
+      '2026-09-30',
+      '2026-10-01',
+      '2026-10-02',
+    ]
+  );
+});
+
+test('compararComEstimativa: abaixo, acima e a diferenca em segundos', () => {
+  assert.deepEqual(compararComEstimativa(3 * 3600 + 53 * 60, 5), {
+    sentido: 'abaixo',
+    diferencaSegundos: 3600 + 7 * 60,
+  });
+  assert.deepEqual(compararComEstimativa(6 * 3600, 5), {
+    sentido: 'acima',
+    diferencaSegundos: 3600,
+  });
+});
+
+test('compararComEstimativa: menos de um minuto de diferenca conta como igual', () => {
+  assert.deepEqual(compararComEstimativa(5 * 3600 - 30, 5), {
+    sentido: 'igual',
+    diferencaSegundos: 0,
+  });
+});
+
+test('regressao: hoje sem leitura nao vira "5h abaixo da estimativa"', () => {
+  assert.equal(compararComEstimativa(null, 5), null);
+});
+
+test('compararComEstimativa sem estimativa nao inventa referencia', () => {
+  assert.equal(compararComEstimativa(3600, null), null);
+  assert.equal(compararComEstimativa(3600, 0), null);
+});
+
+test('descreverComparacao fala a diferenca e a estimativa', () => {
+  assert.equal(
+    descreverComparacao({ sentido: 'abaixo', diferencaSegundos: 3600 + 7 * 60 }, 5),
+    '1h 07min abaixo da sua estimativa de 5h'
+  );
+  assert.equal(
+    descreverComparacao({ sentido: 'igual', diferencaSegundos: 0 }, 5),
+    'Na sua estimativa de 5h'
+  );
 });

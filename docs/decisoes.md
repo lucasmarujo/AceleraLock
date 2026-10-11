@@ -248,9 +248,9 @@ a esperar por teimosia, e o que se quer é que ela comece, espere e mude de idei
 
 ### Modo restrito: ligar é imediato, desligar pede 30min
 
-Configuração nova do produto. A pessoa liga o modo restrito no Perfil e, enquanto
-ele estiver ativo, a tela de escolha de apps mostra um aviso em vez da lista — nem
-ver nem editar. Ativar é imediato: é o compromisso com o próprio futuro da pessoa.
+Configuração nova do produto. A pessoa liga o modo restrito na aba Bloqueios (antes,
+no Perfil) e, enquanto ele estiver ativo, a lista aparece travada — ver sim, editar
+não (até 2026-10-11 a lista nem aparecia; ver "Redesign da UI" abaixo). Ativar é imediato: é o compromisso com o próprio futuro da pessoa.
 Desativar passa pelo mesmo motor de espera monotônica de `WaitingPeriod`, com
 alvo próprio `WaitTarget.RestrictedModeOff` (kind `RESTRICTED_MODE_OFF`).
 
@@ -269,8 +269,8 @@ gravação em vez de aceitar um apagamento silencioso. A UI lê do
 `protectionState()` do nativo; `restricted` **não** vira sexto valor de
 `ProtectionVerdict` porque é chave de configuração, não chave de roteamento
 (ver `src/state/verdict.ts` — `Snapshot.restricted` existe, `computeVerdict`
-não muda de ramo com ela). O gate na tela `/apps` é uma condicional simples,
-não um `Stack.Protected`.
+não muda de ramo com ela). O gate nos painéis da aba Bloqueios é uma condicional
+simples, não um `Stack.Protected`.
 
 A barreira de burla A1, A7, A11 e "um pedido por vez" valem para este alvo pelo
 mesmo motivo: `WaitingPeriod` é o motor, `RestrictedModeOff` é só mais um caso
@@ -407,8 +407,8 @@ Brave — o sistema nem entrega evento de outro app. O endereço fica só em mem
 gravar seria histórico de navegação, e o produto não guarda isso. O serviço também não
 inicia o `BlockerService`, senão um evento de navegador religaria proteção pausada.
 
-Custos aceitos: declaração de uso no Play Console com divulgação em destaque (a tela
-`sites.tsx` explica o que é lido **antes** de mandar para as Configurações), view ids
+Custos aceitos: declaração de uso no Play Console com divulgação em destaque (o painel
+de sites da aba Bloqueios explica o que é lido **antes** de mandar para as Configurações), view ids
 que mudam entre versões dos navegadores e só quebram em aparelho, e "configurações
 restritas" a liberar à mão no Android 13+ fora da Play.
 
@@ -425,6 +425,70 @@ Adicionar e remover site é livre, como na lista de apps. Não existe pedido de
 desbloqueio de site: `requestUnlock` ainda não tem tela nem para apps. E a concessão do
 navegador como app **não** libera os sites da lista — liberar o Chrome não pode virar
 liberar todo site bloqueado.
+
+---
+
+## Redesign da UI (2026-10-11)
+
+Antes × depois de cada tela no arquivo do Paper "AceleraLock — Mapa de telas", página
+"Redesign · antes × depois". Nenhuma regra de tempo, espera ou concessão mudou — o
+`core/` não foi tocado. O que muda é onde cada decisão aparece e o que a tela mostra.
+
+### Três abas: Início, Bloqueios, Ajustes
+
+Bloqueios deixou de ser duas telas empilhadas (`/apps` e `/sites`) abertas por botões da
+Início e virou aba, com Apps e Sites lado a lado num controle segmentado. É o que o app
+faz — escondido atrás de botão secundário, o "escolher apps" competia com o gráfico. O
+modo restrito saiu do Perfil e mora em cima da lista que ele trava. "Perfil" virou
+"Ajustes": tempo de tela foi para a Início, e o que sobrou é configuração.
+
+A barra de três itens cabe na faixa 2–4 do DS §3.20 sem destino de enfeite.
+
+### A lista aparece travada no modo restrito
+
+Antes a tela de apps mostrava só um aviso, com o argumento de que ver a lista já era
+isca. Mas a Início sempre mostrou os ícones dos bloqueados, com ou sem modo restrito —
+o argumento não se sustentava em lugar nenhum além daquela tela. E a barreira A12 é de
+tempo (desligar passa pela espera), não de visibilidade. Ver o que está bloqueado não
+enfraquece nada; os interruptores ficam desabilitados e o salvar recusa.
+
+### Salvar só aparece com alteração, e diz qual
+
+A barra de salvar surge com a primeira alteração pendente ("Instagram sai da lista") e
+some quando não há nada a gravar. A gravação continua no toque, nunca a cada interruptor:
+`setBlockedPackages` reescreve a política e acorda o serviço, e continua passando por
+`mergeBlockedPackages`. Trocar de Apps para Sites não descarta o rascunho do outro lado.
+
+### Modo restrito oferecido no fim do onboarding, desligado por padrão
+
+A última seção explica o custo dos dois lados ("sem ele, você tira o Instagram da lista
+na hora; com ele, mudar pede 30 min") e oferece o interruptor. Desligado por padrão: é
+compromisso, e compromisso marcado de fábrica não é escolha. Só vale ao tocar "Ir para o
+início" — até lá dá para desfazer sem custo.
+
+### Permissões pedidas por botão, não ao marcar um app
+
+Marcar um app sem as duas permissões abria as Configurações no meio da escolha. Agora a
+seção 4 mostra um checklist do que falta, com "Liberar" em cada linha, e o CTA só libera
+com as duas concedidas. O pedido continua obrigatório; deixou de ser efeito colateral.
+Em Ajustes, cada permissão pendente ganhou a ação que a corrige.
+
+### Dia sem leitura é coluna tracejada, não ausência
+
+O gráfico da Início mostra os sete dias de calendário até hoje. Dia sem leitura entra
+tracejado, com nota embaixo, em vez de sumir (a semana encolhia e as letras
+desalinhavam) e nunca como zero. Mesma regra de sempre: `null` não é `0`.
+
+### Cronômetro em barra, não anel
+
+O DS §2.4 aceita anel ou barra. Anel pede `react-native-svg`, dependência nova só para
+isso; a barra resolve com `View`. Continua sem instante de fim: a tela mostra quanto
+falta e quanto da espera já passou, nunca "libera às 15h".
+
+### "Desligar a proteção" segue sem botão
+
+A linha existia no protótipo. Não entrou: o gatilho de `STOP_PROTECTION` foi removido
+de propósito (commit `21cbd28`), e reintroduzir é decisão de produto, não de layout.
 
 ---
 
