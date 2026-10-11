@@ -1,5 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+
+import { Interruptor } from '@/components/Interruptor';
 
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -34,41 +36,32 @@ export function ModoRestritoCard({ restricted, waitMinutes, onAlternar }: Props)
         <View
           style={[
             styles.icone,
-            { backgroundColor: restricted ? theme.colors.bgSurface : theme.colors.bgSunken },
+            { backgroundColor: restricted ? theme.colors.bgWarningMuted : theme.colors.bgSunken },
           ]}
         >
           <Ionicons
             name={restricted ? 'lock-closed-outline' : 'lock-open-outline'}
             size={20}
-            color={restricted ? theme.colors.iconWarning : theme.colors.textSecondary}
+            color={restricted ? theme.colors.textWarning : theme.colors.textSecondary}
           />
         </View>
         <View style={styles.textos}>
           <Text style={[styles.titulo, { color: theme.colors.textPrimary }]}>
             {restricted ? 'Modo restrito ligado' : 'Modo restrito'}
           </Text>
-          <Text
-            style={[
-              styles.descricao,
-              { color: restricted ? theme.colors.textWarning : theme.colors.textSecondary },
-            ]}
-          >
+          <Text style={[styles.descricao, { color: theme.colors.textSecondary }]}>
             {restricted
               ? `A lista está travada. Desligar pede ${waitMinutes} min de espera.`
               : `Quando ligado, mudar a lista pede ${waitMinutes} min de espera.`}
           </Text>
         </View>
-        <Switch
-          accessibilityRole="switch"
+        <Interruptor
+          valor={restricted}
+          onChange={onAlternar}
           accessibilityLabel="Modo restrito"
           accessibilityHint={
             restricted ? 'Abre a confirmação para começar a espera' : 'Liga na hora'
           }
-          accessibilityState={{ checked: restricted }}
-          value={restricted}
-          onValueChange={onAlternar}
-          trackColor={{ false: theme.colors.borderStrong, true: theme.colors.borderBrand }}
-          thumbColor={restricted ? theme.colors.bgSurface : theme.colors.textSecondary}
         />
       </View>
       {restricted && (
@@ -85,12 +78,12 @@ export function ModoRestritoCard({ restricted, waitMinutes, onAlternar }: Props)
 
 const styles = StyleSheet.create({
   bloco: {
-    gap: spacing[2],
+    gap: spacing[2] + 2,
   },
   cartao: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[3],
+    gap: spacing[3] + 2,
     padding: spacing[4],
     borderRadius: radius.lg,
     borderWidth: 1,

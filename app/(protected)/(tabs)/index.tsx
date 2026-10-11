@@ -119,7 +119,7 @@ export default function Home() {
       <ScrollView contentContainerStyle={styles.conteudo}>
         <View style={styles.cabecalho}>
           <View style={styles.saudacao}>
-            <Text style={[styles.data, { color: theme.colors.textSecondary }]}>
+            <Text style={[styles.data, { color: theme.colors.textTertiary }]}>
               {dataPorExtenso(new Date())}
             </Text>
             <Text
@@ -137,7 +137,7 @@ export default function Home() {
             <View style={[styles.escudo, { backgroundColor: theme.colors.bgHeroRaised }]}>
               <Ionicons
                 name="shield-checkmark-outline"
-                size={24}
+                size={26}
                 color={theme.colors.textOnHeroBrand}
               />
             </View>
@@ -155,9 +155,7 @@ export default function Home() {
             </View>
           </View>
 
-          <View style={[styles.divisoria, { backgroundColor: theme.colors.borderHero }]} />
-
-          <View style={styles.linhaPilha}>
+          <View style={[styles.linhaPilha, { borderTopColor: theme.colors.lineOnHero }]}>
             <View style={styles.pilha}>
               {(bloqueados ?? []).slice(0, ICONES_NA_PILHA).map((app, indice) => (
                 <View
@@ -170,7 +168,13 @@ export default function Home() {
                 </View>
               ))}
               {resto && (
-                <Text style={[styles.resto, { color: theme.colors.textOnHeroSecondary }]}>
+                <Text
+                  style={[
+                    styles.resto,
+                    quantosApps > 0 && styles.restoAposPilha,
+                    { color: theme.colors.textOnHeroSecondary },
+                  ]}
+                >
                   {resto}
                 </Text>
               )}
@@ -178,14 +182,14 @@ export default function Home() {
             <Pressable
               accessibilityRole="button"
               accessibilityLabel="Gerenciar bloqueios"
-              hitSlop={8}
+              hitSlop={12}
               onPress={() => router.navigate('/bloqueios')}
               style={({ pressed }) => [styles.gerenciar, { opacity: pressed ? 0.7 : 1 }]}
             >
-              <Text style={[styles.textoGerenciar, { color: theme.colors.textOnHeroBrand }]}>
+              <Text style={[styles.acaoHero, { color: theme.colors.textOnHeroBrand }]}>
                 Gerenciar
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={theme.colors.textOnHeroBrand} />
+              <Ionicons name="chevron-forward" size={18} color={theme.colors.textOnHeroBrand} />
             </Pressable>
           </View>
 
@@ -193,7 +197,9 @@ export default function Home() {
             <Ionicons
               name={restricted ? 'lock-closed-outline' : 'lock-open-outline'}
               size={20}
-              color={restricted ? theme.colors.textOnHeroFriction : theme.colors.textOnHero}
+              color={
+                restricted ? theme.colors.textOnHeroFriction : theme.colors.textOnHeroSecondary
+              }
             />
             <View style={styles.textos}>
               <Text style={[styles.tituloRestrito, { color: theme.colors.textOnHero }]}>
@@ -207,11 +213,11 @@ export default function Home() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Ligar o modo restrito"
-                hitSlop={8}
+                hitSlop={12}
                 onPress={ligarModoRestrito}
                 style={({ pressed }) => [styles.ligar, { opacity: pressed ? 0.7 : 1 }]}
               >
-                <Text style={[styles.textoGerenciar, { color: theme.colors.textOnHeroBrand }]}>
+                <Text style={[styles.acaoHero, { color: theme.colors.textOnHeroBrand }]}>
                   Ligar
                 </Text>
               </Pressable>
@@ -220,16 +226,18 @@ export default function Home() {
         </HeroCard>
 
         {sitesDesligados && (
-          <InlineAlert
-            title={tituloSitesSemBloqueio(quantosSites)}
-            message="A leitura do navegador foi desligada. Os apps continuam bloqueados."
-            actionLabel="Ligar nas Configurações"
-            onAction={() =>
-              Linking.sendIntent('android.settings.ACCESSIBILITY_SETTINGS').catch(() =>
-                Linking.openSettings()
-              )
-            }
-          />
+          <View style={styles.aviso}>
+            <InlineAlert
+              title={tituloSitesSemBloqueio(quantosSites)}
+              message="A leitura do navegador foi desligada. Os apps continuam bloqueados."
+              actionLabel="Ligar nas Configurações"
+              onAction={() =>
+                Linking.sendIntent('android.settings.ACCESSIBILITY_SETTINGS').catch(() =>
+                  Linking.openSettings()
+                )
+              }
+            />
+          </View>
         )}
 
         <View
@@ -264,14 +272,9 @@ export default function Home() {
           </View>
 
           {tempoTela.estado === 'pronto' && (
-            <>
-              <View style={[styles.divisoria, { backgroundColor: theme.colors.borderDefault }]} />
-              <Semana
-                leituras={tempoTela.resumo.days}
-                estimativa={estimativa}
-                corDaLegenda={theme.colors.textSecondary}
-              />
-            </>
+            <View style={[styles.semana, { borderTopColor: theme.colors.borderDefault }]}>
+              <Semana leituras={tempoTela.resumo.days} estimativa={estimativa} />
+            </View>
           )}
         </View>
 
@@ -289,7 +292,7 @@ export default function Home() {
                 {tempoTela.resumo.byPackage.slice(0, MAIS_USADOS).map((app) => (
                   <View key={app.packageName} style={styles.usado}>
                     <IconeApp iconUri={app.iconUri} tamanho={36} />
-                    <View style={styles.textos}>
+                    <View style={styles.textosUsado}>
                       <View style={styles.linhaUsado}>
                         <Text
                           numberOfLines={1}
@@ -380,7 +383,7 @@ function Comparacao({
         { backgroundColor: abaixo ? theme.colors.bgBrandSubtle : theme.colors.bgSunken },
       ]}
     >
-      <Ionicons name={icone} size={14} color={cor} />
+      <Ionicons name={icone} size={16} color={cor} />
       <Text style={[styles.textoChip, { color: cor }]}>
         {descreverComparacao(comparacao, estimativa)}
       </Text>
@@ -396,12 +399,11 @@ function Comparacao({
 function Semana({
   leituras,
   estimativa,
-  corDaLegenda,
 }: {
   leituras: { date: string; seconds: number }[];
   estimativa: number | null;
-  corDaLegenda: string;
 }) {
+  const theme = useTheme();
   const semana = semanaAteHoje(leituras, new Date());
 
   if (semana.every((dia) => dia.segundos === null)) {
@@ -416,17 +418,22 @@ function Semana({
   const nota = notaSemLeitura(semana);
 
   return (
-    <View style={styles.semana}>
+    <View style={styles.conteudoSemana}>
       <View style={styles.cabecalhoSemana}>
         <Overline>Últimos 7 dias</Overline>
         {estimativa !== null && (
           <View style={styles.legenda}>
             <View style={styles.tracos}>
               {[0, 1, 2].map((traco) => (
-                <View key={traco} style={[styles.traco, { backgroundColor: corDaLegenda }]} />
+                <View
+                  key={traco}
+                  style={[styles.traco, { backgroundColor: theme.colors.textTertiary }]}
+                />
               ))}
             </View>
-            <Text style={[styles.textoLegenda, { color: corDaLegenda }]}>sua estimativa</Text>
+            <Text style={[styles.textoLegenda, { color: theme.colors.textSecondary }]}>
+              sua estimativa
+            </Text>
           </View>
         )}
       </View>
@@ -440,7 +447,7 @@ function Semana({
         mostrarValor
         estimativaHoras={estimativa}
       />
-      {nota && <Text style={[styles.nota, { color: corDaLegenda }]}>{nota}</Text>}
+      {nota && <Text style={[styles.nota, { color: theme.colors.textTertiary }]}>{nota}</Text>}
     </View>
   );
 }
@@ -457,13 +464,13 @@ const styles = StyleSheet.create({
   conteudo: {
     paddingHorizontal: spacing[4],
     paddingTop: spacing[4],
-    paddingBottom: spacing[8],
-    gap: spacing[5],
+    paddingBottom: spacing[6],
   },
   cabecalho: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
+    paddingBottom: spacing[5],
   },
   saudacao: {
     flex: 1,
@@ -477,11 +484,12 @@ const styles = StyleSheet.create({
     fontSize: typography.heading.fontSize,
     lineHeight: typography.heading.lineHeight,
     fontWeight: typography.heading.fontWeight,
+    letterSpacing: typography.heading.letterSpacing,
   },
   status: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[4],
+    gap: spacing[3] + 2,
   },
   escudo: {
     width: 48,
@@ -497,21 +505,19 @@ const styles = StyleSheet.create({
   tituloHero: {
     fontSize: typography.title2.fontSize,
     lineHeight: typography.title2.lineHeight,
-    fontWeight: '800',
+    fontWeight: '700',
   },
   subtituloHero: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-  },
-  divisoria: {
-    height: StyleSheet.hairlineWidth,
-    alignSelf: 'stretch',
   },
   linhaPilha: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing[3],
+    borderTopWidth: 1,
+    paddingTop: spacing[4],
   },
   pilha: {
     flex: 1,
@@ -522,44 +528,48 @@ const styles = StyleSheet.create({
     marginLeft: -spacing[2],
   },
   resto: {
-    marginLeft: spacing[3],
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
+  },
+  restoAposPilha: {
+    marginLeft: spacing[3] + 2,
   },
   gerenciar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[1],
-    minHeight: 44,
+    gap: 2,
   },
-  textoGerenciar: {
+  acaoHero: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   restrito: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
     paddingVertical: spacing[3],
-    paddingHorizontal: spacing[4],
+    paddingHorizontal: spacing[3] + 2,
     borderRadius: radius.md,
   },
   tituloRestrito: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   detalheRestrito: {
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
   },
   ligar: {
-    minHeight: 44,
     justifyContent: 'center',
     paddingLeft: spacing[2],
   },
+  aviso: {
+    marginTop: spacing[3],
+  },
   cartao: {
+    marginTop: spacing[6],
     borderWidth: 1,
     borderRadius: radius.lg,
     padding: spacing[5],
@@ -573,6 +583,7 @@ const styles = StyleSheet.create({
     fontSize: typography.metric.fontSize,
     lineHeight: typography.metric.lineHeight,
     fontWeight: typography.metric.fontWeight,
+    letterSpacing: typography.metric.letterSpacing,
     fontVariant: ['tabular-nums'],
   },
   corpo: {
@@ -582,9 +593,10 @@ const styles = StyleSheet.create({
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[2],
+    gap: spacing[1] + 2,
     paddingVertical: spacing[1] + 2,
-    paddingHorizontal: spacing[3],
+    paddingLeft: spacing[2],
+    paddingRight: spacing[2] + 2,
     borderRadius: radius.full,
   },
   textoChip: {
@@ -593,7 +605,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   semana: {
-    gap: spacing[4],
+    borderTopWidth: 1,
+    paddingTop: spacing[4],
+  },
+  conteudoSemana: {
+    gap: spacing[3],
   },
   cabecalhoSemana: {
     flexDirection: 'row',
@@ -603,7 +619,7 @@ const styles = StyleSheet.create({
   legenda: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[2],
+    gap: spacing[1] + 2,
   },
   tracos: {
     flexDirection: 'row',
@@ -623,23 +639,28 @@ const styles = StyleSheet.create({
     lineHeight: typography.caption.lineHeight,
   },
   secao: {
+    marginTop: spacing[6] + spacing[1],
     gap: spacing[3],
   },
   tituloSecao: {
-    fontSize: typography.title3.fontSize,
-    lineHeight: typography.title3.lineHeight,
-    fontWeight: typography.title3.fontWeight,
+    fontSize: typography.title2.fontSize,
+    lineHeight: typography.title2.lineHeight,
+    fontWeight: typography.title2.fontWeight,
   },
   usado: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    paddingVertical: spacing[3],
+    paddingVertical: spacing[3] + 2,
     paddingHorizontal: spacing[4],
+  },
+  textosUsado: {
+    flex: 1,
+    gap: spacing[1] + 2,
   },
   linhaUsado: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'baseline',
     gap: spacing[2],
   },
   nomeApp: {
@@ -650,14 +671,13 @@ const styles = StyleSheet.create({
   duracaoApp: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
     fontVariant: ['tabular-nums'],
   },
   trilho: {
     height: 4,
     borderRadius: 2,
     overflow: 'hidden',
-    marginTop: spacing[1],
   },
   preenchido: {
     height: 4,

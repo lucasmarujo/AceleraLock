@@ -37,8 +37,8 @@ export const brand = {
   turquesaPressedDark: '#03a09e',
   /** t=0.15 em direcao a `turquesa` — pressed do primario claro (invertido). */
   temaPressedLight: '#042e34',
-  /** t=0.20 em direcao a `turquesa` — topo do degrade das boas-vindas. */
-  temaTurquesa: '#04373d',
+  /** Topo do degrade das boas-vindas, medido do Paper (oklab 35.8% -0.052 -0.021). */
+  temaTurquesa: '#0b4549',
   /**
    * As duas pontas do gradiente do anel da logo do AceleraDev
    * (`assets/aceleradev-logo.svg`), medidas do proprio arquivo: azul embaixo
@@ -189,14 +189,16 @@ type TextStyleToken = {
   fontSize: number;
   lineHeight: number;
   fontWeight: '400' | '500' | '600' | '700' | '800';
+  /** Em pt. So nos tamanhos de manchete, onde o Paper aperta o tracking. */
+  letterSpacing?: number;
 };
 
 export const typography: Record<string, TextStyleToken> = {
   /** Numero-heroi de um cartao (tempo de tela de hoje) e manchete das boas-vindas. */
-  metric: { fontSize: 44, lineHeight: 48, fontWeight: '800' },
+  metric: { fontSize: 44, lineHeight: 48, fontWeight: '800', letterSpacing: -1.32 },
   display: { fontSize: 34, lineHeight: 40, fontWeight: '700' },
   /** Titulo de tela — o `title1` com o peso de manchete do redesign. */
-  heading: { fontSize: 28, lineHeight: 34, fontWeight: '800' },
+  heading: { fontSize: 28, lineHeight: 34, fontWeight: '800', letterSpacing: -0.56 },
   title1: { fontSize: 28, lineHeight: 34, fontWeight: '700' },
   title2: { fontSize: 22, lineHeight: 28, fontWeight: '600' },
   title3: { fontSize: 20, lineHeight: 26, fontWeight: '600' },
@@ -205,7 +207,7 @@ export const typography: Record<string, TextStyleToken> = {
   callout: { fontSize: 15, lineHeight: 20, fontWeight: '400' },
   footnote: { fontSize: 13, lineHeight: 18, fontWeight: '400' },
   caption: { fontSize: 12, lineHeight: 16, fontWeight: '500' },
-  timerHero: { fontSize: 56, lineHeight: 60, fontWeight: '700' },
+  timerHero: { fontSize: 56, lineHeight: 60, fontWeight: '700', letterSpacing: -1.12 },
 };
 
 export type Surface = { fill: string; onFill: string; pressedFill: string };
@@ -233,7 +235,12 @@ type SemanticTokens = {
      */
     bgHero: string;
     bgHeroRaised: string;
+    /** Igual ao `bgHero` no claro (sem borda, como no Paper); no escuro separa do canvas. */
     borderHero: string;
+    /** Divisoria dentro do hero (entre status e pilha, acima do interruptor). */
+    lineOnHero: string;
+    /** Contorno e botao do interruptor desligado sobre o hero. */
+    controlOffOnHero: string;
     textOnHero: string;
     textOnHeroSecondary: string;
     textOnHeroBrand: string;
@@ -244,6 +251,14 @@ type SemanticTokens = {
     borderWarning: string;
     textWarning: string;
     iconWarning: string;
+    /** Circulo do icone dentro de um aviso ambar (cadeado do modo restrito ligado). */
+    bgWarningMuted: string;
+    /**
+     * Contorno de controle sobre `bgSunken` (trilho do segmentado). No claro e o
+     * proprio `bgSunken` — o fundo ja separa; no escuro `bgSunken` e quase o
+     * canvas e o trilho sumiria sem ele.
+     */
+    borderSunken: string;
     surfaces: {
       brand: Surface;
       danger: Surface;
@@ -271,7 +286,9 @@ export const lightTheme: SemanticTokens = {
     focusRing: brand.turquesaIconLight,
     bgHero: brand.tema,
     bgHeroRaised: temaNeutral[800],
-    borderHero: temaNeutral[700],
+    borderHero: brand.tema,
+    lineOnHero: temaNeutral[700],
+    controlOffOnHero: neutral[400],
     textOnHero: neutral[0],
     textOnHeroSecondary: neutral[300],
     textOnHeroBrand: brand.turquesa,
@@ -280,6 +297,8 @@ export const lightTheme: SemanticTokens = {
     borderWarning: amber[300],
     textWarning: amber[700],
     iconWarning: amber[550],
+    bgWarningMuted: amber[100],
+    borderSunken: neutral[100],
     surfaces: {
       // B: primario invertido no claro — fundo quase-preto, rotulo turquesa.
       brand: { fill: brand.tema, onFill: brand.turquesa, pressedFill: brand.temaPressedLight },
@@ -310,6 +329,8 @@ export const darkTheme: SemanticTokens = {
     bgHero: temaNeutral[800],
     bgHeroRaised: temaNeutral[700],
     borderHero: temaNeutral[600],
+    lineOnHero: temaNeutral[600],
+    controlOffOnHero: neutral[400],
     textOnHero: neutral[50],
     textOnHeroSecondary: neutral[300],
     textOnHeroBrand: brand.turquesa,
@@ -318,6 +339,8 @@ export const darkTheme: SemanticTokens = {
     borderWarning: amber[700],
     textWarning: amber[300],
     iconWarning: amber[300],
+    bgWarningMuted: amber[700],
+    borderSunken: temaNeutral[700],
     surfaces: {
       brand: { fill: brand.turquesa, onFill: brand.tema, pressedFill: brand.turquesaPressedDark },
       danger: { fill: red[500], onFill: neutral[0], pressedFill: red[600] },

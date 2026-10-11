@@ -20,10 +20,7 @@ const ALTURA_BARRA = 64;
  */
 const RESPIRO = 5;
 
-type IconeDaAba = {
-  ativo: keyof typeof Ionicons.glyphMap;
-  inativo: keyof typeof Ionicons.glyphMap;
-};
+type IconeDaAba = keyof typeof Ionicons.glyphMap;
 
 /**
  * Tres destinos desde o redesign (2026-10-11, docs/decisoes.md): Bloqueios
@@ -47,14 +44,16 @@ export default function TabsLayout() {
     }, [router])
   );
 
-  const icone = ({ ativo, inativo }: IconeDaAba) =>
+  // Mesmo desenho nos dois estados (Paper): o ativo se distingue pela pilula,
+  // pela cor e pelo rotulo em negrito, nao por trocar o icone.
+  const icone = (nome: IconeDaAba) =>
     function IconeDaAbaComFoco({ focused }: { focused: boolean }) {
       return (
         <View
           style={[styles.indicador, focused && { backgroundColor: theme.colors.bgBrandSubtle }]}
         >
           <Ionicons
-            name={focused ? ativo : inativo}
+            name={nome}
             size={22}
             color={focused ? theme.colors.textBrand : theme.colors.textTertiary}
           />
@@ -97,21 +96,21 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: 'Início',
-          tabBarIcon: icone({ ativo: 'home', inativo: 'home-outline' }),
+          tabBarIcon: icone('home-outline'),
         }}
       />
       <Tabs.Screen
         name="bloqueios"
         options={{
           title: 'Bloqueios',
-          tabBarIcon: icone({ ativo: 'shield-checkmark', inativo: 'shield-outline' }),
+          tabBarIcon: icone('shield-outline'),
         }}
       />
       <Tabs.Screen
         name="ajustes"
         options={{
           title: 'Ajustes',
-          tabBarIcon: icone({ ativo: 'options', inativo: 'options-outline' }),
+          tabBarIcon: icone('options-outline'),
         }}
       />
     </Tabs>

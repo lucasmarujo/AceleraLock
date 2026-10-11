@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
@@ -54,7 +55,13 @@ export default function Paused() {
 
   return (
     <TelaDeEstado
-      icon="shield-outline"
+      icon={
+        <MaterialCommunityIcons
+          name="shield-off-outline"
+          size={36}
+          color={theme.colors.textSecondary}
+        />
+      }
       title="Proteção desligada"
       message="Você pediu para desligar e cumpriu a espera. Nada está bloqueado agora."
       action={<Button label="Reativar proteção" onPress={handleActivate} />}
@@ -92,7 +99,7 @@ const styles = StyleSheet.create({
   cartao: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[4],
+    gap: spacing[4] + 2,
     padding: spacing[4],
     borderRadius: radius.lg,
     borderWidth: 1,
@@ -110,7 +117,7 @@ const styles = StyleSheet.create({
   titulo: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   detalhe: {
     fontSize: typography.footnote.fontSize,

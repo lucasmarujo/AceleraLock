@@ -23,6 +23,7 @@ import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.PolicyReader
 import com.aceleralock.blocker.core.ProtectionLog
 import com.aceleralock.blocker.core.RawPolicy
+import com.aceleralock.blocker.core.ScheduleExceptions
 import com.aceleralock.blocker.core.WaitTarget
 import com.aceleralock.blocker.core.WaitingPeriod
 import org.json.JSONArray
@@ -213,9 +214,12 @@ class BlockerService : Service() {
         // Sem tick imediato quando a barra muda: vale o mesmo poll dos apps. Se o
         // aparelho mostrar a pagina chegando a carregar, o SiteAccessibilityService
         // ganha um aviso ao servico.
+        // A cada tick, e nao uma vez: o horario livre comeca e termina com o app
+        // aberto, e desligar a hora automatica tem de voltar a bloquear no ato.
         val verdict = decider.decide(
             foreground, policy, criticalPackages, grants.activePackage(),
-            SiteAccessibilityService.lastAddress
+            SiteAccessibilityService.lastAddress,
+            SystemLocalClock.read(this)
         )
 
         if (verdict.outcome == BlockOutcome.BLOCK) {
@@ -303,6 +307,14 @@ class BlockerService : Service() {
             json.put("blockedPackages", JSONArray(policy.blockedPackages.toList()))
             json.put("restricted", policy.restricted)
             json.put("blockedDomains", JSONArray(policy.blockedDomains.toList()))
+            json.put(
+                "exceptions",
+                JSONArray(
+                    policy.exceptions.flatMap { (pacote, faixas) ->
+                        faixas.map { ScheduleExceptions.encode(pacote, it) }
+                    }
+                )
+            )
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putString(KEY_POLICY, json.toString())

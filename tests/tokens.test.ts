@@ -137,6 +137,14 @@ for (const [name, theme] of [
     assert.notEqual(c.bgHero.toLowerCase(), c.bgCanvas.toLowerCase());
   });
 
+  test(`${name}: surfaces.brand — onFill passa AA sobre fill (botao primario e dia marcado do horario livre)`, () => {
+    const { fill, onFill } = c.surfaces.brand;
+    assert.ok(
+      contraste(onFill, fill) >= 4.5,
+      `${onFill} sobre ${fill} da ${contraste(onFill, fill).toFixed(2)}:1`
+    );
+  });
+
   test(`${name}: aviso ambar — texto passa AA e o icone passa 3:1 sobre o proprio fundo`, () => {
     assert.ok(contraste(c.textWarning, c.bgWarningSubtle) >= 4.5);
     assert.ok(contraste(c.iconWarning, c.bgWarningSubtle) >= 3);
@@ -159,4 +167,21 @@ test('boas-vindas: texto claro fecha 4.5:1 nas duas pontas do degrade', () => {
     }
     assert.ok(contraste(brand.turquesa, fundo) >= 4.5, `turquesa sobre ${fundo}`);
   }
+});
+
+test('cadeado do modo restrito: icone ambar passa 3:1 sobre o circulo nos dois temas', () => {
+  for (const tema of [lightTheme, darkTheme]) {
+    const c = tema.colors;
+    assert.ok(
+      contraste(c.textWarning, c.bgWarningMuted) >= 3,
+      `${c.textWarning} sobre ${c.bgWarningMuted} da ${contraste(c.textWarning, c.bgWarningMuted).toFixed(2)}:1`
+    );
+  }
+});
+
+test('claro sem contorno, escuro com: hero e trilho do segmentado seguem o Paper no claro', () => {
+  assert.equal(lightTheme.colors.borderHero, lightTheme.colors.bgHero);
+  assert.equal(lightTheme.colors.borderSunken, lightTheme.colors.bgSunken);
+  assert.notEqual(darkTheme.colors.borderHero, darkTheme.colors.bgCanvas);
+  assert.ok(contraste(darkTheme.colors.borderSunken, darkTheme.colors.bgCanvas) >= 1.4);
 });

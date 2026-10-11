@@ -90,6 +90,26 @@ public class AceleralockBlockerModule: Module {
             }
         }
 
+        // Horario livre ainda nao existe no iOS: aqui o bloqueio e um shield do
+        // Family Controls por token opaco, e liberar por horario exige uma extensao
+        // DeviceActivityMonitor que ainda nao foi escrita. A UI esconde a opcao no
+        // iPhone; estas funcoes existem so para o contrato ter o mesmo formato.
+        Function("appExceptions") { () -> [[String: Any]] in
+            []
+        }
+
+        Function("setAppExceptions") { (packageName: String, windows: [[String: Any]]) in
+            throw NSError(
+                domain: "AceleralockBlocker",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "horario livre ainda nao existe no iOS"]
+            )
+        }
+
+        Function("automaticClock") { () -> [String: Bool] in
+            ["automaticTime": false, "automaticZone": false]
+        }
+
         Function("blockedDomains") { () -> [String] in
             ManagedSettingsManager.shared.blockedWebDomains()
         }

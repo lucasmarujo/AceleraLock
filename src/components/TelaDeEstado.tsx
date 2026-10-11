@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -7,7 +7,8 @@ import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
-  icon: keyof typeof Ionicons.glyphMap;
+  /** Nome do Ionicons, ou o icone pronto quando o desenho vem de outro conjunto. */
+  icon: keyof typeof Ionicons.glyphMap | ReactElement;
   title: string;
   message: string;
   /** Conteudo entre o texto e a acao (ex.: o que fica liberado). */
@@ -30,7 +31,11 @@ export function TelaDeEstado({ icon, title, message, children, action, caption }
       <View style={styles.espaco} />
       <View style={styles.estado}>
         <View style={[styles.circulo, { backgroundColor: theme.colors.bgSunken }]}>
-          <Ionicons name={icon} size={36} color={theme.colors.textSecondary} />
+          {typeof icon === 'string' ? (
+            <Ionicons name={icon} size={36} color={theme.colors.textSecondary} />
+          ) : (
+            icon
+          )}
         </View>
         <Text
           accessibilityRole="header"
@@ -79,7 +84,7 @@ const styles = StyleSheet.create({
     fontSize: typography.heading.fontSize,
     lineHeight: typography.heading.lineHeight,
     fontWeight: typography.heading.fontWeight,
-    letterSpacing: -0.5,
+    letterSpacing: typography.heading.letterSpacing,
     textAlign: 'center',
   },
   mensagem: {
@@ -88,11 +93,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   extra: {
-    paddingTop: spacing[8],
+    paddingTop: spacing[6] + spacing[1],
   },
   acao: {
     alignItems: 'center',
-    gap: spacing[2],
+    gap: spacing[2] + 2,
   },
   legenda: {
     fontSize: typography.footnote.fontSize,

@@ -139,7 +139,9 @@ Tokens do redesign (2026-10-11) — no código, `bgHero`, `bgWarningSubtle` etc.
 |---|---|---|---|
 | `bg.hero` | `brand.tema` | `temaNeutral.800` | o cartão de tinta da tela (status da proteção, cronômetro, oferta do modo restrito) — um por tela |
 | `bg.heroRaised` | `temaNeutral.800` | `temaNeutral.700` | bloco dentro do hero |
-| `border.hero` | `temaNeutral.700` | `temaNeutral.600` | borda e divisória do hero |
+| `border.hero` | `brand.tema` (= o fundo, sem borda) | `temaNeutral.600` | borda do hero — só aparece no escuro |
+| `line.onHero` | `temaNeutral.700` | `temaNeutral.600` | divisória dentro do hero |
+| `control.offOnHero` | `neutral.400` | `neutral.400` | interruptor desligado sobre o hero |
 | `text.onHero` | `neutral.0` | `neutral.50` | texto principal no hero |
 | `text.onHeroSecondary` | `neutral.300` | `neutral.300` | apoio no hero |
 | `text.onHeroBrand` | `brand.turquesa` | `brand.turquesa` | ação no hero ("Gerenciar", "Ligar") |
@@ -148,9 +150,11 @@ Tokens do redesign (2026-10-11) — no código, `bgHero`, `bgWarningSubtle` etc.
 | `border.warning` | `amber.300` | `amber.700` | borda do aviso |
 | `text.warning` | `amber.700` | `amber.300` | texto do aviso (≥ 4.5:1 sobre o fundo dele) |
 | `icon.warning` | `amber.550` | `amber.300` | ícone do aviso (≥ 3:1 sobre fundo e superfície) |
+| `bg.warningMuted` | `amber.100` | `amber.700` | círculo do ícone dentro do aviso âmbar |
+| `border.sunken` | `neutral.100` (= `bg.sunken`) | `temaNeutral.700` | contorno do trilho do segmentado — só aparece no escuro |
 
 No escuro o hero não pode ser `brand.tema` — seria o próprio canvas. O degradê das
-boas-vindas passou a ir de `brand.temaTurquesa` (`#04373d`) a `brand.tema`. Os pares
+boas-vindas passou a ir de `brand.temaTurquesa` (`#0b4549`) a `brand.tema`. Os pares
 estão cobertos em `tests/tokens.test.ts`.
 
 `bg.brand`/`bg.brandPressed`/`text.onBrand` **não existem mais como tokens soltos.** Botão preenchido de marca é sempre par único:

@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useMemo, useState, type ReactElement } from 'react';
-import { Platform, SectionList, StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 
 import { AppListRow } from '@/components/AppListRow';
@@ -9,12 +10,14 @@ import { filtrarApps } from '@/components/Onboarding/passos';
 import { Skeleton } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
 import { FamilyActivityPickerView } from '@/native/FamilyActivityPickerView';
-import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
+import AceleralockBlocker, { type AutomaticClock, type InstalledApp } from '@/native/blocker';
 import { mergeBlockedPackages } from '@/state/blockedApps';
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 import { BarraSalvar } from './BarraSalvar';
+import { EditorDeHorarios } from './EditorDeHorarios';
+import { agruparPorApp, legendaComHorarios, type Faixa } from './horarioLivre';
 import {
   calcularAlteracoes,
   descreverAlteracoes,
@@ -28,6 +31,28 @@ type Carga =
   | { estado: 'carregando' }
   | { estado: 'erro' }
   | { estado: 'pronto'; apps: InstalledApp[]; salvos: Set<string> };
+
+const SEM_HORARIOS = new Map<string, Faixa[]>();
+
+/** Falha de leitura vira "nenhum horario": a legenda some, o bloqueio nao muda. */
+function lerHorarios(): Map<string, Faixa[]> {
+  try {
+    return agruparPorApp(AceleralockBlocker.appExceptions());
+  } catch (error) {
+    console.warn('[PainelApps] falha ao ler horarios livres', error);
+    return SEM_HORARIOS;
+  }
+}
+
+/** Falha de leitura conta como manual: e o lado em que nenhuma faixa vale. */
+function lerRelogio(): AutomaticClock {
+  try {
+    return AceleralockBlocker.automaticClock();
+  } catch (error) {
+    console.warn('[PainelApps] falha ao ler hora automatica', error);
+    return { automaticTime: false, automaticZone: false };
+  }
+}
 
 type Props = {
   /** Titulo, segmentos e modo restrito: rolam junto com a lista. */
@@ -53,6 +78,12 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
   const [marcados, setMarcados] = useState<Set<string>>(new Set());
   const [busca, setBusca] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const [horarios, setHorarios] = useState<Map<string, Faixa[]>>(SEM_HORARIOS);
+  const [relogio, setRelogio] = useState<AutomaticClock>({
+    automaticTime: true,
+    automaticZone: true,
+  });
+  const [editando, setEditando] = useState<InstalledApp | null>(null);
 
   // useFocusEffect e nao useEffect: voltando pra ca depois de instalar ou
   // desinstalar um app, a lista precisa estar certa.
@@ -71,6 +102,10 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
           }
           setMarcados(new Set(bloqueados));
           setCarga({ estado: 'pronto', apps, salvos: new Set(bloqueados) });
+          // Junto da lista: voltar das Configuracoes com a hora automatica ligada
+          // tem de tirar o aviso da folha.
+          setHorarios(lerHorarios());
+          setRelogio(lerRelogio());
         } catch (error) {
           console.warn('[PainelApps] falha ao listar apps', error);
           if (ativo) {
@@ -118,6 +153,8 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
       setCarga((anterior) =>
         anterior.estado === 'pronto' ? { ...anterior, salvos: new Set(gravados) } : anterior
       );
+      // Tirar um app da lista apaga os horarios livres dele no nativo.
+      setHorarios(lerHorarios());
       onSalvo();
     } finally {
       setSalvando(false);
@@ -157,6 +194,7 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
           placeholder={`Buscar entre ${apps.length} apps`}
           accessibilityLabel="Buscar app pelo nome"
           leadingIcon="search"
+          tamanho="sm"
           autoCapitalize="none"
           autoCorrect={false}
         />
@@ -204,6 +242,10 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
         renderItem={({ item, index, section }) => {
           const primeiro = index === 0;
           const ultimo = index === section.data.length - 1;
+          // Horario livre so para app ja gravado como bloqueado e ainda marcado: app
+          // que "bloqueia ao salvar" ainda nao tem bloqueio para abrir excecao.
+          const bloqueadoDeVerdade = salvos.has(item.packageName) && marcados.has(item.packageName);
+          const faixas = horarios.get(item.packageName) ?? [];
           return (
             <View
               style={[
@@ -215,7 +257,7 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
                 primeiro && styles.celulaPrimeira,
                 ultimo && styles.celulaUltima,
                 !primeiro && {
-                  borderTopWidth: StyleSheet.hairlineWidth,
+                  borderTopWidth: 1,
                   borderTopColor: theme.colors.borderDefault,
                 },
               ]}
@@ -224,16 +266,56 @@ export function PainelApps({ cabecalho, restricted, onSalvo }: Props) {
                 app={item}
                 marcado={marcados.has(item.packageName)}
                 onToggle={() => alternar(item.packageName)}
-                legenda={legendaDaLinha(
-                  salvos.has(item.packageName),
-                  marcados.has(item.packageName)
-                )}
+                legenda={
+                  (bloqueadoDeVerdade && legendaComHorarios(faixas.length)) ||
+                  legendaDaLinha(salvos.has(item.packageName), marcados.has(item.packageName))
+                }
+                legendaDestacada={bloqueadoDeVerdade}
                 disabled={restricted}
+                acao={
+                  bloqueadoDeVerdade ? (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`Horários livres do ${item.label}`}
+                      hitSlop={4}
+                      onPress={() => setEditando(item)}
+                      style={({ pressed }) => [
+                        styles.horarios,
+                        pressed && { backgroundColor: theme.colors.bgSunken },
+                      ]}
+                    >
+                      <Ionicons
+                        name="time-outline"
+                        size={22}
+                        color={
+                          faixas.length > 0 ? theme.colors.textBrand : theme.colors.textTertiary
+                        }
+                      />
+                    </Pressable>
+                  ) : undefined
+                }
               />
             </View>
           );
         }}
       />
+
+      {editando && (
+        <EditorDeHorarios
+          key={editando.packageName}
+          app={editando}
+          faixasSalvas={horarios.get(editando.packageName) ?? []}
+          restricted={restricted}
+          automaticTime={relogio.automaticTime}
+          automaticZone={relogio.automaticZone}
+          onClose={() => setEditando(null)}
+          onSalvar={(faixas) => {
+            AceleralockBlocker.setAppExceptions(editando.packageName, faixas);
+            setHorarios(lerHorarios());
+            setEditando(null);
+          }}
+        />
+      )}
 
       {total > 0 && !restricted && (
         <BarraSalvar
@@ -257,7 +339,6 @@ const styles = StyleSheet.create({
   },
   topo: {
     gap: spacing[4],
-    paddingBottom: spacing[2],
   },
   feedback: {
     gap: spacing[3],
@@ -267,9 +348,16 @@ const styles = StyleSheet.create({
     lineHeight: typography.body.lineHeight,
   },
   cabecalhoSecao: {
-    paddingTop: spacing[5],
+    paddingTop: spacing[6],
     paddingBottom: spacing[2],
     paddingHorizontal: spacing[1],
+  },
+  horarios: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   celula: {
     borderLeftWidth: 1,

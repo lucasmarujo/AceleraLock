@@ -187,33 +187,39 @@ export function PainelSites({ cabecalho, restricted, permissions, onSalvo }: Pro
                 message="Digite o endereço do primeiro site que rouba seu tempo."
               />
             ) : (
-              <Grupo titulo={`Bloqueados · ${carga.dominios.length}`}>
-                {carga.dominios.map((dominio) => (
-                  <View key={dominio} style={styles.linha}>
-                    <View style={[styles.globo, { backgroundColor: theme.colors.bgSunken }]}>
-                      <Ionicons name="globe-outline" size={20} color={theme.colors.textSecondary} />
+              <View style={styles.secao}>
+                <Grupo titulo={`Bloqueados · ${carga.dominios.length}`}>
+                  {carga.dominios.map((dominio) => (
+                    <View key={dominio} style={styles.linha}>
+                      <View style={[styles.globo, { backgroundColor: theme.colors.bgSunken }]}>
+                        <Ionicons
+                          name="globe-outline"
+                          size={20}
+                          color={theme.colors.textSecondary}
+                        />
+                      </View>
+                      <View style={styles.textos}>
+                        <Text style={[styles.dominio, { color: theme.colors.textPrimary }]}>
+                          {dominio}
+                        </Text>
+                        <Text style={[styles.legenda, { color: theme.colors.textSecondary }]}>
+                          {carga.salvos.includes(dominio) ? 'e subdomínios' : 'Bloqueia ao salvar'}
+                        </Text>
+                      </View>
+                      {!restricted && (
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityLabel={`Remover ${dominio}`}
+                          onPress={() => remover(dominio)}
+                          style={styles.remover}
+                        >
+                          <Ionicons name="close" size={20} color={theme.colors.textSecondary} />
+                        </Pressable>
+                      )}
                     </View>
-                    <View style={styles.textos}>
-                      <Text style={[styles.dominio, { color: theme.colors.textPrimary }]}>
-                        {dominio}
-                      </Text>
-                      <Text style={[styles.legenda, { color: theme.colors.textSecondary }]}>
-                        {carga.salvos.includes(dominio) ? 'e subdomínios' : 'Bloqueia ao salvar'}
-                      </Text>
-                    </View>
-                    {!restricted && (
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={`Remover ${dominio}`}
-                        onPress={() => remover(dominio)}
-                        style={styles.remover}
-                      >
-                        <Ionicons name="close" size={20} color={theme.colors.textSecondary} />
-                      </Pressable>
-                    )}
-                  </View>
-                ))}
-              </Grupo>
+                  ))}
+                </Grupo>
+              </View>
             )}
 
             {Platform.OS === 'android' &&
@@ -253,7 +259,10 @@ const styles = StyleSheet.create({
   conteudo: {
     paddingHorizontal: spacing[4],
     paddingBottom: spacing[6],
-    gap: spacing[5],
+    gap: spacing[6],
+  },
+  secao: {
+    marginTop: spacing[1],
   },
   corpo: {
     fontSize: typography.body.fontSize,

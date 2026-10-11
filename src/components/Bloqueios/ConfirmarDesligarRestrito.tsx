@@ -35,8 +35,8 @@ export function ConfirmarDesligarRestrito({ visible, waitMinutes, onClose, onCon
           Desligar o modo restrito?
         </Text>
         <Text style={[styles.corpo, { color: theme.colors.textSecondary }]}>
-          A lista de bloqueios só volta a ser editável depois de uma espera de {waitMinutes}{' '}
-          minutos. Dá para desistir a qualquer momento, sem custo.
+          A lista de apps só volta a ser editável depois de uma espera de {waitMinutes} minutos. Dá
+          para desistir a qualquer momento, sem custo.
         </Text>
       </View>
 
@@ -78,6 +78,7 @@ export function ConfirmarDesligarRestrito({ visible, waitMinutes, onClose, onCon
 const styles = StyleSheet.create({
   conteudo: {
     gap: spacing[3],
+    paddingHorizontal: spacing[1],
   },
   icone: {
     width: 48,
@@ -138,6 +139,6 @@ const styles = StyleSheet.create({
     lineHeight: typography.caption.lineHeight,
   },
   acoes: {
-    gap: spacing[2],
+    gap: spacing[2] + 2,
   },
 });

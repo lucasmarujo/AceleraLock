@@ -1,5 +1,8 @@
 import AceleralockBlockerNative from 'aceleralock-blocker';
 import type {
+  AppException,
+  AutomaticClock,
+  ExceptionWindow,
   InstalledApp,
   PermissionState,
   ProtectionState,
@@ -9,6 +12,9 @@ import type {
 } from 'aceleralock-blocker';
 
 export type {
+  AppException,
+  AutomaticClock,
+  ExceptionWindow,
   InstalledApp,
   PermissionState,
   ProtectionState,
@@ -43,6 +49,18 @@ type AceleralockBlockerModule = {
   blockedDomains(): string[];
   /** O nativo renormaliza e descarta entrada invalida; ver `src/state/blockedSites.ts`. */
   setBlockedDomains(domains: string[]): void;
+  /**
+   * Horarios livres de todos os apps, uma entrada por faixa. Lanca em politica
+   * ilegivel, como `blockedPackages`. No iOS sempre vazio: a opcao nao existe la.
+   */
+  appExceptions(): AppException[];
+  /**
+   * Substitui as faixas de um app; lista vazia apaga. Lanca para app fora da lista
+   * ou faixa invalida — valide antes com `src/components/Bloqueios/horarioLivre.ts`.
+   */
+  setAppExceptions(packageName: string, windows: ExceptionWindow[]): void;
+  /** Sem hora e fuso automaticos nenhum horario livre vale (o app bloqueia). */
+  automaticClock(): AutomaticClock;
   /**
    * Ativa ou desativa o modo restrito de forma imediata. So a desativacao pede
    * espera (`requestDisableRestricted`); ativar e o compromisso da pessoa com o

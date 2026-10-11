@@ -34,7 +34,8 @@ const styles = StyleSheet.create({
   cartao: {
     borderRadius: radius.xl,
     borderWidth: 1,
-    padding: spacing[5],
+    // 19 + 1 de borda = os 20 do Paper; a borda so aparece no escuro.
+    padding: spacing[5] - 1,
     gap: spacing[5],
   },
 });

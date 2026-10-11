@@ -91,7 +91,12 @@ export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel, totalM
         <View style={styles.regras}>
           {regras.map((regra) => (
             <View key={regra.texto} style={styles.regra}>
-              <Ionicons name={regra.icone} size={20} color={theme.colors.textSecondary} />
+              <Ionicons
+                name={regra.icone}
+                size={20}
+                style={styles.icone}
+                color={theme.colors.textSecondary}
+              />
               <Text style={[styles.textoRegra, { color: theme.colors.textSecondary }]}>
                 {regra.texto}
               </Text>
@@ -134,7 +139,7 @@ const COPY: Record<
   },
   RESTRICTED_MODE_OFF: {
     title: 'Desativando o modo restrito',
-    body: 'Quando o tempo acabar, a lista de bloqueios volta a ser editável.',
+    body: 'Quando o tempo acabar, a lista de apps volta a ser editável.',
     fim: 'Ao zerar, o modo restrito desliga sozinho.',
     aposDesistir: 'O modo restrito continua ligado.',
   },
@@ -165,14 +170,14 @@ const styles = StyleSheet.create({
     fontSize: typography.caption.fontSize,
     lineHeight: typography.caption.lineHeight,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    letterSpacing: 0.48,
     textTransform: 'uppercase',
   },
   title: {
     fontSize: typography.heading.fontSize,
     lineHeight: typography.heading.lineHeight,
     fontWeight: typography.heading.fontWeight,
-    letterSpacing: -0.5,
+    letterSpacing: typography.heading.letterSpacing,
   },
   subtitle: {
     fontSize: typography.callout.fontSize,
@@ -185,6 +190,12 @@ const styles = StyleSheet.create({
   regras: {
     gap: spacing[3],
     paddingHorizontal: spacing[1],
+  },
+  // Trava o glifo em 20: a metrica da fonte do icone esticaria a linha.
+  icone: {
+    width: 20,
+    height: 20,
+    lineHeight: 20,
   },
   regra: {
     flexDirection: 'row',
@@ -199,7 +210,7 @@ const styles = StyleSheet.create({
   acao: {
     paddingHorizontal: spacing[4],
     paddingBottom: spacing[3],
-    gap: spacing[2],
+    gap: spacing[2] + 2,
     alignItems: 'center',
   },
   legenda: {

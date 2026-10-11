@@ -2,11 +2,13 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  angulosDoArco,
   deriveCountdownStatus,
   formatRemainingClock,
   formatRemainingForScreenReader,
   formatRemainingShort,
   fracaoDecorrida,
+  pontaDoArco,
   roundToAnnouncementBucket,
 } from '../src/components/Countdown/countdownStatus';
 
@@ -83,4 +85,28 @@ test('regressao: fracaoDecorrida clampa quando o pedido foi feito com outra dura
 test('fracaoDecorrida sem total válido não desenha progresso', () => {
   assert.equal(fracaoDecorrida(10_000, 0), 0);
   assert.equal(fracaoDecorrida(10_000, Number.NaN), 0);
+});
+
+test('angulosDoArco: a metade direita enche primeiro, a esquerda depois', () => {
+  assert.deepEqual(angulosDoArco(0), { direita: 0, esquerda: 0 });
+  assert.deepEqual(angulosDoArco(0.25), { direita: 90, esquerda: 0 });
+  assert.deepEqual(angulosDoArco(0.5), { direita: 180, esquerda: 0 });
+  assert.deepEqual(angulosDoArco(0.75), { direita: 180, esquerda: 90 });
+  assert.deepEqual(angulosDoArco(1), { direita: 180, esquerda: 180 });
+});
+
+test('regressao: angulosDoArco nunca passa de 180 por metade nem fica negativo', () => {
+  assert.deepEqual(angulosDoArco(1.4), { direita: 180, esquerda: 180 });
+  assert.deepEqual(angulosDoArco(-0.2), { direita: 0, esquerda: 0 });
+  assert.deepEqual(angulosDoArco(Number.NaN), { direita: 0, esquerda: 0 });
+});
+
+test('pontaDoArco: comeca no topo e anda no sentido horario', () => {
+  const perto = (a: number, b: number) => Math.abs(a - b) < 1e-9;
+  const topo = pontaDoArco(0, 88);
+  assert.ok(perto(topo.x, 0) && perto(topo.y, -88));
+  const direita = pontaDoArco(0.25, 88);
+  assert.ok(perto(direita.x, 88) && perto(direita.y, 0));
+  const baixo = pontaDoArco(0.5, 88);
+  assert.ok(perto(baixo.x, 0) && perto(baixo.y, 88));
 });

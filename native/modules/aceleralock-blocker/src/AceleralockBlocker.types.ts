@@ -40,6 +40,29 @@ export type ProtectionState = {
   pendingReady: boolean;
 };
 
+/**
+ * Horario livre de um app bloqueado: dentro da faixa o bloqueio nao vale. Dias ISO
+ * (1 = segunda ... 7 = domingo), minutos desde 00:00. `end` menor que `start`
+ * atravessa a meia-noite; os dias sao os de inicio da faixa.
+ */
+export type ExceptionWindow = {
+  days: number[];
+  start: number;
+  end: number;
+};
+
+/** Uma faixa de um app, como `appExceptions()` devolve: achatada, uma por entrada. */
+export type AppException = ExceptionWindow & { packageName: string };
+
+/**
+ * Hora e fuso automaticos do aparelho. Sem os dois, nenhum horario livre vale —
+ * e o que impede abrir o app mudando o relogio.
+ */
+export type AutomaticClock = {
+  automaticTime: boolean;
+  automaticZone: boolean;
+};
+
 /** App que a pessoa pode escolher bloquear (com icone de launcher, nao critico). */
 export type InstalledApp = {
   packageName: string;

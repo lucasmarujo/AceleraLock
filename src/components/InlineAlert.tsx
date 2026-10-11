@@ -37,7 +37,7 @@ export function InlineAlert({
       ]}
       accessibilityRole="alert"
     >
-      <Ionicons name={icon} size={22} color={theme.colors.iconWarning} />
+      <Ionicons name={icon} size={22} color={theme.colors.textWarning} />
       <View style={styles.conteudo}>
         <View style={styles.textos}>
           <Text style={[styles.titulo, { color: theme.colors.textWarning }]}>{title}</Text>
@@ -74,13 +74,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing[3],
-    padding: spacing[4],
+    paddingVertical: spacing[3] + 2,
+    paddingLeft: spacing[4],
+    paddingRight: spacing[3] + 2,
     borderRadius: radius.lg,
     borderWidth: 1,
   },
   conteudo: {
     flex: 1,
-    gap: spacing[3],
+    gap: spacing[2] + 2,
   },
   textos: {
     gap: 2,
@@ -96,9 +98,9 @@ const styles = StyleSheet.create({
   },
   acao: {
     alignSelf: 'flex-start',
-    minHeight: 40,
+    minHeight: 36,
     justifyContent: 'center',
-    paddingHorizontal: spacing[4],
+    paddingHorizontal: spacing[3] + 2,
     borderRadius: radius.sm,
   },
   rotuloAcao: {

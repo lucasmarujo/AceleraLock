@@ -12,6 +12,8 @@ import {
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
+type Tamanho = 'sm' | 'md' | 'lg';
+
 type Props = {
   value: string;
   onChangeText: (texto: string) => void;
@@ -26,6 +28,8 @@ type Props = {
   leadingIcon?: keyof typeof Ionicons.glyphMap;
   /** Acao dentro do campo, a direita (ex.: "Adicionar"). */
   trailing?: ReactNode;
+  /** `sm` busca (48), `md` campo com acao (52), `lg` campo principal da tela (56). */
+  tamanho?: Tamanho;
   autoFocus?: boolean;
   returnKeyType?: ReturnKeyTypeOptions;
   onSubmitEditing?: () => void;
@@ -35,7 +39,10 @@ type Props = {
   editable?: boolean;
 };
 
-const HEIGHT = 52;
+const ALTURA: Record<Tamanho, number> = { sm: 48, md: 52, lg: 56 };
+
+/** Espessura do halo de foco, desenhado fora da caixa. */
+const HALO = 4;
 
 export function TextField({
   value,
@@ -47,6 +54,7 @@ export function TextField({
   error,
   leadingIcon,
   trailing,
+  tamanho = 'md',
   autoFocus = false,
   returnKeyType,
   onSubmitEditing,
@@ -66,22 +74,22 @@ export function TextField({
   return (
     <View style={styles.campo}>
       {label && <Text style={[styles.rotulo, { color: theme.colors.textPrimary }]}>{label}</Text>}
-      <View
-        style={[
-          styles.focusRing,
-          { borderRadius: radius.md + 4 },
-          focused && { borderColor: theme.colors.focusRing },
-        ]}
-      >
+      <View>
+        {focused && !error && (
+          <View
+            pointerEvents="none"
+            style={[styles.halo, { backgroundColor: theme.colors.focusRing }]}
+          />
+        )}
         <View
           style={[
             styles.caixa,
             {
-              borderRadius: radius.md,
+              height: ALTURA[tamanho],
               backgroundColor: theme.colors.bgSurface,
               borderColor: corDaBorda,
               borderWidth: focused || error ? 2 : 1,
-              paddingLeft: leadingIcon ? spacing[3] : spacing[4],
+              paddingLeft: leadingIcon ? spacing[3] + 2 : spacing[4],
               paddingRight: trailing ? spacing[1] + 2 : spacing[4],
             },
           ]}
@@ -130,26 +138,27 @@ export function TextField({
 const styles = StyleSheet.create({
   campo: {
     alignSelf: 'stretch',
-    gap: spacing[1],
+    gap: spacing[2],
   },
   rotulo: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
     fontWeight: typography.bodyStrong.fontWeight,
-    paddingBottom: spacing[1],
   },
-  focusRing: {
-    alignSelf: 'stretch',
-    borderWidth: 2,
-    borderColor: 'transparent',
-    padding: 2,
-    marginHorizontal: -4,
+  halo: {
+    position: 'absolute',
+    top: -HALO,
+    left: -HALO,
+    right: -HALO,
+    bottom: -HALO,
+    borderRadius: radius.md + HALO,
+    opacity: 0.14,
   },
   caixa: {
-    height: HEIGHT,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[2],
+    gap: spacing[2] + 2,
+    borderRadius: radius.md,
   },
   input: {
     flex: 1,
@@ -160,6 +169,5 @@ const styles = StyleSheet.create({
   apoio: {
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
-    paddingHorizontal: spacing[1],
   },
 });

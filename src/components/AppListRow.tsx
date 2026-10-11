@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { IconeApp } from '@/components/IconeApp';
+import { Interruptor } from '@/components/Interruptor';
 import type { InstalledApp } from '@/native/blocker';
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -17,11 +19,17 @@ type Props = {
   variante?: 'switch' | 'check';
   /** Estado por extenso sob o nome ("Bloqueado", "Bloqueia ao salvar"). */
   legenda?: string | null;
+  /** Legenda na cor da marca: so o que esta de fato bloqueado agora. */
+  legendaDestacada?: boolean;
   disabled?: boolean;
+  /** Acao extra antes do interruptor (horarios livres). So na variante `switch`. */
+  acao?: ReactNode;
 };
 
-export const APP_ROW_HEIGHT = 60;
-const ICON_SIZE = 40;
+/** Linha do `switch`: 12 + icone 40 + 12. */
+export const APP_ROW_HEIGHT = 64;
+/** Linha do `check` (onboarding): 10 + icone 36 + 10. */
+export const APP_ROW_HEIGHT_CHECK = 56;
 
 /**
  * docs/design-system.md §3.8. Uma linha por app, sem cartao proprio — vive
@@ -34,7 +42,9 @@ export function AppListRow({
   onToggle,
   variante = 'switch',
   legenda,
+  legendaDestacada = false,
   disabled = false,
+  acao,
 }: Props) {
   const theme = useTheme();
   const destacado = variante === 'check' && marcado;
@@ -48,7 +58,7 @@ export function AppListRow({
         <Text
           style={[
             styles.legenda,
-            { color: marcado ? theme.colors.textBrand : theme.colors.textSecondary },
+            { color: legendaDestacada ? theme.colors.textBrand : theme.colors.textSecondary },
           ]}
           numberOfLines={1}
         >
@@ -67,11 +77,12 @@ export function AppListRow({
         onPress={disabled ? undefined : onToggle}
         style={({ pressed }) => [
           styles.linha,
+          styles.linhaCheck,
           destacado && { backgroundColor: theme.colors.bgBrandSubtle },
           pressed && !destacado && { backgroundColor: theme.colors.bgSunken },
         ]}
       >
-        <IconeApp iconUri={app.iconUri} tamanho={ICON_SIZE} />
+        <IconeApp iconUri={app.iconUri} tamanho={36} />
         {textos}
         <View
           style={[
@@ -81,25 +92,24 @@ export function AppListRow({
               : { borderColor: theme.colors.borderStrong },
           ]}
         >
-          {marcado && <Ionicons name="checkmark" size={16} color={theme.colors.bgSurface} />}
+          {marcado && <Ionicons name="checkmark" size={14} color={theme.colors.bgSurface} />}
         </View>
       </Pressable>
     );
   }
 
+  // Travada (modo restrito) so o interruptor apaga: nome e icone continuam
+  // legiveis — a lista existe pra ser vista, so nao pra ser mexida.
   return (
-    <View style={[styles.linha, disabled && styles.desabilitada]}>
-      <IconeApp iconUri={app.iconUri} tamanho={ICON_SIZE} />
+    <View style={[styles.linha, styles.linhaSwitch]}>
+      <IconeApp iconUri={app.iconUri} tamanho={40} />
       {textos}
-      <Switch
-        accessibilityRole="switch"
+      {acao}
+      <Interruptor
+        valor={marcado}
+        onChange={onToggle}
         accessibilityLabel={app.label}
-        accessibilityState={{ checked: marcado, disabled }}
-        value={marcado}
         disabled={disabled}
-        onValueChange={onToggle}
-        trackColor={{ false: theme.colors.borderStrong, true: theme.colors.borderBrand }}
-        thumbColor={marcado ? theme.colors.bgSurface : theme.colors.textSecondary}
       />
     </View>
   );
@@ -110,16 +120,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    paddingVertical: spacing[2],
     paddingHorizontal: spacing[4],
-    minHeight: APP_ROW_HEIGHT,
   },
-  desabilitada: {
-    opacity: 0.55,
+  linhaCheck: {
+    paddingVertical: spacing[2] + 2,
+    minHeight: APP_ROW_HEIGHT_CHECK,
+  },
+  linhaSwitch: {
+    paddingVertical: spacing[3],
+    minHeight: APP_ROW_HEIGHT,
   },
   textos: {
     flex: 1,
-    gap: 1,
+    gap: 2,
   },
   rotulo: {
     fontSize: typography.body.fontSize,

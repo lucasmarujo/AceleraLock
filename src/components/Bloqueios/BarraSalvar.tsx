@@ -67,9 +67,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    paddingVertical: spacing[2] + 2,
-    paddingLeft: spacing[4] + 2,
-    paddingRight: spacing[2] + 2,
+    // Paper: 10/18/10 sem borda. A borda (so visivel no escuro) come 1 de cada lado.
+    paddingVertical: spacing[2] + 1,
+    paddingLeft: spacing[4] + 1,
+    paddingRight: spacing[2] + 1,
     borderRadius: radius.lg,
     borderWidth: 1,
     ...elevation[2],

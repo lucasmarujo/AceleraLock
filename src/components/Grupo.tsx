@@ -93,6 +93,6 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   divisoria: {
-    height: StyleSheet.hairlineWidth,
+    height: 1,
   },
 });

@@ -3,7 +3,9 @@ package com.aceleralock.blocker.core
 import java.time.LocalDate
 
 /**
- * Relogio de parede. Existe **so** para o historico de tempo de tela.
+ * Relogio de parede. Existe para o historico de tempo de tela e para o horario
+ * livre ([ScheduleExceptions]) — e, no horario livre, so vale com hora e fuso
+ * automaticos ([LocalClockReading]). Espera e concessao continuam sem ele.
  *
  * O resto do modulo evita relogio de parede de proposito: [MonotonicClock] e o
  * que sustenta a espera, porque adiantar a hora do aparelho nao pode encurtar

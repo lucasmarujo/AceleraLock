@@ -1,15 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import {
-  Linking,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
+import { Linking, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   FadeInRight,
   FadeOutLeft,
@@ -21,10 +12,11 @@ import Animated, {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 
-import { AppListRow, APP_ROW_HEIGHT } from '@/components/AppListRow';
+import { AppListRow, APP_ROW_HEIGHT_CHECK } from '@/components/AppListRow';
 import { Button } from '@/components/Button';
 import { HeroCard } from '@/components/HeroCard';
 import { IconeApp } from '@/components/IconeApp';
+import { Interruptor } from '@/components/Interruptor';
 import { Skeleton } from '@/components/Skeleton';
 import { TextField } from '@/components/TextField';
 import AceleralockBlocker, { type InstalledApp } from '@/native/blocker';
@@ -224,18 +216,26 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
       titulo = 'Como você quer ser chamado?';
       subtitulo = 'Só para o app te cumprimentar.';
       conteudo = (
-        <TextField
-          label="Seu nome"
-          value={nome}
-          onChangeText={setNome}
-          placeholder="seu nome"
-          accessibilityLabel="Seu nome"
-          helper="Fica salvo só neste celular."
-          autoFocus
-          autoCapitalize="words"
-          returnKeyType="next"
-          onSubmitEditing={() => normalizarNome(nome) && avancar(2)}
-        />
+        <View style={styles.blocoNome}>
+          <TextField
+            label="Seu nome"
+            value={nome}
+            onChangeText={setNome}
+            placeholder="seu nome"
+            accessibilityLabel="Seu nome"
+            tamanho="lg"
+            autoFocus
+            autoCapitalize="words"
+            returnKeyType="next"
+            onSubmitEditing={() => normalizarNome(nome) && avancar(2)}
+          />
+          <View style={styles.privacidade}>
+            <Ionicons name="lock-closed-outline" size={14} color={theme.colors.textTertiary} />
+            <Text style={[styles.textoPrivacidade, { color: theme.colors.textTertiary }]}>
+              Fica salvo só neste celular.
+            </Text>
+          </View>
+        </View>
       );
       rodape = (
         <Button label="Continuar" disabled={!normalizarNome(nome)} onPress={() => avancar(2)} />
@@ -246,7 +246,7 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
       titulo = 'Quanto tempo de tela você acha que tem por dia?';
       subtitulo = 'Um chute honesto. Depois o app compara com o real.';
       conteudo = (
-        <>
+        <View style={styles.blocoHoras}>
           <View style={[styles.cartao, cartaoNeutro(theme), styles.cartaoHoras]}>
             <View style={styles.numeroCaixa}>
               <Text style={[styles.numero, { color: theme.colors.textBrand }]}>{horas}</Text>
@@ -284,20 +284,24 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
                         ? {
                             backgroundColor: theme.colors.bgBrandSubtle,
                             borderColor: theme.colors.borderBrand,
+                            borderWidth: 2,
                           }
                         : {
                             backgroundColor: theme.colors.bgSurface,
-                            borderColor: theme.colors.borderDefault,
+                            borderColor: theme.colors.borderStrong,
+                            borderWidth: 1,
                           },
                     ]}
                   >
                     {ativo && (
-                      <Ionicons name="checkmark" size={16} color={theme.colors.textBrand} />
+                      <Ionicons name="checkmark" size={14} color={theme.colors.textBrand} />
                     )}
                     <Text
                       style={[
                         styles.textoChip,
-                        { color: ativo ? theme.colors.textBrand : theme.colors.textPrimary },
+                        ativo
+                          ? { color: theme.colors.textBrand, fontWeight: '700' }
+                          : { color: theme.colors.textPrimary, fontWeight: '500' },
                       ]}
                     >
                       {valor} h
@@ -307,7 +311,7 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
               })}
             </View>
           </View>
-        </>
+        </View>
       );
       rodape = <Button label="Continuar" onPress={() => avancar(3)} />;
       break;
@@ -319,8 +323,8 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
           ? 'Para isso, o iPhone pede a sua autorização.'
           : 'Para isso, o Android pede a permissão de acesso ao uso.';
       conteudo = (
-        <>
-          <View style={[styles.cartao, cartaoNeutro(theme)]}>
+        <View style={styles.blocoCartoes}>
+          <View style={[styles.cartao, cartaoNeutro(theme), styles.cartaoExemplo]}>
             <View style={styles.cabecalhoExemplo}>
               <Text style={[styles.tituloCartao, { color: theme.colors.textPrimary }]}>
                 O que você vai ver
@@ -337,14 +341,16 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
                 destaque: indice === TEMPO_TELA_EXEMPLO.length - 1,
               }))}
               legenda="Exemplo — libere o acesso ao uso para ver o seu"
+              variante="exemplo"
             />
           </View>
-          <View style={[styles.cartao, cartaoNeutro(theme)]}>
+          <View style={[styles.cartao, cartaoNeutro(theme), styles.cartaoLista]}>
             {O_QUE_A_PERMISSAO_VE.map((item) => (
               <View key={item.texto} style={styles.itemLista}>
                 <Ionicons
                   name={item.icone}
                   size={20}
+                  style={styles.icone20}
                   color={
                     item.icone === 'checkmark-circle-outline'
                       ? theme.colors.textBrand
@@ -357,7 +363,7 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
               </View>
             ))}
           </View>
-        </>
+        </View>
       );
       rodape = (
         <>
@@ -376,7 +382,15 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
             }}
           />
           {!permissions?.usageAccess && (
-            <Button label="Agora não" variant="ghost" onPress={() => avancar(4)} />
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => avancar(4)}
+              style={({ pressed }) => [styles.agoraNao, { opacity: pressed ? 0.6 : 1 }]}
+            >
+              <Text style={[styles.textoAgoraNao, { color: theme.colors.textSecondary }]}>
+                Agora não
+              </Text>
+            </Pressable>
           )}
         </>
       );
@@ -386,11 +400,11 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
       titulo = nome ? `${nome}, o que você quer bloquear?` : 'O que você quer bloquear?';
       subtitulo = 'Escolha pelo menos um app. Dá para mudar depois.';
       conteudo = (
-        <>
+        <View style={styles.blocoCartoes}>
           {faltando.length > 0 && (
             <View
               style={[
-                styles.cartao,
+                styles.cartaoPermissoes,
                 {
                   backgroundColor: theme.colors.bgWarningSubtle,
                   borderColor: theme.colors.borderWarning,
@@ -406,10 +420,11 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
                   <View key={chave} style={styles.linhaPermissao}>
                     <Ionicons
                       name={concedida ? 'checkmark-circle-outline' : 'alert-circle-outline'}
-                      size={20}
+                      size={18}
+                      style={styles.icone18}
                       color={concedida ? theme.colors.textBrand : theme.colors.iconWarning}
                     />
-                    <Text style={[styles.textoItem, { color: theme.colors.textPrimary }]}>
+                    <Text style={[styles.textoPermissao, { color: theme.colors.textPrimary }]}>
                       {ROTULO_PERMISSAO[chave]}
                     </Text>
                     {concedida ? (
@@ -451,13 +466,14 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
             placeholder="Buscar app"
             accessibilityLabel="Buscar app pelo nome"
             leadingIcon="search"
+            tamanho="sm"
             autoCapitalize="none"
           />
 
           {carga.estado === 'carregando' && (
             <View style={styles.listaFeedback}>
               {[0, 1, 2].map((linha) => (
-                <Skeleton key={linha} width="100%" height={APP_ROW_HEIGHT} />
+                <Skeleton key={linha} width="100%" height={APP_ROW_HEIGHT_CHECK} />
               ))}
             </View>
           )}
@@ -490,7 +506,7 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
                       key={app.packageName}
                       style={
                         indice > 0 && {
-                          borderTopWidth: StyleSheet.hairlineWidth,
+                          borderTopWidth: 1,
                           borderTopColor: theme.colors.borderDefault,
                         }
                       }
@@ -507,7 +523,7 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
               </ScrollView>
             </View>
           )}
-        </>
+        </View>
       );
       rodape = (
         <>
@@ -534,25 +550,27 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
       titulo = tituloDaConclusao(rotulos);
       subtitulo = 'Quando bater a vontade de abrir, o AceleraLock fica no caminho.';
       conteudo = (
-        <>
+        <View style={styles.blocoCartoes}>
           <CartaoBloqueado
             app={escolhidos[0] ?? null}
             total={escolhidos.length}
             reduzido={reduzido}
           />
           {!restricted && (
-            <View style={styles.oferta}>
-              <HeroCard style={styles.hero}>
+            <>
+              <HeroCard style={styles.oferta}>
                 <View style={styles.cabecalhoOferta}>
-                  <Ionicons
-                    name="lock-closed-outline"
-                    size={20}
-                    color={theme.colors.textOnHeroFriction}
-                  />
-                  <Text style={[styles.tituloOferta, { color: theme.colors.textOnHero }]}>
-                    Modo restrito
-                  </Text>
-                  <View style={[styles.selo, { backgroundColor: theme.colors.bgHeroRaised }]}>
+                  <View style={styles.tituloComIcone}>
+                    <Ionicons
+                      name="lock-closed-outline"
+                      size={20}
+                      color={theme.colors.textOnHeroFriction}
+                    />
+                    <Text style={[styles.tituloOferta, { color: theme.colors.textOnHero }]}>
+                      Modo restrito
+                    </Text>
+                  </View>
+                  <View style={[styles.seloOferta, { backgroundColor: theme.colors.bgHeroRaised }]}>
                     <Text style={[styles.textoSelo, { color: theme.colors.textOnHeroFriction }]}>
                       RECOMENDADO
                     </Text>
@@ -561,29 +579,26 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
                 <Text style={[styles.corpoOferta, { color: theme.colors.textOnHeroSecondary }]}>
                   {textoOfertaRestrito(rotulos, waitMinutes)}
                 </Text>
-                <View style={[styles.divisoria, { backgroundColor: theme.colors.borderHero }]} />
-                <View style={styles.linhaInterruptor}>
+                <View
+                  style={[styles.linhaInterruptor, { borderTopColor: theme.colors.lineOnHero }]}
+                >
                   <Text style={[styles.rotuloInterruptor, { color: theme.colors.textOnHero }]}>
                     Ligar modo restrito
                   </Text>
-                  <Switch
+                  <Interruptor
+                    valor={ligarRestrito}
+                    onChange={setLigarRestrito}
                     accessibilityLabel="Ligar modo restrito"
-                    value={ligarRestrito}
-                    onValueChange={setLigarRestrito}
-                    trackColor={{
-                      false: theme.colors.bgHeroRaised,
-                      true: theme.colors.textOnHeroBrand,
-                    }}
-                    thumbColor={theme.colors.textOnHero}
+                    superficie="hero"
                   />
                 </View>
               </HeroCard>
-              <Text style={[styles.legendaOferta, { color: theme.colors.textSecondary }]}>
+              <Text style={[styles.legendaOferta, { color: theme.colors.textTertiary }]}>
                 Ligar é imediato. Dá para mudar depois em Bloqueios.
               </Text>
-            </View>
+            </>
           )}
-        </>
+        </View>
       );
       rodape = <Button label="Ir para o início" loading={salvando} onPress={finalizar} />;
       break;
@@ -597,11 +612,10 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Voltar"
-            hitSlop={4}
             onPress={onVoltar}
             style={styles.voltar}
           >
-            <Ionicons name="arrow-back" size={24} color={theme.colors.textPrimary} />
+            <Ionicons name="arrow-back" size={22} color={theme.colors.textPrimary} />
           </Pressable>
         ) : (
           <View style={styles.voltar} />
@@ -659,7 +673,7 @@ export function OnboardingFlow({ passoInicial, passo, onPasso, onVoltar }: Props
           </View>
           {conteudo}
         </ScrollView>
-        <View style={styles.rodape}>{rodape}</View>
+        <View style={[styles.rodape, passo === 3 && styles.rodapeCompacto]}>{rodape}</View>
       </Animated.View>
     </SafeAreaView>
   );
@@ -692,7 +706,7 @@ function CartaoBloqueado({
 
   return (
     <Animated.View style={[styles.cartao, styles.cartaoFinal, cartaoNeutro(theme), estilo]}>
-      <IconeApp iconUri={app?.iconUri ?? null} tamanho={56} />
+      <IconeApp iconUri={app?.iconUri ?? null} tamanho={48} />
       <View style={styles.textosFinal}>
         <Text style={[styles.nomeFinal, { color: theme.colors.textPrimary }]} numberOfLines={1}>
           {app?.label ?? 'Aplicativo'}
@@ -716,28 +730,29 @@ const styles = StyleSheet.create({
   cabecalho: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[3],
-    paddingHorizontal: spacing[2],
-    paddingTop: spacing[2],
+    gap: spacing[2],
+    paddingLeft: spacing[1],
     paddingRight: spacing[4],
+    paddingTop: spacing[1],
   },
   voltar: {
-    width: 44,
-    height: 44,
+    width: 48,
+    height: 48,
     alignItems: 'center',
     justifyContent: 'center',
   },
   segmentos: {
     flex: 1,
     flexDirection: 'row',
-    gap: spacing[1] + 2,
+    gap: spacing[1],
   },
   segmento: {
     flex: 1,
     height: 4,
-    borderRadius: radius.full,
+    borderRadius: 2,
   },
   contador: {
+    paddingLeft: spacing[2],
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
     fontWeight: '600',
@@ -751,7 +766,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     paddingTop: spacing[6],
     paddingBottom: spacing[4],
-    gap: spacing[5],
+    gap: spacing[6] + spacing[1],
   },
   textos: {
     gap: spacing[2],
@@ -760,6 +775,7 @@ const styles = StyleSheet.create({
     fontSize: typography.heading.fontSize,
     lineHeight: typography.heading.lineHeight,
     fontWeight: typography.heading.fontWeight,
+    letterSpacing: typography.heading.letterSpacing,
   },
   subtitulo: {
     fontSize: typography.body.fontSize,
@@ -772,24 +788,44 @@ const styles = StyleSheet.create({
   rodape: {
     paddingHorizontal: spacing[4],
     paddingBottom: spacing[3],
-    paddingTop: spacing[2],
     gap: spacing[2],
+    alignItems: 'center',
+  },
+  rodapeCompacto: {
+    gap: spacing[1],
   },
   legendaRodape: {
     textAlign: 'center',
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
   },
+  blocoNome: {
+    gap: spacing[2],
+  },
+  privacidade: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing[1] + 2,
+  },
+  textoPrivacidade: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+  },
+  blocoHoras: {
+    gap: spacing[4],
+  },
+  blocoCartoes: {
+    gap: spacing[3],
+  },
   cartao: {
     borderWidth: 1,
     borderRadius: radius.lg,
-    padding: spacing[4],
-    gap: spacing[3],
   },
   cartaoHoras: {
-    paddingVertical: spacing[6],
+    paddingTop: spacing[6],
     paddingHorizontal: spacing[5],
-    gap: spacing[4],
+    paddingBottom: spacing[5],
+    gap: spacing[5],
   },
   numeroCaixa: {
     flexDirection: 'row',
@@ -798,22 +834,24 @@ const styles = StyleSheet.create({
     gap: spacing[2],
   },
   numero: {
-    fontSize: typography.timerHero.fontSize,
-    lineHeight: typography.timerHero.lineHeight,
+    fontSize: 72,
+    lineHeight: 72,
     fontWeight: '800',
+    letterSpacing: -2.88,
     fontVariant: ['tabular-nums'],
   },
   unidade: {
     fontSize: typography.title3.fontSize,
     lineHeight: typography.title3.lineHeight,
+    fontWeight: '500',
   },
   escala: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
   textoEscala: {
-    fontSize: typography.caption.fontSize,
-    lineHeight: typography.caption.lineHeight,
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
   },
   atalhos: {
     gap: spacing[2],
@@ -832,14 +870,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing[1],
-    minHeight: 44,
+    height: 44,
     borderRadius: radius.full,
-    borderWidth: 1,
   },
   textoChip: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+  },
+  cartaoExemplo: {
+    paddingTop: spacing[4],
+    paddingHorizontal: spacing[4],
+    paddingBottom: spacing[3] + 2,
+    gap: spacing[3],
   },
   cabecalhoExemplo: {
     flexDirection: 'row',
@@ -849,7 +891,7 @@ const styles = StyleSheet.create({
   tituloCartao: {
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   selo: {
     paddingHorizontal: spacing[2],
@@ -860,11 +902,22 @@ const styles = StyleSheet.create({
     fontSize: 11,
     lineHeight: 16,
     fontWeight: '700',
-    letterSpacing: 0.6,
+    letterSpacing: 0.66,
+  },
+  cartaoLista: {
+    padding: spacing[4],
+    gap: spacing[3] + 2,
+  },
+  // O glifo do Ionicons ocupa mais que o tamanho (metrica da fonte): sem
+  // travar a altura, a linha cresce e as tres frases se afastam.
+  icone20: {
+    width: 20,
+    height: 20,
+    lineHeight: 20,
   },
   itemLista: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: spacing[3],
   },
   textoItem: {
@@ -872,30 +925,60 @@ const styles = StyleSheet.create({
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
   },
+  agoraNao: {
+    height: 48,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  textoAgoraNao: {
+    fontSize: typography.callout.fontSize,
+    lineHeight: typography.callout.lineHeight,
+    fontWeight: '600',
+  },
+  cartaoPermissoes: {
+    borderWidth: 1,
+    borderRadius: radius.lg,
+    paddingTop: spacing[3] + 2,
+    paddingBottom: spacing[3],
+    paddingLeft: spacing[4],
+    paddingRight: spacing[3],
+    gap: spacing[2] + 2,
+  },
   linhaPermissao: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[3],
-    minHeight: 40,
+    gap: spacing[2] + 2,
+  },
+  icone18: {
+    width: 18,
+    height: 18,
+    lineHeight: 18,
+  },
+  textoPermissao: {
+    flex: 1,
+    fontSize: typography.callout.fontSize,
+    lineHeight: typography.callout.lineHeight,
   },
   pronto: {
+    paddingRight: spacing[1],
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   liberar: {
-    minHeight: 36,
+    height: 36,
     justifyContent: 'center',
-    paddingHorizontal: spacing[3],
+    paddingHorizontal: spacing[3] + 2,
     borderRadius: radius.sm,
   },
   textoLiberar: {
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   lista: {
-    height: APP_ROW_HEIGHT * APPS_VISIVEIS + 2,
+    height: APP_ROW_HEIGHT_CHECK * APPS_VISIVEIS + (APPS_VISIVEIS - 1) + 2,
     borderWidth: 1,
     borderRadius: radius.lg,
     overflow: 'hidden',
@@ -909,7 +992,8 @@ const styles = StyleSheet.create({
   cartaoFinal: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[4],
+    gap: spacing[3] + 2,
+    padding: spacing[4],
   },
   textosFinal: {
     flex: 1,
@@ -918,7 +1002,7 @@ const styles = StyleSheet.create({
   nomeFinal: {
     fontSize: typography.body.fontSize,
     lineHeight: 22,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   legendaFinal: {
     fontSize: typography.footnote.fontSize,
@@ -938,38 +1022,43 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   oferta: {
-    gap: spacing[2],
-  },
-  hero: {
-    gap: spacing[4],
+    gap: spacing[3] + 2,
   },
   cabecalhoOferta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tituloComIcone: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[2],
   },
   tituloOferta: {
-    flex: 1,
     fontSize: typography.title3.fontSize,
     lineHeight: typography.title3.lineHeight,
-    fontWeight: '800',
+    fontWeight: '700',
+  },
+  seloOferta: {
+    paddingHorizontal: spacing[2],
+    paddingVertical: 3,
+    borderRadius: radius.sm,
   },
   corpoOferta: {
     fontSize: typography.callout.fontSize,
-    lineHeight: 22,
-  },
-  divisoria: {
-    height: StyleSheet.hairlineWidth,
+    lineHeight: 21,
   },
   linhaInterruptor: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    borderTopWidth: 1,
+    paddingTop: spacing[3] + 2,
   },
   rotuloInterruptor: {
-    fontSize: typography.callout.fontSize,
-    lineHeight: typography.callout.lineHeight,
-    fontWeight: '700',
+    fontSize: typography.body.fontSize,
+    lineHeight: 22,
+    fontWeight: '600',
   },
   legendaOferta: {
     fontSize: typography.footnote.fontSize,

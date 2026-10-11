@@ -2,14 +2,16 @@ import { useState, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Skeleton } from '@/components/Skeleton';
-import { radius, spacing, typography } from '@/theme/tokens';
+import { spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 import {
+  angulosDoArco,
   formatRemainingClock,
   formatRemainingForScreenReader,
   formatRemainingShort,
   fracaoDecorrida,
+  pontaDoArco,
   roundToAnnouncementBucket,
 } from './countdownStatus';
 import { useCountdown, type RemainingMsReader } from './useCountdown';
@@ -17,8 +19,8 @@ import { useCountdown, type RemainingMsReader } from './useCountdown';
 type Props = {
   readRemainingMs: RemainingMsReader;
   /**
-   * Duracao total configurada, so pra desenhar a barra. Sem ela a barra nao
-   * aparece — o numero e o rotulo bastam (§2.4: a barra nunca e o unico
+   * Duracao total configurada, so pra desenhar o anel. Sem ela o anel nao
+   * aparece — o numero e o rotulo bastam (§2.4: o anel nunca e o unico
    * indicador).
    */
   totalMs?: number;
@@ -32,8 +34,8 @@ type Props = {
  * vermelho, sem piscar, sem contagem dramática, mesmo em `nearingEnd`.
  *
  * Vive sobre o `HeroCard` da tela de espera, por isso as cores são as
- * `textOnHero*`. A barra é âmbar (atrito) — o anel do §2.4 pediria
- * `react-native-svg`, e a barra linear é a alternativa que o próprio §2.4 dá.
+ * `textOnHero*`. O anel é âmbar (atrito) e desenhado só com `View` — duas
+ * metades recortadas girando —, sem puxar `react-native-svg` pra um traço só.
  */
 export function Countdown({ readRemainingMs, totalMs, completeSlot }: Props) {
   const theme = useTheme();
@@ -95,13 +97,8 @@ export function Countdown({ readRemainingMs, totalMs, completeSlot }: Props) {
   const fracao = totalMs ? fracaoDecorrida(remainingMs, totalMs) : null;
   const totalMin = totalMs ? Math.round(totalMs / 60_000) : null;
 
-  return (
-    <View
-      style={styles.container}
-      accessibilityRole="timer"
-      accessibilityLiveRegion="polite"
-      accessibilityLabel={formatRemainingForScreenReader(bucketedMs)}
-    >
+  const numero = (
+    <View style={styles.centro} importantForAccessibility="no-hide-descendants">
       <Text
         style={[
           styles.number,
@@ -113,26 +110,30 @@ export function Countdown({ readRemainingMs, totalMs, completeSlot }: Props) {
           },
         ]}
         maxFontSizeMultiplier={1.3}
-        importantForAccessibility="no"
       >
         {formatRemainingClock(remainingMs)}
       </Text>
+      <Text style={[styles.restantes, { color: theme.colors.textOnHeroSecondary }]}>restantes</Text>
+    </View>
+  );
 
-      {fracao !== null && (
-        <View
-          style={[styles.trilho, { backgroundColor: theme.colors.bgHeroRaised }]}
-          importantForAccessibility="no-hide-descendants"
+  return (
+    <View
+      style={styles.container}
+      accessibilityRole="timer"
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={formatRemainingForScreenReader(bucketedMs)}
+    >
+      {fracao === null ? (
+        numero
+      ) : (
+        <Anel
+          fracao={fracao}
+          corDoTrilho={theme.colors.lineOnHero}
+          corDoArco={theme.colors.textOnHeroFriction}
         >
-          <View
-            style={[
-              styles.preenchimento,
-              {
-                width: `${Math.round(fracao * 100)}%`,
-                backgroundColor: theme.colors.textOnHeroFriction,
-              },
-            ]}
-          />
-        </View>
+          {numero}
+        </Anel>
       )}
 
       <Text
@@ -146,25 +147,142 @@ export function Countdown({ readRemainingMs, totalMs, completeSlot }: Props) {
   );
 }
 
+/** Caixa do anel, a espessura do traco e o raio da linha central (Paper: r=88). */
+const CAIXA = 196;
+const TRACO = 10;
+const DIAMETRO = CAIXA - TRACO;
+const RAIO_CENTRAL = (DIAMETRO - TRACO) / 2;
+
+function Anel({
+  fracao,
+  corDoTrilho,
+  corDoArco,
+  children,
+}: {
+  fracao: number;
+  corDoTrilho: string;
+  corDoArco: string;
+  children: ReactNode;
+}) {
+  const { direita, esquerda } = angulosDoArco(fracao);
+  // Pontas arredondadas, como o `strokeLinecap="round"` do Paper.
+  const inicio = pontaDoArco(0, RAIO_CENTRAL);
+  const ponta = pontaDoArco(fracao, RAIO_CENTRAL);
+  const circulo = { borderColor: corDoArco };
+
+  return (
+    <View style={styles.anel} importantForAccessibility="no-hide-descendants">
+      <View style={[styles.circulo, styles.trilhoAnel, { borderColor: corDoTrilho }]} />
+      {fracao > 0 && (
+        <>
+          <View style={[styles.metade, styles.metadeDireita]}>
+            <View
+              style={[
+                styles.giro,
+                { left: -DIAMETRO / 2, transform: [{ rotate: `${direita}deg` }] },
+              ]}
+            >
+              <View style={[styles.metade, styles.recorteEsquerdo]}>
+                <View style={[styles.circulo, circulo]} />
+              </View>
+            </View>
+          </View>
+          <View style={[styles.metade, styles.metadeEsquerda]}>
+            <View style={[styles.giro, { left: 0, transform: [{ rotate: `${esquerda}deg` }] }]}>
+              <View style={[styles.metade, styles.recorteDireito]}>
+                <View style={[styles.circulo, circulo, { left: -DIAMETRO / 2 }]} />
+              </View>
+            </View>
+          </View>
+          {[inicio, ponta].map((centro, indice) => (
+            <View
+              key={indice}
+              style={[
+                styles.ponta,
+                {
+                  backgroundColor: corDoArco,
+                  left: CAIXA / 2 + centro.x - TRACO / 2,
+                  top: CAIXA / 2 + centro.y - TRACO / 2,
+                },
+              ]}
+            />
+          ))}
+        </>
+      )}
+      {children}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
     alignSelf: 'stretch',
-    gap: spacing[3],
+    gap: spacing[3] + 2,
   },
   number: {
     fontVariant: ['tabular-nums'],
-    letterSpacing: -1,
+    letterSpacing: typography.timerHero.letterSpacing,
   },
-  trilho: {
-    alignSelf: 'stretch',
-    height: 8,
-    borderRadius: radius.full,
+  centro: {
+    alignItems: 'center',
+    gap: 2,
+  },
+  restantes: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+  },
+  anel: {
+    width: CAIXA,
+    height: CAIXA,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  circulo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: DIAMETRO,
+    height: DIAMETRO,
+    borderRadius: DIAMETRO / 2,
+    borderWidth: TRACO,
+  },
+  trilhoAnel: {
+    top: TRACO / 2,
+    left: TRACO / 2,
+  },
+  metade: {
+    position: 'absolute',
+    top: 0,
+    width: DIAMETRO / 2,
+    height: DIAMETRO,
     overflow: 'hidden',
   },
-  preenchimento: {
-    height: '100%',
-    borderRadius: radius.full,
+  metadeDireita: {
+    top: TRACO / 2,
+    left: CAIXA / 2,
+  },
+  metadeEsquerda: {
+    top: TRACO / 2,
+    left: TRACO / 2,
+  },
+  recorteEsquerdo: {
+    left: 0,
+  },
+  recorteDireito: {
+    left: DIAMETRO / 2,
+  },
+  giro: {
+    position: 'absolute',
+    top: 0,
+    width: DIAMETRO,
+    height: DIAMETRO,
+  },
+  ponta: {
+    position: 'absolute',
+    width: TRACO,
+    height: TRACO,
+    borderRadius: TRACO / 2,
   },
   label: {
     fontSize: typography.callout.fontSize,

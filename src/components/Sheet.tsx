@@ -47,7 +47,7 @@ export function Sheet({ visible, onClose, children, accessibilityLabel }: Props)
             styles.folha,
             {
               backgroundColor: theme.colors.bgSurface,
-              paddingBottom: insets.bottom + spacing[4],
+              paddingBottom: insets.bottom + spacing[5],
             },
           ]}
         >
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     paddingTop: spacing[3],
-    paddingHorizontal: spacing[5],
+    paddingHorizontal: spacing[4],
     gap: spacing[5],
     ...elevation[2],
     shadowOffset: { width: 0, height: -elevation[2].shadowOffset.height },

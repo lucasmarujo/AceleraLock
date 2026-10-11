@@ -17,9 +17,14 @@ type Props = {
   selected?: boolean;
   /** Chevron quando o toque leva a outra tela. */
   chevron?: boolean;
+  /** 52 em vez de 56: linhas de uma palavra so (Sobre). */
+  densa?: boolean;
+  /** Recuo a direita; o padrao e 12 com chevron e 16 sem. */
+  recuoDireito?: number;
 };
 
 const MIN_HEIGHT = 56;
+const MIN_HEIGHT_DENSA = 52;
 
 /**
  * docs/design-system.md §3.19. Pensada pra viver dentro de `Grupo`: o padding
@@ -35,6 +40,8 @@ export function ListRow({
   emphasis = 'default',
   selected,
   chevron = false,
+  densa = false,
+  recuoDireito,
 }: Props) {
   const theme = useTheme();
   const corDoValor = {
@@ -69,8 +76,13 @@ export function ListRow({
     </>
   );
 
+  const medidas = {
+    minHeight: densa ? MIN_HEIGHT_DENSA : MIN_HEIGHT,
+    paddingRight: recuoDireito ?? (chevron ? spacing[3] : spacing[4]),
+  };
+
   if (!onPress) {
-    return <View style={styles.linha}>{conteudo}</View>;
+    return <View style={[styles.linha, medidas]}>{conteudo}</View>;
   }
 
   return (
@@ -80,7 +92,11 @@ export function ListRow({
       accessibilityLabel={value ? `${label}, ${value}` : label}
       accessibilityHint={description}
       onPress={onPress}
-      style={({ pressed }) => [styles.linha, pressed && { backgroundColor: theme.colors.bgSunken }]}
+      style={({ pressed }) => [
+        styles.linha,
+        medidas,
+        pressed && { backgroundColor: theme.colors.bgSunken },
+      ]}
     >
       {conteudo}
     </Pressable>
@@ -92,8 +108,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    minHeight: MIN_HEIGHT,
-    paddingHorizontal: spacing[4],
+    paddingLeft: spacing[4],
     paddingVertical: spacing[2],
   },
   textos: {

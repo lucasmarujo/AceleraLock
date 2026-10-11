@@ -75,7 +75,9 @@ export default function Bloqueios() {
     }
   };
 
-  const cabecalho = (
+  // O cartao do modo restrito mora no segmento Apps (Paper). Em Sites ele so
+  // aparece ligado, pra explicar por que a lista nao aceita mudanca.
+  const cabecalho = (comModoRestrito: boolean) => (
     <View style={styles.cabecalho}>
       <Text accessibilityRole="header" style={[styles.titulo, { color: theme.colors.textPrimary }]}>
         Bloqueios
@@ -89,11 +91,13 @@ export default function Bloqueios() {
         valor={aba}
         onChange={setAba}
       />
-      <ModoRestritoCard
-        restricted={restricted}
-        waitMinutes={waitMinutes}
-        onAlternar={alternarModoRestrito}
-      />
+      {comModoRestrito && (
+        <ModoRestritoCard
+          restricted={restricted}
+          waitMinutes={waitMinutes}
+          onAlternar={alternarModoRestrito}
+        />
+      )}
     </View>
   );
 
@@ -105,7 +109,7 @@ export default function Bloqueios() {
       <View style={[styles.painel, aba !== 'apps' && styles.oculto]}>
         <PainelApps
           key={`apps-${restricted}`}
-          cabecalho={cabecalho}
+          cabecalho={cabecalho(true)}
           restricted={restricted}
           onSalvo={() => setContagem(lerContagem())}
         />
@@ -113,7 +117,7 @@ export default function Bloqueios() {
       <View style={[styles.painel, aba !== 'sites' && styles.oculto]}>
         <PainelSites
           key={`sites-${restricted}`}
-          cabecalho={cabecalho}
+          cabecalho={cabecalho(restricted)}
           restricted={restricted}
           permissions={permissions}
           onSalvo={() => setContagem(lerContagem())}
@@ -148,5 +152,6 @@ const styles = StyleSheet.create({
     fontSize: typography.heading.fontSize,
     lineHeight: typography.heading.lineHeight,
     fontWeight: typography.heading.fontWeight,
+    letterSpacing: typography.heading.letterSpacing,
   },
 });

@@ -1,6 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { radius, spacing, typography } from '@/theme/tokens';
+import { brand, radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 export type Segmento<T extends string> = {
@@ -14,6 +15,8 @@ type Props<T extends string> = {
   valor: T;
   onChange: (valor: T) => void;
   accessibilityLabel: string;
+  /** Visto antes do rotulo selecionado (escolha de tema), alem do fundo. */
+  marcarSelecionado?: boolean;
 };
 
 /**
@@ -25,6 +28,7 @@ export function SegmentedControl<T extends string>({
   valor,
   onChange,
   accessibilityLabel,
+  marcarSelecionado = false,
 }: Props<T>) {
   const theme = useTheme();
 
@@ -32,7 +36,7 @@ export function SegmentedControl<T extends string>({
     <View
       style={[
         styles.trilho,
-        { backgroundColor: theme.colors.bgSunken, borderColor: theme.colors.borderDefault },
+        { backgroundColor: theme.colors.bgSunken, borderColor: theme.colors.borderSunken },
       ]}
       accessibilityRole="tablist"
       accessibilityLabel={accessibilityLabel}
@@ -56,11 +60,14 @@ export function SegmentedControl<T extends string>({
                 styles.segmentoAtivo,
                 {
                   backgroundColor: theme.colors.bgSurface,
-                  borderColor: theme.colors.borderDefault,
+                  borderColor: theme.colors.borderSunken,
                 },
               ],
             ]}
           >
+            {marcarSelecionado && ativo && (
+              <Ionicons name="checkmark" size={16} color={theme.colors.textPrimary} />
+            )}
             <Text
               style={[
                 styles.rotulo,
@@ -114,13 +121,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing[2],
+    gap: spacing[1] + 2,
     borderRadius: radius.sm + 1,
     borderWidth: 1,
     borderColor: 'transparent',
   },
   segmentoAtivo: {
-    borderWidth: 1,
+    shadowColor: brand.tema,
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   rotulo: {
     fontSize: typography.callout.fontSize,
@@ -128,6 +139,7 @@ const styles = StyleSheet.create({
   },
   contador: {
     minWidth: 22,
+    paddingVertical: 1,
     paddingHorizontal: 7,
     borderRadius: radius.full,
     alignItems: 'center',

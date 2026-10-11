@@ -428,6 +428,55 @@ liberar todo site bloqueado.
 
 ---
 
+## Horários livres por app (2026-10-11)
+
+Pedido do usuário: cada app bloqueado pode ter faixas de horário em que o bloqueio
+não vale ("das 12h às 13h, de segunda a sexta"). Opcional — sem faixa, o app fica
+bloqueado o tempo todo, como antes.
+
+### É a única decisão de bloqueio que lê relógio de parede
+
+"Das 12h às 13h" não tem versão monotônica. Até aqui nenhum caminho de decisão lia a
+hora do aparelho (A1–A3 da matriz de burla), e esta é a exceção, isolada em
+`ScheduleExceptions` no `core/`. Espera e concessão continuam só monotônicas.
+
+### Só vale com hora e fuso automáticos
+
+Decisão do usuário. Sem defesa, mudar o relógio para 12h30 abriria o app. Com "data e
+hora automáticas" e "fuso automático" ligados, o Android não deixa ajustar o relógio
+na mão; com qualquer um dos dois desligado, **nenhuma faixa vale** e o app bloqueia.
+Falha para o lado do bloqueio, nunca da liberação. O fuso entra junto porque trocar
+de fuso também muda a hora local — é o mesmo atalho por outra porta (A15).
+
+### Modo restrito ligado anula todas as faixas
+
+Decisão do usuário. Com o modo restrito ligado nenhuma faixa vale e a folha de horários
+fica só de leitura. Gravar uma faixa nesse estado não abre nada, por isso o nativo não
+precisa de gate: a recusa está na regra (`isExempt`), com teste.
+
+### Faixas por app, com dias da semana
+
+Várias faixas por app (até 8), cada uma com dias, início e fim, em passos de 15 minutos.
+Faixa que vira a meia-noite pertence ao dia em que começa: sexta 22:00–02:00 vai até
+sábado 2h. Início igual ao fim é recusado (faixa vazia ou dia inteiro, ambíguo). Só app
+já gravado na lista pode ter faixa, e tirar o app da lista apaga as faixas dele — voltar
+com o app meses depois não traz horário livre esquecido.
+
+### Persistência: string codificada dentro da política
+
+As faixas moram na `BlockPolicy`, porque são configuração do bloqueio e não guardam
+instante de liberação (o que vetaria a política, ver "A concessão não é uma lista").
+Viajam como `pacote|1,2,3,4,5|720|780` num array de strings, para caber no
+`PolicyJson`, que não lê objeto aninhado. Faixa malformada cai sozinha, sem derrubar a
+política: perder um horário livre só bloqueia mais.
+
+### Só Android por enquanto
+
+Decisão do usuário. No iOS o bloqueio é um shield do Family Controls por token opaco, e
+liberar por horário exige uma extensão `DeviceActivityMonitor` que ainda não existe. A
+regra está espelhada em Swift (`ios/Core/ScheduleExceptions.swift`); o módulo iOS só tem
+as funções do contrato, e a UI não mostra a opção no iPhone (lá não há lista por app).
+
 ## Redesign da UI (2026-10-11)
 
 Antes × depois de cada tela no arquivo do Paper "AceleraLock — Mapa de telas", página
@@ -479,16 +528,32 @@ O gráfico da Início mostra os sete dias de calendário até hoje. Dia sem leit
 tracejado, com nota embaixo, em vez de sumir (a semana encolhia e as letras
 desalinhavam) e nunca como zero. Mesma regra de sempre: `null` não é `0`.
 
-### Cronômetro em barra, não anel
+### Cronômetro em anel, sem dependência nova
 
-O DS §2.4 aceita anel ou barra. Anel pede `react-native-svg`, dependência nova só para
-isso; a barra resolve com `View`. Continua sem instante de fim: a tela mostra quanto
-falta e quanto da espera já passou, nunca "libera às 15h".
+O Paper desenha o anel do DS §2.4. `react-native-svg` seria dependência nova só para
+um traço, então o anel é feito com `View`: duas metades recortadas que giram (a direita
+cobre 0–50% da espera, a esquerda 50–100%) e duas pontas arredondadas. A geometria mora
+em `countdownStatus.ts` (`angulosDoArco`, `pontaDoArco`), testada. Continua sem instante
+de fim: a tela mostra quanto falta e quanto da espera já passou, nunca "libera às 15h".
 
 ### "Desligar a proteção" segue sem botão
 
-A linha existia no protótipo. Não entrou: o gatilho de `STOP_PROTECTION` foi removido
-de propósito (commit `21cbd28`), e reintroduzir é decisão de produto, não de layout.
+A linha existia no protótipo. Não entrou, por decisão do usuário: o gatilho de
+`STOP_PROTECTION` foi removido de propósito (commit `21cbd28`). Pelo mesmo motivo,
+"Tempo de espera" em Ajustes é só leitura e sem chevron — não há tela para mudar a
+duração, e chevron sem destino seria promessa falsa.
+
+### Interruptor próprio, no desenho do Paper
+
+O `Switch` do RN muda de cara por plataforma e por versão do Android, e o estado
+desligado sumia no tema escuro. `Interruptor` desenha o trilho 52×32 do Paper: ligado
+preenchido, desligado só contorno. Travado (modo restrito) só o interruptor apaga — o
+nome e o ícone do app continuam legíveis.
+
+### Tela de plataforma não suportada fala do iPhone
+
+O texto segue o Paper e a versão anterior da tela. Na prática o veredito só cai nela
+fora de Android e iOS (`useProtectionVerdict`), então nenhum iPhone a vê hoje.
 
 ---
 

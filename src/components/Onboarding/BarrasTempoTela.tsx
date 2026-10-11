@@ -32,9 +32,17 @@ type Props = {
   legenda: string;
   mostrarValor?: boolean;
   estimativaHoras?: number | null;
+  /** `exemplo`: miniatura do onboarding — mais baixa, sem eixo nem estimativa. */
+  variante?: 'completo' | 'exemplo';
 };
 
-const ALTURA = 112;
+type Medidas = { altura: number; largura: number; raio: number };
+
+const MEDIDAS: Record<'completo' | 'exemplo', Medidas> = {
+  completo: { altura: 112, largura: 36, raio: radius.sm },
+  exemplo: { altura: 72, largura: 30, raio: 6 },
+};
+
 const ESCALONAMENTO_MS = 70;
 
 /**
@@ -42,8 +50,6 @@ const ESCALONAMENTO_MS = 70;
  * pixel. Zero medido continua zero (sem barra) — ver `alturaDaBarra`.
  */
 const ALTURA_MINIMA = 6;
-
-const LARGURA_MAXIMA = 36;
 
 /**
  * Tracos da linha da estimativa. Linha tracejada de verdade (`borderStyle:
@@ -56,15 +62,17 @@ function Barra({
   dado,
   maximo,
   indice,
+  medidas,
 }: {
   dado: Dado & { horas: number };
   maximo: number;
   indice: number;
+  medidas: Medidas;
 }) {
   const theme = useTheme();
   const reduzido = useReducedMotion();
   const progresso = useSharedValue(0);
-  const alvo = alturaDaBarra(dado.horas, maximo, ALTURA, ALTURA_MINIMA);
+  const alvo = alturaDaBarra(dado.horas, maximo, medidas.altura, ALTURA_MINIMA);
 
   useEffect(() => {
     progresso.value = withDelay(
@@ -84,6 +92,8 @@ function Barra({
         styles.barra,
         estilo,
         {
+          maxWidth: medidas.largura,
+          borderRadius: medidas.raio,
           backgroundColor: dado.destaque ? theme.colors.borderBrand : theme.colors.borderStrong,
         },
       ]}
@@ -100,8 +110,11 @@ export function BarrasTempoTela({
   legenda,
   mostrarValor = false,
   estimativaHoras = null,
+  variante = 'completo',
 }: Props) {
   const theme = useTheme();
+  const medidas = MEDIDAS[variante];
+  const exemplo = variante === 'exemplo';
 
   // A estimativa divide a escala com as leituras (ver `escalaDoGrafico`). O
   // preco e que uma estimativa muito acima do medido achata as barras — que e
@@ -110,7 +123,9 @@ export function BarrasTempoTela({
     dados.flatMap((dado) => (dado.horas === null ? [] : [dado.horas])),
     estimativaHoras
   );
-  const alturaEstimativa = alturaDaBarra(estimativaHoras ?? 0, maximo, ALTURA);
+  const alturaEstimativa = exemplo
+    ? 0
+    : alturaDaBarra(estimativaHoras ?? 0, maximo, medidas.altura);
   const mostrarEstimativa = alturaEstimativa > 0;
 
   return (
@@ -129,13 +144,31 @@ export function BarrasTempoTela({
           : ''
       }`}
     >
-      <View style={styles.grade}>
+      <View style={[styles.grade, { height: medidas.altura }]}>
         {dados.map((dado, indice) => (
-          <View key={`${dado.rotulo}-${indice}`} style={styles.coluna}>
+          <View
+            key={`${dado.rotulo}-${indice}`}
+            style={[styles.coluna, { height: medidas.altura, width: medidas.largura }]}
+          >
             {dado.horas === null ? (
-              <View style={[styles.semLeitura, { borderColor: theme.colors.borderStrong }]} />
+              <View
+                style={[
+                  styles.semLeitura,
+                  {
+                    height: medidas.altura,
+                    maxWidth: medidas.largura,
+                    borderRadius: medidas.raio,
+                    borderColor: theme.colors.borderStrong,
+                  },
+                ]}
+              />
             ) : (
-              <Barra dado={{ ...dado, horas: dado.horas }} maximo={maximo} indice={indice} />
+              <Barra
+                dado={{ ...dado, horas: dado.horas }}
+                maximo={maximo}
+                indice={indice}
+                medidas={medidas}
+              />
             )}
           </View>
         ))}
@@ -143,7 +176,7 @@ export function BarrasTempoTela({
         {mostrarEstimativa && (
           <View
             pointerEvents="none"
-            style={[styles.linhaEstimativa, { top: ALTURA - alturaEstimativa }]}
+            style={[styles.linhaEstimativa, { top: medidas.altura - alturaEstimativa }]}
           >
             {Array.from({ length: TRACOS_DA_LINHA }, (_, indice) => (
               <View
@@ -155,37 +188,46 @@ export function BarrasTempoTela({
         )}
       </View>
 
-      <View style={styles.eixos}>
-        {dados.map((dado, indice) => (
-          <View key={`${dado.rotulo}-eixo-${indice}`} style={styles.eixo}>
-            {mostrarValor && (
+      {!exemplo && (
+        <View style={styles.eixos}>
+          {dados.map((dado, indice) => (
+            <View
+              key={`${dado.rotulo}-eixo-${indice}`}
+              style={[styles.eixo, { width: medidas.largura }]}
+            >
+              {mostrarValor && (
+                <Text
+                  numberOfLines={1}
+                  style={[
+                    styles.valor,
+                    {
+                      color: dado.destaque
+                        ? theme.colors.textBrand
+                        : dado.horas === null
+                          ? theme.colors.textTertiary
+                          : theme.colors.textSecondary,
+                      fontWeight: dado.destaque ? '700' : '400',
+                    },
+                  ]}
+                >
+                  {dado.horas === null ? '—' : formatarDuracaoCompacta(dado.horas * 3600)}
+                </Text>
+              )}
               <Text
-                numberOfLines={1}
                 style={[
-                  styles.valor,
+                  styles.rotulo,
                   {
-                    color: dado.destaque ? theme.colors.textBrand : theme.colors.textSecondary,
-                    fontWeight: dado.destaque ? '700' : '400',
+                    color: dado.destaque ? theme.colors.textPrimary : theme.colors.textTertiary,
+                    fontWeight: dado.destaque ? '700' : '500',
                   },
                 ]}
               >
-                {dado.horas === null ? '—' : formatarDuracaoCompacta(dado.horas * 3600)}
+                {dado.rotulo}
               </Text>
-            )}
-            <Text
-              style={[
-                styles.rotulo,
-                {
-                  color: dado.destaque ? theme.colors.textPrimary : theme.colors.textTertiary,
-                  fontWeight: dado.destaque ? '700' : '500',
-                },
-              ]}
-            >
-              {dado.rotulo}
-            </Text>
-          </View>
-        ))}
-      </View>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -193,31 +235,24 @@ export function BarrasTempoTela({
 const styles = StyleSheet.create({
   caixa: {
     alignSelf: 'stretch',
-    gap: spacing[2],
+    gap: spacing[3],
   },
+  // Colunas de largura fixa espalhadas (Paper): a primeira encosta na borda
+  // esquerda e a ultima na direita, e o eixo usa a mesma largura por coluna.
   grade: {
-    height: ALTURA,
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    gap: spacing[2],
   },
   coluna: {
-    flex: 1,
-    height: ALTURA,
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
   barra: {
     width: '100%',
-    maxWidth: LARGURA_MAXIMA,
-    borderRadius: radius.sm,
   },
   semLeitura: {
     width: '100%',
-    maxWidth: LARGURA_MAXIMA,
-    height: ALTURA,
-    borderRadius: radius.sm,
     borderWidth: 1.5,
     borderStyle: 'dashed',
   },
@@ -236,10 +271,8 @@ const styles = StyleSheet.create({
   eixos: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: spacing[2],
   },
   eixo: {
-    flex: 1,
     alignItems: 'center',
     gap: 2,
   },

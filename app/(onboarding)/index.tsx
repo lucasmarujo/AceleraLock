@@ -15,7 +15,9 @@ import { Stack, useRouter } from 'expo-router';
 
 import { Button } from '@/components/Button';
 import { readOnboardingComplete } from '@/state/onboardingStorage';
+import AceleralockBlocker from '@/native/blocker';
 import {
+  amber,
   brand,
   duration,
   easing,
@@ -30,11 +32,30 @@ const BADGE = require('../../assets/icon-1024.png');
 
 const BADGE_SIZE = 88;
 
-const PROMESSAS: { icone: keyof typeof Ionicons.glyphMap; texto: string }[] = [
-  { icone: 'shield-outline', texto: 'Bloqueia os apps e sites que você escolher' },
-  { icone: 'hourglass-outline', texto: 'Mudar de ideia pode pedir uma espera' },
-  { icone: 'phone-portrait-outline', texto: 'Tudo fica no seu celular. Sem conta.' },
-];
+/** Fonte da marca no overline (Paper: Roboto Mono). */
+const MONO = Platform.select({ ios: 'Menlo', default: 'monospace' });
+
+type Promessa = { icone: keyof typeof Ionicons.glyphMap; cor: string; texto: string };
+
+function promessas(esperaMinutos: number): Promessa[] {
+  return [
+    {
+      icone: 'shield-outline',
+      cor: brand.turquesa,
+      texto: 'Bloqueia os apps e sites que você escolher',
+    },
+    {
+      icone: 'hourglass-outline',
+      cor: amber[300],
+      texto: `Mudar de ideia pode pedir ${esperaMinutos} min de espera`,
+    },
+    {
+      icone: 'phone-portrait-outline',
+      cor: neutral[300],
+      texto: 'Tudo fica no seu celular. Sem conta.',
+    },
+  ];
+}
 
 /**
  * Superficie de marca *fixa*: e a unica tela do app que nao responde ao
@@ -108,6 +129,7 @@ export default function OnboardingBoasVindas() {
     return () => subscription.remove();
   }, []);
 
+  const { waitMinutes } = AceleralockBlocker.protectionState();
   const estiloBadge = useEntrada(0, reduzido);
   const estiloTitulo = useEntrada(120, reduzido);
   const estiloPromessas = useEntrada(260, reduzido);
@@ -118,44 +140,47 @@ export default function OnboardingBoasVindas() {
       <Stack.Screen options={{ gestureEnabled: false }} />
       <LinearGradient
         colors={[brand.temaTurquesa, brand.tema]}
+        locations={[0, 0.58]}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.7 }}
+        end={{ x: 0, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
 
       {primeiraVez && (
         <SafeAreaView style={styles.conteudo}>
-          <Animated.View style={estiloBadge}>
-            <Image
-              source={BADGE}
-              style={styles.badge}
-              resizeMode="contain"
-              accessibilityIgnoresInvertColors
-              accessibilityLabel="AceleraLock"
-            />
-          </Animated.View>
+          <View style={styles.topo}>
+            <Animated.View style={estiloBadge}>
+              <Image
+                source={BADGE}
+                style={styles.badge}
+                resizeMode="contain"
+                accessibilityIgnoresInvertColors
+                accessibilityLabel="AceleraLock"
+              />
+            </Animated.View>
 
-          <Animated.View style={[styles.cabecalho, estiloTitulo]}>
-            <Text style={styles.marca}>ACELERALOCK</Text>
-            <Text accessibilityRole="header" style={styles.titulo}>
-              Faça o impulso esperar.
-            </Text>
-            <Text style={styles.subtitulo}>
-              Escolha os apps que roubam seu tempo. Quando bater a vontade de abrir, o AceleraLock
-              fica no caminho.
-            </Text>
-          </Animated.View>
+            <Animated.View style={[styles.cabecalho, estiloTitulo]}>
+              <Text style={styles.marca}>ACELERALOCK</Text>
+              <Text accessibilityRole="header" style={styles.titulo}>
+                Faça o impulso esperar.
+              </Text>
+              <Text style={styles.subtitulo}>
+                Escolha os apps que roubam seu tempo. Quando bater a vontade de abrir, o AceleraLock
+                fica no caminho.
+              </Text>
+            </Animated.View>
 
-          <Animated.View style={[styles.promessas, estiloPromessas]}>
-            {PROMESSAS.map((promessa) => (
-              <View key={promessa.texto} style={styles.promessa}>
-                <View style={styles.iconePromessa}>
-                  <Ionicons name={promessa.icone} size={18} color={brand.turquesa} />
+            <Animated.View style={[styles.promessas, estiloPromessas]}>
+              {promessas(waitMinutes).map((promessa) => (
+                <View key={promessa.icone} style={styles.promessa}>
+                  <View style={styles.iconePromessa}>
+                    <Ionicons name={promessa.icone} size={18} color={promessa.cor} />
+                  </View>
+                  <Text style={styles.textoPromessa}>{promessa.texto}</Text>
                 </View>
-                <Text style={styles.textoPromessa}>{promessa.texto}</Text>
-              </View>
-            ))}
-          </Animated.View>
+              ))}
+            </Animated.View>
+          </View>
 
           <View style={styles.espaco} />
 
@@ -195,10 +220,10 @@ const styles = StyleSheet.create({
   },
   conteudo: {
     flex: 1,
+  },
+  topo: {
     paddingHorizontal: spacing[6],
-    paddingTop: spacing[8],
-    paddingBottom: spacing[4],
-    gap: spacing[6],
+    paddingTop: spacing[12],
   },
   badge: {
     width: BADGE_SIZE,
@@ -206,39 +231,42 @@ const styles = StyleSheet.create({
     borderRadius: radius.xl,
   },
   cabecalho: {
-    gap: spacing[3],
+    marginTop: spacing[6] + spacing[1],
+    gap: spacing[3] + 2,
   },
   marca: {
+    fontFamily: MONO,
     fontSize: typography.caption.fontSize,
     lineHeight: typography.caption.lineHeight,
-    fontWeight: '700',
-    letterSpacing: 2,
+    fontWeight: '500',
+    letterSpacing: 1.44,
     color: brand.turquesa,
   },
   titulo: {
     fontSize: typography.metric.fontSize,
-    lineHeight: typography.metric.lineHeight,
+    lineHeight: 46,
     fontWeight: typography.metric.fontWeight,
-    letterSpacing: -1,
+    letterSpacing: -1.54,
     color: neutral[0],
   },
   subtitulo: {
     fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
+    lineHeight: 25,
     color: neutral[300],
   },
   promessas: {
+    marginTop: spacing[8] + spacing[1],
     gap: spacing[4],
   },
   promessa: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[3],
+    gap: spacing[3] + 2,
   },
   iconePromessa: {
     width: 36,
     height: 36,
-    borderRadius: radius.sm,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: temaNeutral[800],
@@ -254,11 +282,13 @@ const styles = StyleSheet.create({
   },
   rodape: {
     alignSelf: 'stretch',
-    gap: spacing[2],
+    paddingHorizontal: spacing[4],
+    paddingBottom: spacing[1],
+    gap: spacing[1] + 2,
   },
   sair: {
     alignSelf: 'center',
-    minHeight: 44,
+    height: 48,
     justifyContent: 'center',
     paddingHorizontal: spacing[4],
   },
@@ -266,6 +296,6 @@ const styles = StyleSheet.create({
     color: neutral[300],
     fontSize: typography.callout.fontSize,
     lineHeight: typography.callout.lineHeight,
-    fontWeight: '600',
+    fontWeight: '500',
   },
 });

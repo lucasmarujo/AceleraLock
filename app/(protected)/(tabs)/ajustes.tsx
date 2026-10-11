@@ -83,76 +83,82 @@ export default function Ajustes() {
       edges={['top']}
     >
       <ScrollView contentContainerStyle={styles.conteudo}>
-        <Text
-          accessibilityRole="header"
-          style={[styles.titulo, { color: theme.colors.textPrimary }]}
-        >
-          Ajustes
-        </Text>
+        <View style={styles.topo}>
+          <Text
+            accessibilityRole="header"
+            style={[styles.titulo, { color: theme.colors.textPrimary }]}
+          >
+            Ajustes
+          </Text>
 
-        <View
-          style={[
-            styles.perfil,
-            { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
-          ]}
-        >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${nome ?? 'Sem nome'}. Estimativa de tempo de tela`}
-            accessibilityHint={editandoHoras ? 'Fecha o ajuste' : 'Abre o ajuste da estimativa'}
-            accessibilityState={{ expanded: editandoHoras }}
-            onPress={() => setEditandoHoras((atual) => !atual)}
-            style={({ pressed }) => [
-              styles.linhaPerfil,
-              pressed && { backgroundColor: theme.colors.bgSunken },
+          <View
+            style={[
+              styles.perfil,
+              { backgroundColor: theme.colors.bgSurface, borderColor: theme.colors.borderDefault },
             ]}
           >
-            <Avatar nome={nome} size={40} />
-            <View style={styles.textos}>
-              <Text style={[styles.nome, { color: theme.colors.textPrimary }]}>
-                {nome ?? 'Sem nome'}
-              </Text>
-              <Text style={[styles.estimativa, { color: theme.colors.textSecondary }]}>
-                {horas === null
-                  ? 'Estimativa não definida'
-                  : `Estimativa: ${horas} h de tela por dia`}
-              </Text>
-            </View>
-            <Ionicons
-              name={editandoHoras ? 'chevron-up' : 'chevron-forward'}
-              size={20}
-              color={theme.colors.textTertiary}
-            />
-          </Pressable>
-          {editandoHoras && (
-            <View style={[styles.editor, { borderTopColor: theme.colors.borderDefault }]}>
-              <SliderHoras horas={horas ?? 1} onChange={alterarHoras} />
-            </View>
-          )}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${nome ?? 'Sem nome'}. Estimativa de tempo de tela`}
+              accessibilityHint={editandoHoras ? 'Fecha o ajuste' : 'Abre o ajuste da estimativa'}
+              accessibilityState={{ expanded: editandoHoras }}
+              onPress={() => setEditandoHoras((atual) => !atual)}
+              style={({ pressed }) => [
+                styles.linhaPerfil,
+                pressed && { backgroundColor: theme.colors.bgSunken },
+              ]}
+            >
+              <Avatar nome={nome} size={48} />
+              <View style={styles.textos}>
+                <Text style={[styles.nome, { color: theme.colors.textPrimary }]}>
+                  {nome ?? 'Sem nome'}
+                </Text>
+                <Text style={[styles.estimativa, { color: theme.colors.textSecondary }]}>
+                  {horas === null
+                    ? 'Estimativa não definida'
+                    : `Estimativa: ${horas} h de tela por dia`}
+                </Text>
+              </View>
+              <Ionicons
+                name={editandoHoras ? 'chevron-up' : 'chevron-forward'}
+                size={20}
+                color={theme.colors.textTertiary}
+              />
+            </Pressable>
+            {editandoHoras && (
+              <View style={[styles.editor, { borderTopColor: theme.colors.borderDefault }]}>
+                <SliderHoras horas={horas ?? 1} onChange={alterarHoras} />
+              </View>
+            )}
+          </View>
         </View>
 
-        <Grupo titulo="Proteção">
-          <ListRow
-            icon={
-              <Ionicons
-                name={restricted ? 'lock-closed-outline' : 'lock-open-outline'}
-                size={22}
-                color={restricted ? theme.colors.iconWarning : theme.colors.textPrimary}
-              />
-            }
-            label="Modo restrito"
-            value={restricted ? 'Ligado' : 'Desligado'}
-            chevron
-            onPress={() => router.navigate('/bloqueios')}
-          />
-          <ListRow
-            icon={<Ionicons name="hourglass-outline" size={22} color={theme.colors.textPrimary} />}
-            label="Tempo de espera"
-            value={`${waitMinutes} min`}
-          />
-        </Grupo>
-
         <View style={styles.secao}>
+          <Grupo titulo="Proteção">
+            <ListRow
+              icon={
+                <Ionicons
+                  name={restricted ? 'lock-closed-outline' : 'lock-open-outline'}
+                  size={20}
+                  color={restricted ? theme.colors.textWarning : theme.colors.textSecondary}
+                />
+              }
+              label="Modo restrito"
+              value={restricted ? 'Ligado' : 'Desligado'}
+              chevron
+              onPress={() => router.navigate('/bloqueios')}
+            />
+            <ListRow
+              icon={
+                <Ionicons name="hourglass-outline" size={20} color={theme.colors.textSecondary} />
+              }
+              label="Tempo de espera"
+              value={`${waitMinutes} min`}
+            />
+          </Grupo>
+        </View>
+
+        <View style={[styles.secao, styles.aparencia]}>
           <View style={styles.cabecalhoSecao}>
             <Overline>Aparência</Overline>
           </View>
@@ -164,72 +170,91 @@ export default function Ajustes() {
             }))}
             valor={preferencia}
             onChange={definirPreferencia}
+            marcarSelecionado
           />
         </View>
 
-        <Grupo
-          titulo="Permissões"
-          detalhe={
-            pendentes === 0 ? undefined : pendentes === 1 ? '1 pendente' : `${pendentes} pendentes`
-          }
-          corDoDetalhe={theme.colors.textWarning}
-        >
-          {permissoes.map((item) => (
-            <ListRow
-              key={item.chave}
-              icon={
-                <Ionicons
-                  name={item.concedida ? 'checkmark-circle-outline' : 'alert-circle-outline'}
-                  size={22}
-                  color={item.concedida ? theme.colors.textBrand : theme.colors.iconWarning}
-                />
-              }
-              label={item.titulo}
-              description={item.descricao}
-              value={item.concedida ? item.rotuloConcedida : undefined}
-              emphasis="brand"
-              accessory={
-                item.concedida ? undefined : (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={`${item.rotuloAcao}: ${item.titulo}`}
-                    hitSlop={4}
-                    onPress={() => void abrirPermissao(item)}
-                    style={({ pressed }) => [
-                      styles.acao,
-                      {
-                        borderColor: theme.colors.borderStrong,
-                        backgroundColor: pressed ? theme.colors.bgSunken : theme.colors.bgSurface,
-                      },
-                    ]}
-                  >
-                    <Text style={[styles.textoAcao, { color: theme.colors.textPrimary }]}>
-                      {item.rotuloAcao}
+        <View style={styles.secao}>
+          <Grupo
+            titulo="Permissões"
+            detalhe={
+              pendentes === 0
+                ? undefined
+                : pendentes === 1
+                  ? '1 pendente'
+                  : `${pendentes} pendentes`
+            }
+            corDoDetalhe={theme.colors.textWarning}
+          >
+            {permissoes.map((item) => (
+              <ListRow
+                key={item.chave}
+                icon={
+                  <Ionicons
+                    name={item.concedida ? 'checkmark-circle-outline' : 'alert-circle-outline'}
+                    size={20}
+                    color={item.concedida ? theme.colors.textBrand : theme.colors.iconWarning}
+                  />
+                }
+                label={item.titulo}
+                description={item.descricao}
+                recuoDireito={item.concedida ? spacing[4] : spacing[3]}
+                accessory={
+                  item.concedida ? (
+                    <Text style={[styles.concedida, { color: theme.colors.textBrand }]}>
+                      {item.rotuloConcedida}
                     </Text>
-                  </Pressable>
-                )
+                  ) : (
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={`${item.rotuloAcao}: ${item.titulo}`}
+                      hitSlop={4}
+                      onPress={() => void abrirPermissao(item)}
+                      style={({ pressed }) => [
+                        styles.acao,
+                        {
+                          borderColor: theme.colors.borderStrong,
+                          backgroundColor: pressed ? theme.colors.bgSunken : theme.colors.bgSurface,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.textoAcao, { color: theme.colors.textPrimary }]}>
+                        {item.rotuloAcao}
+                      </Text>
+                    </Pressable>
+                  )
+                }
+              />
+            ))}
+          </Grupo>
+        </View>
+
+        <View style={styles.secao}>
+          <Grupo titulo="Sobre">
+            <ListRow
+              label="Política de privacidade"
+              densa
+              recuoDireito={spacing[3] + 2}
+              accessory={
+                <Ionicons name="open-outline" size={18} color={theme.colors.textTertiary} />
               }
+              onPress={() => void Linking.openURL(`${SITE}/#privacidade`)}
             />
-          ))}
-        </Grupo>
-
-        <Grupo titulo="Sobre">
-          <ListRow
-            label="Política de privacidade"
-            accessory={<Ionicons name="open-outline" size={20} color={theme.colors.textTertiary} />}
-            onPress={() => void Linking.openURL(`${SITE}/#privacidade`)}
-          />
-          <ListRow
-            label="Termos de uso"
-            accessory={<Ionicons name="open-outline" size={20} color={theme.colors.textTertiary} />}
-            onPress={() => void Linking.openURL(`${SITE}/#termos`)}
-          />
-          <ListRow label="Versão" value={Constants.expoConfig?.version ?? '—'} />
-        </Grupo>
-
-        <Text style={[styles.rodape, { color: theme.colors.textTertiary }]}>
-          Tudo fica no seu celular. Sem conta, sem servidor.
-        </Text>
+            <ListRow
+              label="Termos de uso"
+              densa
+              recuoDireito={spacing[3] + 2}
+              accessory={
+                <Ionicons name="open-outline" size={18} color={theme.colors.textTertiary} />
+              }
+              onPress={() => void Linking.openURL(`${SITE}/#termos`)}
+            />
+            <ListRow label="Versão" densa value={Constants.expoConfig?.version ?? '—'} />
+          </Grupo>
+          <Text style={[styles.rodape, { color: theme.colors.textTertiary }]}>
+            Tudo fica no seu celular. Sem conta, sem servidor.
+          </Text>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -241,12 +266,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing[4],
     paddingTop: spacing[4],
     paddingBottom: spacing[8],
-    gap: spacing[5],
+  },
+  topo: {
+    gap: spacing[4],
   },
   titulo: {
     fontSize: typography.heading.fontSize,
     lineHeight: typography.heading.lineHeight,
     fontWeight: typography.heading.fontWeight,
+    letterSpacing: typography.heading.letterSpacing,
   },
   perfil: {
     borderWidth: 1,
@@ -256,8 +284,10 @@ const styles = StyleSheet.create({
   linhaPerfil: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[4],
-    padding: spacing[4],
+    gap: spacing[3] + 2,
+    paddingVertical: spacing[3] + 2,
+    paddingLeft: spacing[4],
+    paddingRight: spacing[3],
   },
   textos: {
     flex: 1,
@@ -273,18 +303,27 @@ const styles = StyleSheet.create({
     lineHeight: typography.footnote.lineHeight,
   },
   editor: {
-    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopWidth: 1,
     paddingHorizontal: spacing[4],
     paddingVertical: spacing[4],
   },
   secao: {
+    paddingTop: spacing[6],
+    gap: spacing[2],
+  },
+  aparencia: {
     gap: spacing[2],
   },
   cabecalhoSecao: {
     paddingHorizontal: spacing[1],
   },
+  concedida: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+    fontWeight: '600',
+  },
   acao: {
-    minHeight: 36,
+    height: 36,
     justifyContent: 'center',
     paddingHorizontal: spacing[3],
     borderRadius: radius.sm,
@@ -293,11 +332,12 @@ const styles = StyleSheet.create({
   textoAcao: {
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   rodape: {
     fontSize: typography.footnote.fontSize,
     lineHeight: typography.footnote.lineHeight,
     paddingHorizontal: spacing[1],
+    paddingTop: spacing[1],
   },
 });
