@@ -98,3 +98,70 @@ function semAcento(texto: string): string {
     .normalize('NFD')
     .replace(/\p{Diacritic}/gu, '');
 }
+
+/** Atalhos de valor da secao 2: o slider sozinho e dificil com leitor de tela. */
+export const HORAS_ATALHOS = [2, 4, 5, 8] as const;
+
+/**
+ * "1 de 5" do cabecalho, medido no caminho desta pessoa — mesma regra da barra:
+ * quem entra na secao 3 por reentrada ve "1 de 3", nao "3 de 5".
+ */
+export function progressoDoPasso(passo: Passo, inicial: Passo): { atual: number; total: number } {
+  return { atual: passo - inicial + 1, total: PASSO_ULTIMO - inicial + 1 };
+}
+
+/** Titulo da secao 5: diz o que aconteceu, com o nome do app quando e um so. */
+export function tituloDaConclusao(rotulos: string[]): string {
+  if (rotulos.length === 0) {
+    return 'Bloqueio criado.';
+  }
+  if (rotulos.length === 1) {
+    return `${rotulos[0]} bloqueado.`;
+  }
+  return `${rotulos.length} apps bloqueados.`;
+}
+
+export type PermissaoEssencial = 'usageAccess' | 'overlay';
+
+/**
+ * As duas permissoes sem as quais o bloqueio nao funciona, na ordem do
+ * checklist da secao 4. `null` (sem sonda ainda) conta as duas como faltando —
+ * mesmo lado seguro de `nextMissingCorePermission`.
+ */
+export function permissoesFaltando(
+  permissoes: { usageAccess: boolean; overlay: boolean } | null
+): PermissaoEssencial[] {
+  return (['usageAccess', 'overlay'] as const).filter((chave) => permissoes?.[chave] !== true);
+}
+
+export function tituloPermissoesFaltando(faltando: number): string {
+  return faltando === 1
+    ? 'Falta 1 permissão para bloquear'
+    : `Faltam ${faltando} permissões para bloquear`;
+}
+
+/** CTA da secao 4: diz quantos apps o toque bloqueia. */
+export function rotuloDoBloqueio(marcados: number): string {
+  if (marcados === 0) {
+    return 'Bloquear';
+  }
+  return marcados === 1 ? 'Bloquear 1 app' : `Bloquear ${marcados} apps`;
+}
+
+/** Linha sob o app no cartao da secao 5. */
+export function legendaDaConclusao(total: number): string {
+  if (total <= 1) {
+    return 'A partir de agora';
+  }
+  const outros = total - 1;
+  return `E mais ${outros} ${outros === 1 ? 'app' : 'apps'}, a partir de agora`;
+}
+
+/**
+ * Oferta do modo restrito na secao 5. Diz o custo dos dois lados com o app que
+ * a pessoa acabou de escolher — "um app" quando ha mais de um.
+ */
+export function textoOfertaRestrito(rotulos: string[], esperaMinutos: number): string {
+  const alvo = rotulos.length === 1 ? `o ${rotulos[0]}` : 'um app';
+  return `Sem ele, você tira ${alvo} da lista na hora. Com ele, mudar a lista pede ${esperaMinutos} min de espera — tempo para a vontade passar.`;
+}

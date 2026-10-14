@@ -2,9 +2,11 @@ package com.aceleralock.blocker.core
 
 /**
  * Parser minimo do JSON persistido, sem `org.json` (Android-only) e sem
- * dependencia nova no `core/`. O formato e proprio do app: tres campos
- * (`blockedPackages` e `blockedDomains` arrays de strings, `restricted` boolean)
- * e nada mais.
+ * dependencia nova no `core/`. O formato e proprio do app: quatro campos
+ * (`blockedPackages`, `blockedDomains` e `exceptions` arrays de strings,
+ * `restricted` boolean) e nada mais. As faixas de horario livre viajam como
+ * string codificada por [ScheduleExceptions.encode] justamente para nao exigir
+ * objeto aninhado deste parser.
  *
  * Extracao pura para que o contrato "o que vai pro disco e o que sai dele"
  * tenha teste em JVM (AGENTS.md §2). O adaptador Android entrega a string
@@ -23,7 +25,13 @@ object PolicyJson {
         val blocked = readStringArray(raw, "blockedPackages")
         val restricted = readBoolean(raw, "restricted")
         val domains = readStringArray(raw, "blockedDomains")
-        return RawPolicy(blockedPackages = blocked, restricted = restricted, blockedDomains = domains)
+        val exceptions = readStringArray(raw, "exceptions")
+        return RawPolicy(
+            blockedPackages = blocked,
+            restricted = restricted,
+            blockedDomains = domains,
+            exceptions = exceptions
+        )
     }
 
     private fun readStringArray(raw: String, key: String): List<String> {

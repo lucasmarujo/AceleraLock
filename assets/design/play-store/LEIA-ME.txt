@@ -1,0 +1,40 @@
+ACELERALOCK — Recursos gráficos para a Google Play Console
+==========================================================
+
+CONTEÚDO
+--------
+recurso-grafico-1024x500.png ....... 1024 x 500 (campo "Recurso gráfico")
+telefone/ .......................... 5 capturas 1080 x 1920 (9:16)
+tablet-7pol/ ....................... 5 capturas 1080 x 1920 (9:16)
+tablet-10pol/ ...................... 5 capturas 2160 x 3840 (9:16)
+icone/ ............................. ícone do app 1024 px + SVG vetorial
+
+Todas as capturas passam do mínimo de 1.080 px por lado exigido para
+a elegibilidade à promoção (mínimo de 4 capturas).
+
+NARRATIVA (ordem de upload)
+---------------------------
+01 Proteção ........ proposta de valor mais forte, legível em miniatura
+02 Bloqueio ........ o momento do impulso; prova de como o produto age
+03 Espera .......... diferencial: atrito honesto, cancelar é fácil
+04 Escolha ......... controle do usuário; ritmo visual invertido (device no topo)
+05 Privacidade ..... confiança + fechamento de marca (efeito recência)
+
+DECISÕES
+--------
+- Nomes de apps são genéricos ("Rede Social", "Vídeos curtos") para evitar
+  marcas de terceiros nas peças da loja. Se quiser usar apps reais, é preciso
+  checar as diretrizes de cada marca.
+- Cores, tipos e componentes seguem os tokens do design system
+  (brand.turquesa #03c3bf, brand.tema #04141c, aceleraCiano #08EFD5,
+  aceleraAzul #014D93, amber para o estado de espera).
+- Texto de marketing em Archivo; a UI dentro do mockup usa fonte de sistema,
+  como define o design system.
+- Os números de tela (28:14, "3 dias seguidos") são ilustrativos e
+  correspondem a comportamento real descrito no design system.
+
+O QUE FALTA
+-----------
+- Vídeo do YouTube (campo opcional na Play Console).
+- Capturas de tablet hoje são a mesma composição em resolução maior. Se quiser
+  composições próprias de tablet (paisagem, duas telas lado a lado), é só pedir.

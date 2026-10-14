@@ -1,11 +1,13 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Button } from '@/components/Button';
 import { Countdown } from '@/components/Countdown/Countdown';
 import type { RemainingMsReader } from '@/components/Countdown/useCountdown';
-import { spacing, typography } from '@/theme/tokens';
+import { HeroCard } from '@/components/HeroCard';
+import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 export type PendingTarget =
@@ -15,6 +17,8 @@ type Props = {
   readRemainingMs: RemainingMsReader;
   pendingTarget: PendingTarget;
   onCancel: () => void | Promise<void>;
+  /** Duracao configurada, so pra barra de progresso. */
+  totalMs?: number;
 };
 
 /**
@@ -29,12 +33,11 @@ type Props = {
  * - O contador nunca é hostil — `Countdown` já não usa vermelho/pisca em
  *   `nearingEnd`; esta tela não adiciona nenhum.
  *
- * Conclusão de verdade (a rota some sozinha) e o que "cancelar" faz de fato
- * são do `mobile` — `completeSlot` aqui é só uma mensagem calma, sem botão:
- * a tela desmonta pelo guard de `app/_layout.tsx` quando o estado muda,
- * independente do que este componente está desenhando no instante.
+ * As três regras do relógio ficam escritas porque são o que a pessoa testa
+ * primeiro (fechar o app, desligar o celular). Nenhum horário de término é
+ * mostrado: a espera é monotônica e não existe instante de fim.
  */
-export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel }: Props) {
+export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel, totalMs }: Props) {
   const theme = useTheme();
   const [canceling, setCanceling] = useState(false);
   const copy = COPY[pendingTarget];
@@ -45,73 +48,174 @@ export function WaitingScreen({ readRemainingMs, pendingTarget, onCancel }: Prop
     setCanceling(false);
   };
 
+  const regras: { icone: keyof typeof Ionicons.glyphMap; texto: string }[] = [
+    { icone: 'time-outline', texto: 'A contagem segue com o app fechado.' },
+    {
+      icone: 'power-outline',
+      texto: 'Desligar o celular pausa a contagem — ela volta de onde parou.',
+    },
+    { icone: 'checkmark', texto: copy.fim },
+  ];
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.bgCanvas }]}>
-      <View style={styles.body}>
-        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>{copy.title}</Text>
-        <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{copy.body}</Text>
-        <View style={styles.countdown}>
+      <ScrollView contentContainerStyle={styles.conteudo}>
+        <View style={styles.cabecalho}>
+          <View style={[styles.selo, { backgroundColor: theme.colors.bgWarningSubtle }]}>
+            <Ionicons name="hourglass-outline" size={14} color={theme.colors.textWarning} />
+            <Text style={[styles.textoSelo, { color: theme.colors.textWarning }]}>
+              Espera em andamento
+            </Text>
+          </View>
+          <Text
+            accessibilityRole="header"
+            style={[styles.title, { color: theme.colors.textPrimary }]}
+          >
+            {copy.title}
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>{copy.body}</Text>
+        </View>
+
+        <HeroCard style={styles.cronometro}>
           <Countdown
             readRemainingMs={readRemainingMs}
+            totalMs={totalMs}
             completeSlot={
-              <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
+              <Text style={[styles.subtitle, { color: theme.colors.textOnHeroSecondary }]}>
                 Confirmando…
               </Text>
             }
           />
+        </HeroCard>
+
+        <View style={styles.regras}>
+          {regras.map((regra) => (
+            <View key={regra.texto} style={styles.regra}>
+              <Ionicons
+                name={regra.icone}
+                size={20}
+                style={styles.icone}
+                color={theme.colors.textSecondary}
+              />
+              <Text style={[styles.textoRegra, { color: theme.colors.textSecondary }]}>
+                {regra.texto}
+              </Text>
+            </View>
+          ))}
         </View>
+      </ScrollView>
+
+      <View style={styles.acao}>
+        <Button label="Desistir da espera" loading={canceling} onPress={handleCancel} />
+        <Text style={[styles.legenda, { color: theme.colors.textTertiary }]}>
+          Desistir é grátis e imediato. {copy.aposDesistir}
+        </Text>
       </View>
-      <Button label="Cancelar" variant="primary" loading={canceling} onPress={handleCancel} />
     </SafeAreaView>
   );
 }
 
-const COPY: Record<PendingTarget, { title: string; body: string }> = {
+const COPY: Record<
+  PendingTarget,
+  { title: string; body: string; fim: string; aposDesistir: string }
+> = {
   STOP_PROTECTION: {
     title: 'Desligando a proteção',
-    body: 'Assim que o tempo acabar, a proteção é desligada e os apps bloqueados voltam a abrir.',
+    body: 'Quando o tempo acabar, a proteção desliga e os apps bloqueados voltam a abrir.',
+    fim: 'Ao zerar, a proteção desliga sozinha.',
+    aposDesistir: 'A proteção continua ligada.',
   },
   UNLOCK_APP: {
     title: 'Esperando para desbloquear',
-    body: 'Assim que o tempo acabar, o app volta a abrir.',
+    body: 'Quando o tempo acabar, o app volta a abrir.',
+    fim: 'Ao zerar, o app é liberado.',
+    aposDesistir: 'O app continua bloqueado.',
   },
   CHANGE_DURATIONS: {
     title: 'Esperando para mudar a duração',
     body: 'A nova duração vale assim que o tempo acabar.',
+    fim: 'Ao zerar, a nova duração passa a valer.',
+    aposDesistir: 'A duração continua a mesma.',
   },
   RESTRICTED_MODE_OFF: {
     title: 'Desativando o modo restrito',
-    body: 'Assim que o tempo acabar, a lista de apps volta a poder ser editada.',
+    body: 'Quando o tempo acabar, a lista de apps volta a ser editável.',
+    fim: 'Ao zerar, o modo restrito desliga sozinho.',
+    aposDesistir: 'O modo restrito continua ligado.',
   },
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: spacing[6],
-    gap: spacing[8],
   },
-  body: {
-    flex: 1,
-    justifyContent: 'center',
+  conteudo: {
+    padding: spacing[4],
+    paddingTop: spacing[5],
+    gap: spacing[5],
+  },
+  cabecalho: {
+    gap: spacing[2],
+  },
+  selo: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing[3],
+    gap: spacing[1] + 2,
+    paddingVertical: spacing[1],
+    paddingHorizontal: spacing[3] - 2,
+    borderRadius: radius.full,
+  },
+  textoSelo: {
+    fontSize: typography.caption.fontSize,
+    lineHeight: typography.caption.lineHeight,
+    fontWeight: '600',
+    letterSpacing: 0.48,
+    textTransform: 'uppercase',
   },
   title: {
-    fontSize: typography.title2.fontSize,
-    lineHeight: typography.title2.lineHeight,
-    fontWeight: typography.title2.fontWeight,
-    textAlign: 'center',
+    fontSize: typography.heading.fontSize,
+    lineHeight: typography.heading.lineHeight,
+    fontWeight: typography.heading.fontWeight,
+    letterSpacing: typography.heading.letterSpacing,
   },
   subtitle: {
-    fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
-    fontWeight: typography.body.fontWeight,
-    textAlign: 'center',
+    fontSize: typography.callout.fontSize,
+    lineHeight: 21,
   },
-  countdown: {
-    marginTop: spacing[6],
+  cronometro: {
+    paddingVertical: spacing[6],
+    alignItems: 'center',
+  },
+  regras: {
+    gap: spacing[3],
+    paddingHorizontal: spacing[1],
+  },
+  // Trava o glifo em 20: a metrica da fonte do icone esticaria a linha.
+  icone: {
+    width: 20,
+    height: 20,
+    lineHeight: 20,
+  },
+  regra: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing[3],
+  },
+  textoRegra: {
+    flex: 1,
+    fontSize: typography.callout.fontSize,
+    lineHeight: typography.callout.lineHeight,
+  },
+  acao: {
+    paddingHorizontal: spacing[4],
+    paddingBottom: spacing[3],
+    gap: spacing[2] + 2,
+    alignItems: 'center',
+  },
+  legenda: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+    textAlign: 'center',
   },
 });

@@ -1,5 +1,9 @@
-import { Image, StyleSheet, Switch, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import type { ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { IconeApp } from '@/components/IconeApp';
+import { Interruptor } from '@/components/Interruptor';
 import type { InstalledApp } from '@/native/blocker';
 import { radius, spacing, typography } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
@@ -8,57 +12,104 @@ type Props = {
   app: InstalledApp;
   marcado: boolean;
   onToggle: () => void;
+  /**
+   * `switch` na aba Bloqueios (liga/desliga o bloqueio de um app ja escolhido);
+   * `check` no onboarding (escolha numa lista).
+   */
+  variante?: 'switch' | 'check';
+  /** Estado por extenso sob o nome ("Bloqueado", "Bloqueia ao salvar"). */
+  legenda?: string | null;
+  /** Legenda na cor da marca: so o que esta de fato bloqueado agora. */
+  legendaDestacada?: boolean;
+  disabled?: boolean;
+  /** Acao extra antes do interruptor (horarios livres). So na variante `switch`. */
+  acao?: ReactNode;
 };
 
-export const APP_ROW_HEIGHT = 56;
-const ICON_SIZE = 40;
+/** Linha do `switch`: 12 + icone 40 + 12. */
+export const APP_ROW_HEIGHT = 64;
+/** Linha do `check` (onboarding): 10 + icone 36 + 10. */
+export const APP_ROW_HEIGHT_CHECK = 56;
 
 /**
- * docs/design-system.md §3.8 (`AppListItem`) e §3.9 (`Toggle`): icone do app +
- * nome a esquerda, Switch nativo a direita, estado dito por accessibilityState
- * e nao so pela posicao do botao.
- *
- * O icone chega como `file://` de um PNG que o nativo mantem em cache
- * (InstalledAppsResolver) — o JS nunca desenha Drawable nem carrega base64.
- *
- * Sai do `AppPickerScreen` porque a secao 4 do onboarding mostra a mesma linha
- * numa lista de 3 itens; duplicar o fallback de icone e o accessibilityState
- * era o caminho pra as duas listas divergirem em acessibilidade.
+ * docs/design-system.md §3.8. Uma linha por app, sem cartao proprio — vive
+ * dentro de `Grupo`. Linha marcada no modo `check` ganha fundo de marca; o
+ * estado vai tambem em texto e no `accessibilityState`, nunca so na cor.
  */
-export function AppListRow({ app, marcado, onToggle }: Props) {
+export function AppListRow({
+  app,
+  marcado,
+  onToggle,
+  variante = 'switch',
+  legenda,
+  legendaDestacada = false,
+  disabled = false,
+  acao,
+}: Props) {
   const theme = useTheme();
+  const destacado = variante === 'check' && marcado;
 
-  return (
-    <View
-      style={[
-        styles.linha,
-        {
-          backgroundColor: marcado ? theme.colors.bgBrandSubtle : theme.colors.bgSurface,
-          borderColor: marcado ? theme.colors.borderBrand : theme.colors.borderDefault,
-        },
-      ]}
-    >
-      {app.iconUri ? (
-        <Image
-          source={{ uri: app.iconUri }}
-          style={styles.icone}
-          resizeMode="contain"
-          accessibilityIgnoresInvertColors
-        />
-      ) : (
-        // Mesmo espaco reservado: lista que muda de alinhamento no meio e pior
-        // do que lista sem icone nenhum.
-        <View style={[styles.icone, { backgroundColor: theme.colors.bgSunken }]} />
-      )}
+  const textos = (
+    <View style={styles.textos}>
       <Text style={[styles.rotulo, { color: theme.colors.textPrimary }]} numberOfLines={1}>
         {app.label}
       </Text>
-      <Switch
-        accessibilityRole="switch"
+      {legenda && (
+        <Text
+          style={[
+            styles.legenda,
+            { color: legendaDestacada ? theme.colors.textBrand : theme.colors.textSecondary },
+          ]}
+          numberOfLines={1}
+        >
+          {legenda}
+        </Text>
+      )}
+    </View>
+  );
+
+  if (variante === 'check') {
+    return (
+      <Pressable
+        accessibilityRole="checkbox"
         accessibilityLabel={app.label}
-        accessibilityState={{ checked: marcado }}
-        value={marcado}
-        onValueChange={onToggle}
+        accessibilityState={{ checked: marcado, disabled }}
+        onPress={disabled ? undefined : onToggle}
+        style={({ pressed }) => [
+          styles.linha,
+          styles.linhaCheck,
+          destacado && { backgroundColor: theme.colors.bgBrandSubtle },
+          pressed && !destacado && { backgroundColor: theme.colors.bgSunken },
+        ]}
+      >
+        <IconeApp iconUri={app.iconUri} tamanho={36} />
+        {textos}
+        <View
+          style={[
+            styles.check,
+            marcado
+              ? { backgroundColor: theme.colors.borderBrand, borderColor: theme.colors.borderBrand }
+              : { borderColor: theme.colors.borderStrong },
+          ]}
+        >
+          {marcado && <Ionicons name="checkmark" size={14} color={theme.colors.bgSurface} />}
+        </View>
+      </Pressable>
+    );
+  }
+
+  // Travada (modo restrito) so o interruptor apaga: nome e icone continuam
+  // legiveis — a lista existe pra ser vista, so nao pra ser mexida.
+  return (
+    <View style={[styles.linha, styles.linhaSwitch]}>
+      <IconeApp iconUri={app.iconUri} tamanho={40} />
+      {textos}
+      {acao}
+      <Interruptor
+        valor={marcado}
+        onChange={onToggle}
+        accessibilityLabel={app.label}
+        disabled={disabled}
       />
     </View>
   );
@@ -69,20 +120,34 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing[3],
-    paddingVertical: spacing[2],
-    paddingHorizontal: spacing[3],
-    borderRadius: radius.md,
-    borderWidth: 1,
+    paddingHorizontal: spacing[4],
+  },
+  linhaCheck: {
+    paddingVertical: spacing[2] + 2,
+    minHeight: APP_ROW_HEIGHT_CHECK,
+  },
+  linhaSwitch: {
+    paddingVertical: spacing[3],
     minHeight: APP_ROW_HEIGHT,
   },
-  icone: {
-    width: ICON_SIZE,
-    height: ICON_SIZE,
-    borderRadius: radius.sm,
+  textos: {
+    flex: 1,
+    gap: 2,
   },
   rotulo: {
-    flex: 1,
     fontSize: typography.body.fontSize,
-    lineHeight: typography.body.lineHeight,
+    lineHeight: 22,
+  },
+  legenda: {
+    fontSize: typography.footnote.fontSize,
+    lineHeight: typography.footnote.lineHeight,
+  },
+  check: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.full,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

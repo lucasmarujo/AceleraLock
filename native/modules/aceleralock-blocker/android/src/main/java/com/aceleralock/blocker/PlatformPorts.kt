@@ -2,8 +2,11 @@ package com.aceleralock.blocker
 
 import android.content.Context
 import android.os.SystemClock
+import android.provider.Settings
 import com.aceleralock.blocker.core.KeyValueStore
+import com.aceleralock.blocker.core.LocalClockReading
 import com.aceleralock.blocker.core.MonotonicClock
+import java.time.LocalDateTime
 
 /**
  * Adaptadores finos das portas do core para o Android. A logica que decide bloqueio
@@ -55,4 +58,28 @@ object SystemWallClock : com.aceleralock.blocker.core.WallClock {
     override fun today(): java.time.LocalDate = java.time.LocalDate.now()
 
     override fun nowMillis(): Long = System.currentTimeMillis()
+}
+
+/**
+ * Hora local para o horario livre, com as duas chaves que dizem se a pessoa pode
+ * mexer nela. Quem decide o que fazer com isso e o core ([ScheduleExceptions]); aqui
+ * so se le. Leitura que falha conta como manual: na duvida, o app bloqueia.
+ */
+object SystemLocalClock {
+    fun read(context: Context): LocalClockReading {
+        val resolver = context.contentResolver
+        return LocalClockReading(
+            dateTime = LocalDateTime.now(),
+            automaticTime = isOn(resolver, Settings.Global.AUTO_TIME),
+            automaticZone = isOn(resolver, Settings.Global.AUTO_TIME_ZONE)
+        )
+    }
+
+    fun isAutomatic(context: Context): Pair<Boolean, Boolean> {
+        val resolver = context.contentResolver
+        return isOn(resolver, Settings.Global.AUTO_TIME) to isOn(resolver, Settings.Global.AUTO_TIME_ZONE)
+    }
+
+    private fun isOn(resolver: android.content.ContentResolver, key: String): Boolean =
+        runCatching { Settings.Global.getInt(resolver, key) == 1 }.getOrDefault(false)
 }

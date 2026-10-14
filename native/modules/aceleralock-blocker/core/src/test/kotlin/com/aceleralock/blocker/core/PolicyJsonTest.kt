@@ -62,4 +62,20 @@ class PolicyJsonTest {
         assertFailsWith<Exception> { PolicyJson.parse("{") }
         assertFailsWith<Exception> { PolicyJson.parse("") }
     }
+
+    @Test
+    @DisplayName("feliz: parseia o array de horarios livres")
+    fun parsesExceptions() {
+        val raw = """{"blockedPackages":["$instagram"],"exceptions":["$instagram|1,2|720|780"]}"""
+
+        assertEquals(listOf("$instagram|1,2|720|780"), PolicyJson.parse(raw).exceptions)
+    }
+
+    @Test
+    @DisplayName("borda: politica salva antes dos horarios livres le sem nenhum")
+    fun missingExceptionsDefaultsToEmpty() {
+        val raw = """{"blockedPackages":["$instagram"],"restricted":false}"""
+
+        assertEquals(emptyList(), PolicyJson.parse(raw).exceptions)
+    }
 }

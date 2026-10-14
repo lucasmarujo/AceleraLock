@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
-import { radius, typography } from '@/theme/tokens';
+import { radius } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
   /** `null` cai pro ícone genérico — a ordem de fallback do §3.17. */
   nome: string | null;
-  size?: 24 | 32 | 40 | 64;
+  size?: 24 | 32 | 40 | 48 | 64;
 };
 
 /**
@@ -26,7 +26,12 @@ export function Avatar({ nome, size = 64 }: Props) {
       accessibilityElementsHidden
       importantForAccessibility="no"
     >
-      <Text style={[styles.iniciais, { color: theme.colors.textBrand, fontSize: size * 0.36 }]}>
+      <Text
+        style={[
+          styles.iniciais,
+          { color: theme.colors.textBrand, fontSize: Math.round(size * 0.42) },
+        ]}
+      >
         {iniciais}
       </Text>
     </View>
@@ -54,6 +59,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   iniciais: {
-    fontWeight: typography.title2.fontWeight,
+    fontWeight: '700',
   },
 });

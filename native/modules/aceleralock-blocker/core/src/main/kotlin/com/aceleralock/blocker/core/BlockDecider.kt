@@ -8,7 +8,8 @@ enum class BlockOutcome {
 enum class AllowReason {
     NOT_A_TARGET,
     CRITICAL_APP,
-    ACTIVE_GRANT
+    ACTIVE_GRANT,
+    SCHEDULED_EXCEPTION
 }
 
 data class BlockVerdict(
@@ -34,6 +35,9 @@ data class BrowserAddress(val packageName: String, val text: String)
  * nao ressuscita concessao encerrada, porque nao existe instante de fim para
  * comparar.
  *
+ * A unica entrada de relogio de parede e o horario livre ([ScheduleExceptions]),
+ * e so com hora e fuso automaticos: sem eles a faixa nao vale e o app bloqueia.
+ *
  * O teto continua sendo desinstalar, e contra isso nao ha defesa sem Device Admin.
  */
 class BlockDecider {
@@ -43,7 +47,8 @@ class BlockDecider {
         policy: BlockPolicy,
         criticalPackages: Set<String>,
         activeGrant: String?,
-        browserAddress: BrowserAddress? = null
+        browserAddress: BrowserAddress? = null,
+        clock: LocalClockReading? = null
     ): BlockVerdict {
         if (packageName in criticalPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.CRITICAL_APP)
@@ -59,6 +64,11 @@ class BlockDecider {
         }
         if (packageName !in policy.blockedPackages) {
             return BlockVerdict(BlockOutcome.ALLOW, AllowReason.NOT_A_TARGET)
+        }
+        // Depois dos sites, pelo mesmo motivo da concessao: horario livre do
+        // navegador libera o navegador, nunca os sites da lista.
+        if (ScheduleExceptions.isExempt(packageName, policy, clock)) {
+            return BlockVerdict(BlockOutcome.ALLOW, AllowReason.SCHEDULED_EXCEPTION)
         }
         return if (packageName == activeGrant) {
             BlockVerdict(BlockOutcome.ALLOW, AllowReason.ACTIVE_GRANT)

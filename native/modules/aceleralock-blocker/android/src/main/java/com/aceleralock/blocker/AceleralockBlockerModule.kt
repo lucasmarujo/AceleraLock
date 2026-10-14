@@ -1,6 +1,7 @@
 package com.aceleralock.blocker
 
 import com.aceleralock.blocker.core.BlockPolicy
+import com.aceleralock.blocker.core.ExceptionWindow
 import com.aceleralock.blocker.core.PolicyRead
 import com.aceleralock.blocker.core.ProtectionLog
 import com.aceleralock.blocker.core.SiteMatcher
@@ -8,6 +9,9 @@ import com.aceleralock.blocker.core.WaitTarget
 import com.aceleralock.blocker.core.WaitingPeriod
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.kotlin.records.Field
+import expo.modules.kotlin.records.Record
+import java.time.DayOfWeek
 import java.time.Duration
 
 /**
@@ -103,7 +107,43 @@ class AceleralockBlockerModule : Module() {
         }
 
         Function("setBlockedPackages") { packages: Array<String> ->
-            BlockerService.writePolicy(context, currentPolicy().copy(blockedPackages = packages.toSet()))
+            BlockerService.writePolicy(context, currentPolicy().withBlockedPackages(packages.toSet()))
+        }
+
+        /**
+         * Horarios livres de todos os apps, achatados: uma entrada por faixa. Dias ISO
+         * (1 = segunda), minutos desde 00:00.
+         */
+        Function("appExceptions") {
+            currentPolicy().exceptions.flatMap { (pacote, faixas) ->
+                faixas.map { faixa ->
+                    mapOf(
+                        "packageName" to pacote,
+                        "days" to faixa.days.map { it.value }.sorted(),
+                        "start" to faixa.startMinute,
+                        "end" to faixa.endMinute
+                    )
+                }
+            }
+        }
+
+        /**
+         * Substitui as faixas de um app; lista vazia apaga. Lanca para app fora da
+         * lista ou faixa invalida (ver BlockPolicy.withExceptions) — a UI ja valida, e
+         * gravar meia configuracao seria pior que recusar a inteira.
+         *
+         * Sem gate do modo restrito aqui de proposito: com ele ligado nenhuma faixa
+         * vale (o core recusa a isencao), entao gravar nao abre nada.
+         */
+        Function("setAppExceptions") { packageName: String, windows: List<ExceptionWindowRecord> ->
+            val faixas = windows.map(::toExceptionWindow)
+            BlockerService.writePolicy(context, currentPolicy().withExceptions(packageName, faixas))
+        }
+
+        /** Hora e fuso automaticos: sem os dois, nenhum horario livre vale. */
+        Function("automaticClock") {
+            val (hora, fuso) = SystemLocalClock.isAutomatic(context)
+            mapOf("automaticTime" to hora, "automaticZone" to fuso)
         }
 
         Function("blockedDomains") {
@@ -196,6 +236,14 @@ class AceleralockBlockerModule : Module() {
         }
     }
 
+    private fun toExceptionWindow(raw: ExceptionWindowRecord): ExceptionWindow {
+        val dias = raw.days.map { dia ->
+            require(dia in 1..7) { "dia da semana invalido: $dia" }
+            DayOfWeek.of(dia)
+        }.toSet()
+        return ExceptionWindow(dias, raw.start, raw.end)
+    }
+
     private fun request(target: WaitTarget): Boolean {
         val accepted = waiting().request(target)
         if (accepted) {
@@ -243,4 +291,16 @@ class AceleralockBlockerModule : Module() {
 
     private val context
         get() = requireNotNull(appContext.reactContext) { "sem contexto do React" }
+}
+
+/** Faixa de horario livre como chega do JS. A validacao e do core, nao daqui. */
+class ExceptionWindowRecord : Record {
+    @Field
+    val days: List<Int> = emptyList()
+
+    @Field
+    val start: Int = 0
+
+    @Field
+    val end: Int = 0
 }

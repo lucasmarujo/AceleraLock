@@ -133,6 +133,30 @@ Informação — azul (neutro, links, dicas):
 | `icon.brand` | `brand.turquesaIconLight` | `brand.turquesa` | ícone de estado protegido |
 | `icon.amber` | `amber.600` | `amber.300` | ícone de cooldown |
 
+Tokens do redesign (2026-10-11) — no código, `bgHero`, `bgWarningSubtle` etc.:
+
+| Semântico | Claro | Escuro | Uso |
+|---|---|---|---|
+| `bg.hero` | `brand.tema` | `temaNeutral.800` | o cartão de tinta da tela (status da proteção, cronômetro, oferta do modo restrito) — um por tela |
+| `bg.heroRaised` | `temaNeutral.800` | `temaNeutral.700` | bloco dentro do hero |
+| `border.hero` | `brand.tema` (= o fundo, sem borda) | `temaNeutral.600` | borda do hero — só aparece no escuro |
+| `line.onHero` | `temaNeutral.700` | `temaNeutral.600` | divisória dentro do hero |
+| `control.offOnHero` | `neutral.400` | `neutral.400` | interruptor desligado sobre o hero |
+| `text.onHero` | `neutral.0` | `neutral.50` | texto principal no hero |
+| `text.onHeroSecondary` | `neutral.300` | `neutral.300` | apoio no hero |
+| `text.onHeroBrand` | `brand.turquesa` | `brand.turquesa` | ação no hero ("Gerenciar", "Ligar") |
+| `text.onHeroFriction` | `amber.300` | `amber.300` | atrito ativo no hero (modo restrito, espera) |
+| `bg.warningSubtle` | `amber.50` | `amber.900` | `InlineAlert` warning, modo restrito ligado |
+| `border.warning` | `amber.300` | `amber.700` | borda do aviso |
+| `text.warning` | `amber.700` | `amber.300` | texto do aviso (≥ 4.5:1 sobre o fundo dele) |
+| `icon.warning` | `amber.550` | `amber.300` | ícone do aviso (≥ 3:1 sobre fundo e superfície) |
+| `bg.warningMuted` | `amber.100` | `amber.700` | círculo do ícone dentro do aviso âmbar |
+| `border.sunken` | `neutral.100` (= `bg.sunken`) | `temaNeutral.700` | contorno do trilho do segmentado — só aparece no escuro |
+
+No escuro o hero não pode ser `brand.tema` — seria o próprio canvas. O degradê das
+boas-vindas passou a ir de `brand.temaTurquesa` (`#0b4549`) a `brand.tema`. Os pares
+estão cobertos em `tests/tokens.test.ts`.
+
 `bg.brand`/`bg.brandPressed`/`text.onBrand` **não existem mais como tokens soltos.** Botão preenchido de marca é sempre par único:
 
 | `surfaces.*` | Claro | Escuro |
@@ -181,6 +205,8 @@ Escala (tamanho / entrelinha / peso). Tamanhos em pt; escalam com a fonte do sis
 | `footnote` | 13 | 18 | 400 | legenda, timestamp |
 | `caption` | 12 | 16 | 500 | rótulo de badge, overline |
 | `timerHero` | 56 | 60 | 700 | cronômetro na cerimônia (tabular; escala travada em 1.3×) |
+| `metric` | 44 | 48 | 800 | número-herói de cartão (tempo de tela de hoje), título das boas-vindas |
+| `heading` | 28 | 34 | 800 | título de tela e de aba |
 
 Regras:
 
@@ -391,6 +417,7 @@ Layout final (container, exato texto, o que acontece em `error`) é trabalho de 
 - Variantes: `info` (azul), `warning` (âmbar), `error` (vermelho), `success` (a marca, turquesa).
 - Ícone + texto + ação opcional. Fundo `*.Subtle`.
 - Usado para: falha ao ler o tempo restante, permissão do sistema revogada. **Nunca toast para informação crítica que exige ação.**
+- Implementado (2026-10-11) só o `warning`, em `src/components/InlineAlert.tsx`: sites com a leitura do navegador desligada, pedido de acessibilidade. Ação em `surfaces.brand`, nunca vermelha.
 
 ### 3.12 `Toast`
 
@@ -404,6 +431,7 @@ Layout final (container, exato texto, o que acontece em `error`) é trabalho de 
 - Handle de arraste, backdrop `bg.scrim`, topo `radius.lg`.
 - Dismissível por padrão; **não** dismissível quando é um passo comprometido da cerimônia (aí só "Cancelar" explícito).
 - `elevation.2`. Respeita safe area inferior.
+- Implementado em `src/components/Sheet.tsx` (2026-10-11), usado na confirmação de desligar o modo restrito: "Manter ligado" é o primário, a outra ação diz o custo ("Começar espera de 30 min").
 
 ### 3.14 `Dialog`
 
@@ -443,6 +471,7 @@ Layout final (container, exato texto, o que acontece em `error`) é trabalho de 
 - **`Header`:** título da tela + ação de voltar (seta iOS / seta Android) + ações à direita. Large-title permitido no iOS, top app bar padrão no Android — **mesmo texto, mesmas ações**.
 - **`TabBar`:** 2–4 destinos, ícone + rótulo, na base. Tab bar iOS / navigation bar Android. Item ativo em `icon.brand` + rótulo `bodyStrong`.
   - O piso era 3. Passou a 2 em 2026-08-30, quando a área logada ganhou Início e Perfil: o app faz uma coisa, e um terceiro destino existiria só para cumprir a faixa — item de menu de enfeite é pior que uma barra curta.
+  - Desde 2026-10-11 são 3: Início, Bloqueios, Ajustes. O terceiro não é enfeite — Bloqueios é o que o app faz, e antes ficava atrás de botão secundário (ver `docs/decisoes.md`, Redesign da UI). Item ativo com indicador em pílula (`bg.brandSubtle`) além da cor.
 
 ### 3.23 Estados obrigatórios por tela
 

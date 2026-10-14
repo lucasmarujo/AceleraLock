@@ -9,6 +9,7 @@ enum AllowReason {
     case notATarget
     case criticalApp
     case activeGrant
+    case scheduledException
 }
 
 struct BlockVerdict {
@@ -36,7 +37,8 @@ struct BlockDecider {
         policy: BlockPolicy,
         criticalPackages: Set<String>,
         activeGrant: String?,
-        browserAddress: BrowserAddress? = nil
+        browserAddress: BrowserAddress? = nil,
+        clock: LocalClockReading? = nil
     ) -> BlockVerdict {
         if criticalPackages.contains(packageName) {
             return BlockVerdict(.allow, .criticalApp)
@@ -48,6 +50,9 @@ struct BlockDecider {
         }
         if !policy.blockedPackages.contains(packageName) {
             return BlockVerdict(.allow, .notATarget)
+        }
+        if ScheduleExceptions.isExempt(packageName, policy: policy, clock: clock) {
+            return BlockVerdict(.allow, .scheduledException)
         }
         if packageName == activeGrant {
             return BlockVerdict(.allow, .activeGrant)

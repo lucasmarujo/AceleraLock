@@ -44,4 +44,53 @@ class PolicyReaderTest {
 
         assertEquals(PolicyRead.Unreadable, read)
     }
+
+    @Test
+    @DisplayName("feliz: horario livre codificado chega decodificado na politica")
+    fun loadsExceptions() {
+        val read = PolicyReader.read("qualquer") {
+            RawPolicy(listOf(instagram), exceptions = listOf("$instagram|1,2,3,4,5|720|780"))
+        }
+
+        val politica = (read as PolicyRead.Loaded).policy
+        assertEquals(
+            listOf(ExceptionWindow(setOf(1, 2, 3, 4, 5).map(java.time.DayOfWeek::of).toSet(), 720, 780)),
+            politica.exceptions[instagram]
+        )
+    }
+
+    @Test
+    @DisplayName("barreira: faixa malformada cai sozinha e a lista de alvos continua valendo")
+    fun malformedExceptionIsDroppedNotTheWholePolicy() {
+        val read = PolicyReader.read("qualquer") {
+            RawPolicy(listOf(instagram), exceptions = listOf("$instagram|9|720|780", "lixo"))
+        }
+
+        val politica = (read as PolicyRead.Loaded).policy
+        assertEquals(setOf(instagram), politica.blockedPackages)
+        assertEquals(emptyMap(), politica.exceptions)
+    }
+
+    @Test
+    @DisplayName("barreira: faixa de app fora da lista nao entra na politica")
+    fun exceptionForNonTargetIsIgnored() {
+        val read = PolicyReader.read("qualquer") {
+            RawPolicy(listOf(instagram), exceptions = listOf("$tiktok|1|720|780"))
+        }
+
+        assertEquals(emptyMap(), (read as PolicyRead.Loaded).policy.exceptions)
+    }
+
+    @Test
+    @DisplayName("borda: mais faixas que o teto guardadas no disco ficam so ate o teto")
+    fun storedExceptionsAreCapped() {
+        val muitas = (0 until 12).map { "$instagram|1|${it * 60}|${it * 60 + 30}" }
+
+        val read = PolicyReader.read("qualquer") { RawPolicy(listOf(instagram), exceptions = muitas) }
+
+        assertEquals(
+            ScheduleExceptions.MAX_WINDOWS_PER_APP,
+            (read as PolicyRead.Loaded).policy.exceptions.getValue(instagram).size
+        )
+    }
 }

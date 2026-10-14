@@ -229,6 +229,10 @@ Consequências operacionais:
 
 - Não introduza `System.currentTimeMillis()` / `LocalDateTime.now()` em lógica
   que decide espera, concessão ou bloqueios.
+- **Exceção única, decidida pelo usuário:** o horário livre por app
+  (`ScheduleExceptions`) lê a hora local — e só vale com hora **e** fuso
+  automáticos e com o modo restrito desligado. Não estenda isso a espera ou
+  concessão. Ver `docs/decisoes.md`, "Horários livres por app".
 - `WaitingPeriod`: deltas monotônicos somados e persistidos. Reboot
   **congela** a espera (conservador: espera demora mais, nunca menos).
 - `GrantWindow`: saldo que só diminui. Reboot **encerra** a concessão.

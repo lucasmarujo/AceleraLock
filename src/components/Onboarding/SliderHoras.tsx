@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { duration, easing, radius, spacing } from '@/theme/tokens';
+import { brand, duration, easing, radius, spacing } from '@/theme/tokens';
 import { useTheme } from '@/theme/useTheme';
 
 import {
@@ -25,7 +25,7 @@ type Props = {
   onChange: (horas: number) => void;
 };
 
-const TRILHA_ALTURA = 6;
+const TRILHA_ALTURA = 8;
 const THUMB = 28;
 
 /**
@@ -188,8 +188,8 @@ export function SliderHoras({ horas, onChange }: Props) {
           styles.thumb,
           estiloThumb,
           {
-            backgroundColor: theme.colors.borderBrand,
-            borderColor: theme.colors.bgSurface,
+            backgroundColor: theme.colors.bgSurface,
+            borderColor: theme.colors.borderBrand,
           },
         ]}
       />
@@ -198,9 +198,11 @@ export function SliderHoras({ horas, onChange }: Props) {
 }
 
 const styles = StyleSheet.create({
+  // Alvo de toque de 44, mas ocupa so os 28 do thumb no layout (Paper).
   area: {
     alignSelf: 'stretch',
     height: THUMB + spacing[4],
+    marginVertical: -spacing[2],
     justifyContent: 'center',
   },
   trilha: {
@@ -219,5 +221,10 @@ const styles = StyleSheet.create({
     height: THUMB,
     borderRadius: radius.full,
     borderWidth: 3,
+    shadowColor: brand.tema,
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
 });

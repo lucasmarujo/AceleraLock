@@ -149,3 +149,86 @@ export function alturaDaBarra(valor: number, maximo: number, altura: number, min
 export function escalaDoGrafico(horas: number[], estimativa: number | null): number {
   return Math.max(...horas, estimativa ?? 0, 1);
 }
+
+export type DiaDaSemana = {
+  /** ISO `YYYY-MM-DD`. */
+  data: string;
+  /** Letra do dia da semana, ou "Hoje" na ultima coluna. */
+  rotulo: string;
+  /** `null` = dia sem leitura, desenhado tracejado. Nunca vira zero. */
+  segundos: number | null;
+  hoje: boolean;
+};
+
+const LETRA_DO_DIA = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+/**
+ * Os ultimos `dias` dias de calendario terminando hoje, na ordem do grafico.
+ * Dia sem leitura entra como `null` em vez de sumir: a coluna tracejada diz
+ * "nao medido" sem afirmar que a pessoa nao usou o celular, e a semana nao
+ * encolhe nem desalinha as letras.
+ */
+export function semanaAteHoje(
+  leituras: { date: string; seconds: number }[],
+  hoje: Date,
+  dias = 7
+): DiaDaSemana[] {
+  const porData = new Map(leituras.map((leitura) => [leitura.date, leitura.seconds]));
+  return Array.from({ length: dias }, (_, indice) => {
+    const data = new Date(
+      hoje.getFullYear(),
+      hoje.getMonth(),
+      hoje.getDate() - (dias - 1 - indice)
+    );
+    const iso = isoLocal(data);
+    const ehHoje = indice === dias - 1;
+    return {
+      data: iso,
+      rotulo: ehHoje ? 'Hoje' : LETRA_DO_DIA[data.getDay()],
+      segundos: porData.has(iso) ? (porData.get(iso) as number) : null,
+      hoje: ehHoje,
+    };
+  });
+}
+
+export type ComparacaoComEstimativa = {
+  sentido: 'abaixo' | 'acima' | 'igual';
+  diferencaSegundos: number;
+};
+
+/** Diferenca de menos de um minuto conta como igual — "0min abaixo" nao informa nada. */
+const MARGEM_IGUAL_SEGUNDOS = 60;
+
+/**
+ * `null` sem estimativa (nao ha com o que comparar) e sem leitura de hoje: dia
+ * nao medido nao esta "5h abaixo" de nada.
+ */
+export function compararComEstimativa(
+  segundosHoje: number | null,
+  estimativaHoras: number | null
+): ComparacaoComEstimativa | null {
+  if (
+    segundosHoje === null ||
+    estimativaHoras === null ||
+    !(estimativaHoras > 0) ||
+    !Number.isFinite(segundosHoje)
+  ) {
+    return null;
+  }
+  const diferenca = segundosHoje - estimativaHoras * 3600;
+  if (Math.abs(diferenca) < MARGEM_IGUAL_SEGUNDOS) {
+    return { sentido: 'igual', diferencaSegundos: 0 };
+  }
+  return { sentido: diferenca < 0 ? 'abaixo' : 'acima', diferencaSegundos: Math.abs(diferenca) };
+}
+
+export function descreverComparacao(
+  comparacao: ComparacaoComEstimativa,
+  estimativaHoras: number
+): string {
+  const estimativa = formatarDuracaoCompacta(estimativaHoras * 3600);
+  if (comparacao.sentido === 'igual') {
+    return `Na sua estimativa de ${estimativa}`;
+  }
+  return `${formatarDuracao(comparacao.diferencaSegundos)} ${comparacao.sentido} da sua estimativa de ${estimativa}`;
+}

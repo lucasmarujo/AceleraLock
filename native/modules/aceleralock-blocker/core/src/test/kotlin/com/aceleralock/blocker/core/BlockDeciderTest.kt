@@ -107,4 +107,84 @@ class BlockDeciderTest {
 
         assertEquals(BlockOutcome.BLOCK, verdict.outcome)
     }
+
+    // Horario livre: seg 12:00-13:00, com relogio de 2026-10-12 (segunda).
+    private val almoco = ExceptionWindow(setOf(java.time.DayOfWeek.MONDAY), 12 * 60, 13 * 60)
+
+    private fun relogio(hora: Int, automatico: Boolean = true) =
+        LocalClockReading(java.time.LocalDateTime.of(2026, 10, 12, hora, 30), automatico, automatico)
+
+    private val comHorarioLivre =
+        BlockPolicy(setOf(instagram), exceptions = mapOf(instagram to listOf(almoco)))
+
+    @Test
+    @DisplayName("feliz: dentro do horario livre o alvo abre")
+    fun scheduledExceptionAllowsTarget() {
+        val verdict = decider.decide(instagram, comHorarioLivre, emptySet(), null, null, relogio(12))
+
+        assertEquals(BlockOutcome.ALLOW, verdict.outcome)
+        assertEquals(AllowReason.SCHEDULED_EXCEPTION, verdict.allowReason)
+    }
+
+    @Test
+    @DisplayName("feliz: fora do horario livre o alvo continua bloqueado")
+    fun outsideTheWindowStillBlocks() {
+        val verdict = decider.decide(instagram, comHorarioLivre, emptySet(), null, null, relogio(14))
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+    }
+
+    @Test
+    @DisplayName("barreira: com modo restrito ligado o horario livre nao vale")
+    fun restrictedModeKeepsBlockingInsideTheWindow() {
+        val restrito = comHorarioLivre.copy(restricted = true)
+
+        val verdict = decider.decide(instagram, restrito, emptySet(), null, null, relogio(12))
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+    }
+
+    @Test
+    @DisplayName("barreira: relogio manual mantem o bloqueio mesmo na faixa")
+    fun manualClockKeepsBlockingInsideTheWindow() {
+        val verdict = decider.decide(
+            instagram, comHorarioLivre, emptySet(), null, null, relogio(12, automatico = false)
+        )
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+    }
+
+    @Test
+    @DisplayName("regressao: sem leitura de relogio o decisor se comporta como antes")
+    fun withoutClockTheDecisionIsUnchanged() {
+        val verdict = decider.decide(instagram, comHorarioLivre, emptySet(), null)
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+    }
+
+    @Test
+    @DisplayName("barreira: horario livre do navegador nao libera site da lista")
+    fun browserExceptionDoesNotUnlockSite() {
+        val policy = sites.copy(
+            blockedPackages = setOf(chrome),
+            exceptions = mapOf(chrome to listOf(almoco))
+        )
+
+        val verdict = decider.decide(
+            chrome, policy, emptySet(), null, BrowserAddress(chrome, "instagram.com"), relogio(12)
+        )
+
+        assertEquals(BlockOutcome.BLOCK, verdict.outcome)
+        assertEquals("instagram.com", verdict.blockedHost)
+    }
+
+    @Test
+    @DisplayName("barreira 2: app critico continua liberado por ser critico, nao pelo horario")
+    fun criticalStillWinsOverException() {
+        val policy = BlockPolicy(setOf(dialer), exceptions = mapOf(dialer to listOf(almoco)))
+
+        val verdict = decider.decide(dialer, policy, setOf(dialer), null, null, relogio(12))
+
+        assertEquals(AllowReason.CRITICAL_APP, verdict.allowReason)
+    }
 }

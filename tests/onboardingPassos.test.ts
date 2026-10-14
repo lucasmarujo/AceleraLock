@@ -2,16 +2,46 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
+  HORAS_ATALHOS,
   HORAS_MAX,
   HORAS_MIN,
   filtrarApps,
   horasDaProporcao,
   horasDoToque,
+  legendaDaConclusao,
   normalizarNome,
   passoInicial,
+  permissoesFaltando,
+  progressoDoPasso,
   proporcaoDasHoras,
   proporcaoDoToque,
+  rotuloDoBloqueio,
+  textoOfertaRestrito,
+  tituloDaConclusao,
+  tituloPermissoesFaltando,
 } from '../src/components/Onboarding/passos';
+
+test('progressoDoPasso: primeira execucao conta de 1 a 5', () => {
+  assert.deepEqual(progressoDoPasso(1, 1), { atual: 1, total: 5 });
+  assert.deepEqual(progressoDoPasso(5, 1), { atual: 5, total: 5 });
+});
+
+test('regressao: reentrada pela secao 3 conta o proprio caminho, nao comeca em 3 de 5', () => {
+  assert.deepEqual(progressoDoPasso(3, 3), { atual: 1, total: 3 });
+  assert.deepEqual(progressoDoPasso(5, 3), { atual: 3, total: 3 });
+});
+
+test('HORAS_ATALHOS ficam dentro da faixa do slider', () => {
+  for (const horas of HORAS_ATALHOS) {
+    assert.ok(horas >= HORAS_MIN && horas <= HORAS_MAX);
+  }
+});
+
+test('tituloDaConclusao diz o que foi bloqueado', () => {
+  assert.equal(tituloDaConclusao(['Instagram']), 'Instagram bloqueado.');
+  assert.equal(tituloDaConclusao(['Instagram', 'TikTok']), '2 apps bloqueados.');
+  assert.equal(tituloDaConclusao([]), 'Bloqueio criado.');
+});
 
 test('primeira execucao comeca na secao 1 (nome)', () => {
   assert.equal(passoInicial(false), 1);
@@ -92,4 +122,43 @@ test('proporcaoDasHoras e horasDaProporcao sao inversos em todo degrau', () => {
   for (let hora = HORAS_MIN; hora <= HORAS_MAX; hora++) {
     assert.equal(horasDaProporcao(proporcaoDasHoras(hora)), hora, `hora ${hora}`);
   }
+});
+
+test('permissoesFaltando: lista so o que falta, na ordem do checklist', () => {
+  assert.deepEqual(permissoesFaltando({ usageAccess: true, overlay: false }), ['overlay']);
+  assert.deepEqual(permissoesFaltando({ usageAccess: false, overlay: true }), ['usageAccess']);
+  assert.deepEqual(permissoesFaltando({ usageAccess: true, overlay: true }), []);
+});
+
+test('barreira: sem sonda nativa as duas permissoes contam como faltando', () => {
+  assert.deepEqual(permissoesFaltando(null), ['usageAccess', 'overlay']);
+});
+
+test('tituloPermissoesFaltando: singular e plural', () => {
+  assert.equal(tituloPermissoesFaltando(1), 'Falta 1 permissão para bloquear');
+  assert.equal(tituloPermissoesFaltando(2), 'Faltam 2 permissões para bloquear');
+});
+
+test('rotuloDoBloqueio diz quantos apps o toque bloqueia', () => {
+  assert.equal(rotuloDoBloqueio(0), 'Bloquear');
+  assert.equal(rotuloDoBloqueio(1), 'Bloquear 1 app');
+  assert.equal(rotuloDoBloqueio(3), 'Bloquear 3 apps');
+});
+
+test('legendaDaConclusao conta os outros apps alem do mostrado', () => {
+  assert.equal(legendaDaConclusao(1), 'A partir de agora');
+  assert.equal(legendaDaConclusao(2), 'E mais 1 app, a partir de agora');
+  assert.equal(legendaDaConclusao(4), 'E mais 3 apps, a partir de agora');
+});
+
+test('textoOfertaRestrito nomeia o app escolhido e a espera configurada', () => {
+  assert.equal(
+    textoOfertaRestrito(['Instagram'], 30),
+    'Sem ele, você tira o Instagram da lista na hora. Com ele, mudar a lista pede 30 min de espera — tempo para a vontade passar.'
+  );
+});
+
+test('textoOfertaRestrito: varios apps viram "um app", e a espera vem da politica', () => {
+  assert.match(textoOfertaRestrito(['Instagram', 'TikTok'], 45), /tira um app da lista/);
+  assert.match(textoOfertaRestrito([], 45), /pede 45 min de espera/);
 });

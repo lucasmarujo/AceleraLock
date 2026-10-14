@@ -1,15 +1,24 @@
-import { Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Linking } from 'react-native';
 
+import { Button } from '@/components/Button';
+import { TelaDeEstado } from '@/components/TelaDeEstado';
+
+const SITE = 'https://aceleralock.marujo.dev';
+
+/**
+ * Veredito 'plataforma-nao-suportada'. O texto segue o Paper (e o da versao
+ * anterior desta tela), que fala do iPhone.
+ */
 export default function PlatformNotSupported() {
   return (
-    <SafeAreaView
-      style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 8 }}
-    >
-      <Text style={{ fontSize: 20, fontWeight: '600', textAlign: 'center' }}>
-        O iOS ainda não bloqueia nada neste app.
-      </Text>
-      <Text style={{ textAlign: 'center' }}>Hoje o bloqueio só funciona no Android.</Text>
-    </SafeAreaView>
+    <TelaDeEstado
+      icon="phone-portrait-outline"
+      title="Ainda não funciona no iPhone"
+      message="Por enquanto o AceleraLock só bloqueia apps no Android. No iPhone, o bloqueio depende de uma liberação especial da Apple."
+      action={
+        <Button label="Saiba mais" variant="secondary" onPress={() => void Linking.openURL(SITE)} />
+      }
+      caption="Abre aceleralock.marujo.dev no navegador."
+    />
   );
 }

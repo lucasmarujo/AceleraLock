@@ -33,6 +33,56 @@ export function formatRemainingShort(remainingMs: number): string {
 }
 
 /**
+ * Número grande do cronômetro: "18:24", e "1:05:09" a partir de uma hora — a
+ * espera é configurável, então o formato não pode assumir que cabe em minutos.
+ * Arredonda pra cima pelo mesmo motivo do rótulo: "00:00" só quando acabou.
+ */
+export function formatRemainingClock(remainingMs: number): string {
+  const totalSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const ss = String(seconds).padStart(2, '0');
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, '0')}:${ss}`;
+  }
+  return `${String(minutes).padStart(2, '0')}:${ss}`;
+}
+
+/**
+ * Quanto da espera já passou (0..1), pra barra de progresso (§2.4). É desenho,
+ * não verdade: o total vem da duração configurada hoje, e um pedido feito com
+ * outra duração pode não bater — por isso clampado nas duas pontas, e por isso
+ * a barra nunca é o único indicador (número e rótulo continuam do lado).
+ */
+export function fracaoDecorrida(remainingMs: number, totalMs: number): number {
+  if (!Number.isFinite(totalMs) || totalMs <= 0 || !Number.isFinite(remainingMs)) {
+    return 0;
+  }
+  return Math.min(1, Math.max(0, 1 - remainingMs / totalMs));
+}
+
+/**
+ * Rotação das duas metades do anel (§2.4), em graus no sentido horário a
+ * partir do topo. O anel é desenhado com duas metades recortadas: a direita
+ * cobre 0..50% da espera e a esquerda 50..100%, cada uma girando até 180°.
+ */
+export function angulosDoArco(fracao: number): { direita: number; esquerda: number } {
+  const f = Number.isFinite(fracao) ? Math.min(1, Math.max(0, fracao)) : 0;
+  return { direita: Math.min(f, 0.5) * 360, esquerda: Math.max(0, f - 0.5) * 360 };
+}
+
+/**
+ * Centro da ponta arredondada do arco, relativo ao centro do anel: o arco
+ * começa no topo e anda no sentido horário. `y` cresce pra baixo, como na tela.
+ */
+export function pontaDoArco(fracao: number, raio: number): { x: number; y: number } {
+  const f = Number.isFinite(fracao) ? Math.min(1, Math.max(0, fracao)) : 0;
+  const angulo = f * 2 * Math.PI;
+  return { x: raio * Math.sin(angulo), y: -raio * Math.cos(angulo) };
+}
+
+/**
  * Rótulo de leitor de tela — não pode mudar a cada segundo (§2.5: abusivo
  * com VoiceOver/TalkBack). Quem chama passa o mesmo `remainingMs` arredondado
  * pro bucket de 15s (roundToAnnouncementBucket), não o valor cru do tick.

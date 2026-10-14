@@ -9,7 +9,9 @@ data class RawPolicy(
      */
     val restricted: Boolean = false,
     /** Ausente conta como lista vazia: politica salva antes dos sites existirem. */
-    val blockedDomains: List<String> = emptyList()
+    val blockedDomains: List<String> = emptyList(),
+    /** Faixas codificadas por [ScheduleExceptions.encode]. Ausente conta como nenhuma. */
+    val exceptions: List<String> = emptyList()
 )
 
 /**
@@ -43,12 +45,32 @@ object PolicyReader {
             return PolicyRead.Absent
         }
         val parsed = runCatching { extract(raw) }.getOrElse { return PolicyRead.Unreadable }
+        val blocked = parsed.blockedPackages.toSet()
         return PolicyRead.Loaded(
             BlockPolicy(
-                blockedPackages = parsed.blockedPackages.toSet(),
+                blockedPackages = blocked,
                 restricted = parsed.restricted,
-                blockedDomains = parsed.blockedDomains.toSet()
+                blockedDomains = parsed.blockedDomains.toSet(),
+                exceptions = readExceptions(parsed.exceptions, blocked)
             )
         )
     }
+
+    /**
+     * Faixa malformada e descartada sozinha, sem derrubar a politica inteira: perder
+     * um horario livre so bloqueia mais, e marcar tudo como ilegivel faria o servico
+     * ignorar uma lista de alvos que esta perfeitamente legivel. Pelo mesmo motivo,
+     * faixa de app fora da lista e o que passa do teto nao entram.
+     */
+    private fun readExceptions(
+        encoded: List<String>,
+        blocked: Set<String>
+    ): Map<String, List<ExceptionWindow>> =
+        encoded
+            .mapNotNull(ScheduleExceptions::decode)
+            .filter { (pacote, _) -> pacote in blocked }
+            .groupBy({ it.first }, { it.second })
+            .mapValues { (_, faixas) ->
+                faixas.distinct().take(ScheduleExceptions.MAX_WINDOWS_PER_APP)
+            }
 }

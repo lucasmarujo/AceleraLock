@@ -14,7 +14,7 @@ export type EsquemaTema = 'claro' | 'escuro';
 export const PREFERENCIAS: readonly PreferenciaTema[] = ['sistema', 'claro', 'escuro'];
 
 export const ROTULOS_PREFERENCIA: Record<PreferenciaTema, string> = {
-  sistema: 'Seguir o sistema',
+  sistema: 'Sistema',
   claro: 'Claro',
   escuro: 'Escuro',
 };

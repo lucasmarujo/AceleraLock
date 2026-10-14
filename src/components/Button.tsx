@@ -30,7 +30,7 @@ type Props = {
   surface?: Surface;
 };
 
-const HEIGHT: Record<ButtonSize, number> = { lg: 52, md: 44 };
+const HEIGHT: Record<ButtonSize, number> = { lg: 56, md: 44 };
 
 function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, surface?: Surface) {
   switch (variant) {
@@ -54,7 +54,7 @@ function variantStyle(theme: Theme, variant: ButtonVariant, pressed: boolean, su
     }
     case 'secondary':
       return {
-        backgroundColor: 'transparent',
+        backgroundColor: theme.colors.bgSurface,
         textColor: theme.colors.textPrimary,
         borderWidth: 1,
         borderColor: theme.colors.borderStrong,
@@ -86,6 +86,23 @@ export function Button({
   const [focused, setFocused] = useState(false);
   const isDisabled = disabled || loading;
 
+  // Primario desabilitado e cinza afundado com rotulo terciario (Paper), nao a
+  // cor da marca apagada: o turquesa a 40% ainda lia como "toque aqui".
+  const estiloFinal = (v: ReturnType<typeof variantStyle>) => {
+    if (!isDisabled || loading) {
+      return { ...v, opacity: undefined };
+    }
+    if (variant === 'primary') {
+      return {
+        ...v,
+        backgroundColor: theme.colors.bgSunken,
+        textColor: theme.colors.textTertiary,
+        opacity: 1,
+      };
+    }
+    return { ...v, opacity: 0.4 };
+  };
+
   return (
     <View
       style={[
@@ -108,7 +125,7 @@ export function Button({
         onBlur={() => setFocused(false)}
         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
         style={({ pressed }) => {
-          const v = variantStyle(theme, variant, pressed, surface);
+          const v = estiloFinal(variantStyle(theme, variant, pressed, surface));
           return [
             styles.base,
             {
@@ -118,13 +135,13 @@ export function Button({
               backgroundColor: v.backgroundColor,
               borderWidth: v.borderWidth,
               borderColor: v.borderColor,
-              opacity: isDisabled && !loading ? 0.4 : pressed && v.borderWidth > 0 ? 0.92 : 1,
+              opacity: v.opacity ?? (pressed && v.borderWidth > 0 ? 0.92 : 1),
             },
           ];
         }}
       >
         {({ pressed }) => {
-          const v = variantStyle(theme, variant, pressed, surface);
+          const v = estiloFinal(variantStyle(theme, variant, pressed, surface));
           return (
             <>
               <Text
@@ -147,10 +164,13 @@ export function Button({
 }
 
 const styles = StyleSheet.create({
+  // O anel ocupa 4px fora do botao: a margem negativa devolve esse espaco pro
+  // layout, e o botao visivel alinha com o resto do conteudo.
   focusRing: {
     borderWidth: 2,
     borderColor: 'transparent',
     padding: 2,
+    margin: -4,
   },
   stretch: {
     alignSelf: 'stretch',
