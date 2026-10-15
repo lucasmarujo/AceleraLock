@@ -4065,9 +4065,49 @@ svg {
 }
 
 .rodape-fim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
   margin-top: 40px;
   font-size: 13px;
-  color: var(--neutral-500);
+  line-height: 1.5;
+  color: var(--neutral-400);
+}
+
+.feito-por {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.feito-por a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  padding: 0 14px 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--tema-neutral-700);
+  color: var(--neutral-0);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    border-color 150ms var(--curva-padrao),
+    background 150ms var(--curva-padrao);
+}
+
+.feito-por a:hover {
+  border-color: var(--brand-turquesa);
+  background: color-mix(in srgb, var(--brand-turquesa) 10%, transparent);
+}
+
+.feito-por svg {
+  width: 18px;
+  height: 18px;
 }
 
 /* ---------- Revelacao na rolagem ---------- */

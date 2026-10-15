@@ -266,6 +266,15 @@ test('regressao: link para politica, termos e lista de espera nao depende de ond
   }
 });
 
+test('feliz: rodape credita o autor com link para o perfil dele no GitHub', () => {
+  const rodape = lerLanding('index.html').match(/<footer[\s\S]*<\/footer>/)?.[0] ?? '';
+  const credito = rodape.match(/Made by\s*<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/);
+  assert.ok(credito, 'rodape sem o "Made by" com link');
+  assert.equal(credito[1], 'https://github.com/lucasmarujo');
+  assert.match(credito[2], /<use href="#i-github"/);
+  assert.match(credito[2], /lucasmarujo/);
+});
+
 /**
  * No celular, decoracao que passa da largura da tela alarga a pagina inteira (o
  * navegador estica a viewport de layout ate caber) e o dedo arrasta pro lado — o
