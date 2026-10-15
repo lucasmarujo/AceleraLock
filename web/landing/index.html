@@ -1,0 +1,1514 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; media-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <title>AceleraLock — Faça o impulso esperar.</title>
+    <meta
+      name="description"
+      content="O AceleraLock bloqueia os apps e sites que roubam o seu tempo e fica no caminho quando bate a vontade de abrir. 100% no aparelho, sem conta, gratuito e de código aberto."
+    />
+    <meta name="theme-color" content="#04141c" />
+    <meta name="color-scheme" content="dark" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="AceleraLock" />
+    <meta property="og:title" content="AceleraLock — Faça o impulso esperar." />
+    <meta
+      property="og:description"
+      content="Bloqueio de apps e sites que roda 100% no seu celular. Sem conta, sem nuvem, sem anúncio."
+    />
+    <meta property="og:image" content="https://acelera.marujo.dev/assets/og.jpg" />
+    <meta property="og:image:width" content="1024" />
+    <meta property="og:image:height" content="500" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="assets/favicon.png" type="image/png" />
+    <link rel="apple-touch-icon" href="assets/icone-192.png" />
+    <link rel="preload" href="fontes/roboto.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="estilo.css" />
+    <script type="module" src="js/principal.js"></script>
+  </head>
+  <body>
+    <a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-escudo"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-escudo-check"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"
+        />
+        <path d="m9 12 2 2 4-4" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-casa"
+        viewBox="0 0 24 24"
+      >
+        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+        <path
+          d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-ajustes"
+        viewBox="0 0 24 24"
+      >
+        <path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-cadeado"
+        viewBox="0 0 24 24"
+      >
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-cadeado-aberto"
+        viewBox="0 0 24 24"
+      >
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 9.9-1" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-lupa"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-globo"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-fechar"
+        viewBox="0 0 24 24"
+      >
+        <path d="M18 6 6 18M6 6l12 12" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-check-circulo"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="m9 12 2 2 4-4" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-relogio"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v6l4 2" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-energia"
+        viewBox="0 0 24 24"
+      >
+        <path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.77.04" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-check"
+        viewBox="0 0 24 24"
+      >
+        <path d="M20 6 9 17l-5-5" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-ampulheta"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-celular"
+        viewBox="0 0 24 24"
+      >
+        <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+        <path d="M12 18h.01" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-seta-baixo"
+        viewBox="0 0 24 24"
+      >
+        <path d="M12 5v14M19 12l-7 7-7-7" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-seta-direita"
+        viewBox="0 0 24 24"
+      >
+        <path d="M5 12h14M12 5l7 7-7 7" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-mais"
+        viewBox="0 0 24 24"
+      >
+        <path d="M5 12h14M12 5v14" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-menos"
+        viewBox="0 0 24 24"
+      >
+        <path d="M5 12h14" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-chevron"
+        viewBox="0 0 24 24"
+      >
+        <path d="m9 18 6-6-6-6" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-info"
+        viewBox="0 0 24 24"
+      >
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4M12 8h.01" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-usuario-x"
+        viewBox="0 0 24 24"
+      >
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="m17 8 5 5M22 8l-5 5" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-codigo"
+        viewBox="0 0 24 24"
+      >
+        <path d="m16 18 6-6-6-6M8 6l-6 6 6 6" />
+      </symbol>
+      <symbol id="i-github" viewBox="0 0 16 16">
+        <path
+          fill="currentColor"
+          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-nuvem-riscada"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="m2 2 20 20M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-telefone"
+        viewBox="0 0 24 24"
+      >
+        <path
+          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-play"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="currentColor"
+          stroke="none"
+          d="M8 5.14v13.72a1 1 0 0 0 1.5.86l11-6.86a1 1 0 0 0 0-1.72l-11-6.86A1 1 0 0 0 8 5.14z"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-wifi"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="currentColor"
+          stroke="none"
+          d="M12 21.5 0.6 7.8C3.7 5.4 7.6 4 12 4s8.3 1.4 11.4 3.8L12 21.5z"
+        />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-sinal"
+        viewBox="0 0 24 24"
+      >
+        <path fill="currentColor" stroke="none" d="M2 22h20V2L2 22z" />
+      </symbol>
+      <symbol
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        id="i-bateria"
+        viewBox="0 0 12 22"
+      >
+        <rect x="1" y="3" width="10" height="18" rx="2" stroke-width="1.6" />
+        <rect fill="currentColor" stroke="none" x="4" y="0.6" width="4" height="2.4" rx="1" />
+        <rect fill="currentColor" stroke="none" x="2.8" y="7" width="6.4" height="12.2" rx="1" />
+      </symbol>
+    </svg>
+
+    <header class="topo" data-topo>
+      <nav class="topo-barra" aria-label="Principal">
+        <a class="marca" href="#inicio">
+          <img src="assets/icone.webp" width="32" height="32" alt="" />
+          <span>Acelera<em>Lock</em></span>
+        </a>
+        <ul class="topo-links">
+          <li><a href="#como-funciona">Como funciona</a></li>
+          <li><a href="#video">Vídeo</a></li>
+          <li><a href="#privacidade">Privacidade</a></li>
+          <li><a href="#perguntas">Perguntas</a></li>
+        </ul>
+        <a
+          class="botao botao-marca botao-pequeno"
+          href="https://aceleralock.marujo.dev/teste#lista-de-espera"
+          >Entrar no teste</a
+        >
+      </nav>
+    </header>
+
+    <main id="conteudo">
+      <section class="heroi" id="inicio" aria-labelledby="titulo-heroi">
+        <div class="heroi-fundo" aria-hidden="true">
+          <i class="brilho brilho-tinta"></i>
+          <i class="brilho brilho-marca"></i>
+          <i class="pontos"></i>
+          <i class="circulo circulo-1"></i>
+          <i class="circulo circulo-2"></i>
+        </div>
+
+        <div class="envoltorio heroi-grade">
+          <div class="heroi-texto">
+            <p class="selo-comunidade">
+              <img src="assets/aceleradev.svg" width="22" height="22" alt="" />
+              <span>Powered by <strong>AceleraDev</strong></span>
+            </p>
+            <h1 class="heroi-titulo" id="titulo-heroi">
+              <span class="palavra">Faça</span> <span class="palavra">o</span>
+              <span class="palavra">impulso</span> <span class="palavra destaque">esperar.</span>
+            </h1>
+            <p class="heroi-sub">
+              O AceleraLock bloqueia os apps e sites que roubam o seu tempo. Quando bater a vontade
+              de abrir, ele fica no caminho — e mudar de ideia pode pedir 30 minutos de espera.
+            </p>
+            <div class="heroi-acoes">
+              <a
+                class="botao botao-marca"
+                href="https://aceleralock.marujo.dev/teste#lista-de-espera"
+              >
+                Entrar na lista do teste
+                <svg class="icone" aria-hidden="true"><use href="#i-seta-direita" /></svg>
+              </a>
+              <a class="botao botao-fantasma" href="#video">
+                <svg class="icone" aria-hidden="true"><use href="#i-play" /></svg>
+                Ver o vídeo <span class="botao-nota">49 s</span>
+              </a>
+            </div>
+            <ul class="heroi-garantias">
+              <li>
+                <svg class="icone" aria-hidden="true"><use href="#i-celular" /></svg>
+                Tudo no seu celular
+              </li>
+              <li>
+                <svg class="icone" aria-hidden="true"><use href="#i-usuario-x" /></svg>
+                Sem conta
+              </li>
+              <li>
+                <svg class="icone" aria-hidden="true"><use href="#i-codigo" /></svg>
+                Gratuito e de código aberto
+              </li>
+            </ul>
+          </div>
+
+          <div class="heroi-aparelho">
+            <div class="aparelho aparelho-heroi" data-aparelho="heroi" aria-hidden="true">
+              <div class="aparelho-sombra"></div>
+              <div class="aparelho-palco">
+                <div class="aparelho-entrada">
+                  <div class="aparelho-corpo">
+                    <div class="aparelho-camadas">
+                      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                    </div>
+                    <div class="aparelho-verso">
+                      <i class="verso-camera"></i>
+                      <img src="assets/icone.webp" width="96" height="96" alt="" />
+                    </div>
+                    <div class="aparelho-frente">
+                      <i class="aparelho-botao aparelho-botao-1"></i>
+                      <i class="aparelho-botao aparelho-botao-2"></i>
+                      <div class="tela">
+                        <div class="app app-inicio" data-tela-inicio>
+                          <div class="app-rolagem" data-rolagem>
+                            <div class="status">
+                              <span>9:41</span>
+                              <span class="status-icones">
+                                <svg class="i-wifi"><use href="#i-wifi" /></svg>
+                                <svg class="i-sinal"><use href="#i-sinal" /></svg>
+                                <svg class="i-bateria"><use href="#i-bateria" /></svg>
+                              </span>
+                            </div>
+                            <div class="inicio-cabecalho">
+                              <div>
+                                <p class="inicio-data">Sábado, 11 de outubro</p>
+                                <p class="inicio-ola">Olá, Ana</p>
+                              </div>
+                              <span class="avatar">A</span>
+                            </div>
+                            <div class="inicio-bloco">
+                              <div class="protecao">
+                                <div class="protecao-status">
+                                  <span class="protecao-escudo"
+                                    ><svg><use href="#i-escudo-check" /></svg
+                                  ></span>
+                                  <div>
+                                    <p class="protecao-titulo">Proteção ativa</p>
+                                    <p class="protecao-resumo">3 apps e 2 sites bloqueados</p>
+                                  </div>
+                                </div>
+                                <div class="protecao-pilha">
+                                  <span class="pilha">
+                                    <i class="icone-app ig">I</i><i class="icone-app tt">T</i
+                                    ><i class="icone-app yt">Y</i>
+                                  </span>
+                                  <span class="pilha-resto">+ 2 sites</span>
+                                  <span class="protecao-acao"
+                                    >Gerenciar <svg><use href="#i-chevron" /></svg
+                                  ></span>
+                                </div>
+                                <div class="protecao-restrito">
+                                  <svg><use href="#i-cadeado-aberto" /></svg>
+                                  <div>
+                                    <p class="restrito-titulo">Modo restrito desligado</p>
+                                    <p class="restrito-texto">Tirar um app da lista é imediato.</p>
+                                  </div>
+                                  <span class="protecao-acao">Ligar</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="inicio-bloco">
+                              <div class="cartao hoje">
+                                <div class="hoje-topo">
+                                  <p class="legenda">Tempo de tela hoje</p>
+                                  <p class="hoje-numero" data-hoje>3h 53min</p>
+                                  <p class="selo-estimativa" data-selo>
+                                    <svg><use href="#i-seta-baixo" /></svg>1h 07min abaixo da sua
+                                    estimativa de 5h
+                                  </p>
+                                </div>
+                                <div class="semana">
+                                  <div class="semana-topo">
+                                    <p class="legenda">Últimos 7 dias</p>
+                                    <p class="semana-estimativa"><i></i>sua estimativa</p>
+                                  </div>
+                                  <div class="grafico">
+                                    <i class="barra barra-1" data-barra></i>
+                                    <i class="barra barra-2" data-barra></i>
+                                    <i class="barra barra-sem-leitura" data-barra></i>
+                                    <i class="barra barra-4" data-barra></i>
+                                    <i class="barra barra-5" data-barra></i>
+                                    <i class="barra barra-6" data-barra></i>
+                                    <i class="barra barra-hoje" data-barra></i>
+                                    <i class="grafico-estimativa" data-estimativa></i>
+                                  </div>
+                                  <div class="dias-semana">
+                                    <span data-dia-rotulo><b>4h42</b>D</span>
+                                    <span data-dia-rotulo><b>6h06</b>S</span>
+                                    <span data-dia-rotulo><b>—</b>T</span>
+                                    <span data-dia-rotulo><b>2h48</b>Q</span>
+                                    <span data-dia-rotulo><b>5h12</b>Q</span>
+                                    <span data-dia-rotulo><b>4h05</b>S</span>
+                                    <span class="dia-hoje" data-dia-rotulo><b>3h53</b>Hoje</span>
+                                  </div>
+                                  <p class="semana-nota">
+                                    Terça sem leitura: o aparelho não registrou esse dia.
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="mais-usados">
+                              <p class="mais-usados-titulo">Mais usados hoje</p>
+                              <div class="cartao">
+                                <div class="uso">
+                                  <i class="icone-app icone-app-36 ig">I</i>
+                                  <div class="uso-texto">
+                                    <p><span>Instagram</span><b>1h 22min</b></p>
+                                    <span class="uso-trilho"><i class="uso-1" data-uso></i></span>
+                                  </div>
+                                </div>
+                                <div class="uso">
+                                  <i class="icone-app icone-app-36 yt">Y</i>
+                                  <div class="uso-texto">
+                                    <p><span>YouTube</span><b>53min</b></p>
+                                    <span class="uso-trilho"><i class="uso-2" data-uso></i></span>
+                                  </div>
+                                </div>
+                                <div class="uso">
+                                  <i class="icone-app icone-app-36 wa">W</i>
+                                  <div class="uso-texto">
+                                    <p><span>WhatsApp</span><b>41min</b></p>
+                                    <span class="uso-trilho"><i class="uso-3" data-uso></i></span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="abas">
+                            <div class="abas-itens">
+                              <span class="aba ativa"
+                                ><i
+                                  ><svg><use href="#i-casa" /></svg></i
+                                >Início</span
+                              >
+                              <span class="aba"
+                                ><i
+                                  ><svg><use href="#i-escudo" /></svg></i
+                                >Bloqueios</span
+                              >
+                              <span class="aba"
+                                ><i
+                                  ><svg><use href="#i-ajustes" /></svg></i
+                                >Ajustes</span
+                              >
+                            </div>
+                            <i class="gesto"></i>
+                          </div>
+                        </div>
+                        <i class="tela-reflexo" data-reflexo></i>
+                      </div>
+                    </div>
+
+                    <div class="chip chip-bloqueio">
+                      <div class="chip-dentro">
+                        <img src="assets/icone.webp" width="44" height="44" alt="" />
+                        <div>
+                          <p class="chip-titulo">Instagram está bloqueado.</p>
+                          <p class="chip-texto">
+                            Cada minuto fora dessa tela é um minuto seu de novo.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="chip chip-espera">
+                      <div class="chip-dentro">
+                        <svg class="mini-anel" viewBox="0 0 48 48">
+                          <circle cx="24" cy="24" r="20" />
+                          <circle class="mini-anel-arco" cx="24" cy="24" r="20" />
+                        </svg>
+                        <div>
+                          <p class="chip-rotulo">Espera em andamento</p>
+                          <p class="chip-relogio">18:24</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="chip chip-horario">
+                      <div class="chip-dentro">
+                        <span class="chip-horario-icone"
+                          ><svg><use href="#i-relogio" /></svg
+                        ></span>
+                        <div>
+                          <p class="chip-rotulo">Horário livre · Instagram</p>
+                          <p class="chip-linha">Seg a sex · 12:00–13:00</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="heroi-rolar" href="#manifesto">
+          <span>Role para ver funcionando</span>
+          <i aria-hidden="true"></i>
+        </a>
+      </section>
+
+      <section class="manifesto" id="manifesto" aria-labelledby="titulo-manifesto">
+        <div class="manifesto-fixo">
+          <div class="envoltorio">
+            <p class="rotulo" id="titulo-manifesto">
+              <span>00</span><i></i><span>O problema</span>
+            </p>
+            <p class="manifesto-texto" data-manifesto>
+              Bloqueador de app costuma falhar pelo mesmo motivo: o botão de desligar fica a um
+              toque de distância. O impulso dura segundos. No AceleraLock, ceder pode custar
+              <em class="ambar">trinta minutos</em> — e desistir <em>não custa nada.</em>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="historia"
+        id="como-funciona"
+        aria-labelledby="titulo-historia"
+        data-tom="marca"
+      >
+        <header class="envoltorio historia-cabeca">
+          <p class="rotulo"><span>Como funciona</span></p>
+          <h2 class="titulo-secao" id="titulo-historia">
+            Cinco momentos. <span class="quebra">Um app que fica <em>no caminho.</em></span>
+          </h2>
+        </header>
+
+        <div class="historia-corpo">
+          <div class="historia-palco">
+            <div class="historia-brilho" aria-hidden="true">
+              <i class="brilho-marca"></i>
+              <i class="brilho-ambar"></i>
+            </div>
+            <div class="historia-aparelho">
+              <div class="aparelho aparelho-historia" data-aparelho="historia" aria-hidden="true">
+                <div class="aparelho-sombra"></div>
+                <div class="aparelho-palco">
+                  <div class="aparelho-entrada">
+                    <div class="aparelho-corpo">
+                      <div class="aparelho-camadas">
+                        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                      </div>
+                      <div class="aparelho-verso">
+                        <i class="verso-camera"></i>
+                        <img src="assets/icone.webp" width="96" height="96" alt="" />
+                      </div>
+                      <div class="aparelho-frente">
+                        <i class="aparelho-botao aparelho-botao-1"></i>
+                        <i class="aparelho-botao aparelho-botao-2"></i>
+                        <div class="tela">
+                          <div class="cena ativa" data-cena="bloqueios">
+                            <div class="app app-bloqueios" data-tela-bloqueios>
+                              <div class="status">
+                                <span>9:41</span>
+                                <span class="status-icones">
+                                  <svg class="i-wifi"><use href="#i-wifi" /></svg>
+                                  <svg class="i-sinal"><use href="#i-sinal" /></svg>
+                                  <svg class="i-bateria"><use href="#i-bateria" /></svg>
+                                </span>
+                              </div>
+                              <div class="bloq-topo">
+                                <p class="app-titulo">Bloqueios</p>
+                                <div class="segmentado">
+                                  <span class="seg ativo"
+                                    >Apps <b class="contagem" data-contagem>0</b></span
+                                  >
+                                  <span class="seg">Sites <b>2</b></span>
+                                </div>
+                              </div>
+                              <div class="bloq-bloco">
+                                <div class="cartao restrito">
+                                  <span class="restrito-icone"
+                                    ><svg><use href="#i-cadeado-aberto" /></svg
+                                  ></span>
+                                  <div>
+                                    <p class="restrito-nome">Modo restrito</p>
+                                    <p class="restrito-desc">
+                                      Quando ligado, mudar a lista pede 30 min de espera.
+                                    </p>
+                                  </div>
+                                  <span class="interruptor"></span>
+                                </div>
+                              </div>
+                              <div class="bloq-bloco">
+                                <div class="busca">
+                                  <svg><use href="#i-lupa" /></svg>
+                                  Buscar entre 14 apps
+                                </div>
+                              </div>
+                              <div class="bloq-lista" data-lista>
+                                <p class="rotulo-secao">
+                                  <span class="rotulo-outros">Outros apps</span>
+                                  <span class="rotulo-bloqueados">Bloqueados · 3</span>
+                                </p>
+                                <div class="cartao lista lista-a">
+                                  <div class="linha-app" data-app="Instagram">
+                                    <i class="icone-app ig">I</i>
+                                    <p class="linha-texto">
+                                      <span>Instagram</span
+                                      ><span class="linha-legenda" data-legenda></span>
+                                    </p>
+                                    <span class="interruptor" data-interruptor></span>
+                                  </div>
+                                  <div class="linha-app" data-app="TikTok">
+                                    <i class="icone-app tt">T</i>
+                                    <p class="linha-texto">
+                                      <span>TikTok</span
+                                      ><span class="linha-legenda" data-legenda></span>
+                                    </p>
+                                    <span class="interruptor" data-interruptor></span>
+                                  </div>
+                                  <div class="linha-app" data-app="YouTube">
+                                    <i class="icone-app yt">Y</i>
+                                    <p class="linha-texto">
+                                      <span>YouTube</span
+                                      ><span class="linha-legenda" data-legenda></span>
+                                    </p>
+                                    <span class="interruptor" data-interruptor></span>
+                                  </div>
+                                </div>
+                                <p class="separador"><span>Outros apps</span></p>
+                                <div class="cartao lista lista-b">
+                                  <div class="linha-app">
+                                    <i class="icone-app x">X</i>
+                                    <p class="linha-texto"><span>X</span></p>
+                                    <span class="interruptor"></span>
+                                  </div>
+                                  <div class="linha-app">
+                                    <i class="icone-app fb">f</i>
+                                    <p class="linha-texto"><span>Facebook</span></p>
+                                    <span class="interruptor"></span>
+                                  </div>
+                                  <div class="linha-app">
+                                    <i class="icone-app rd">R</i>
+                                    <p class="linha-texto"><span>Reddit</span></p>
+                                    <span class="interruptor"></span>
+                                  </div>
+                                  <div class="linha-app">
+                                    <i class="icone-app nf">N</i>
+                                    <p class="linha-texto"><span>Netflix</span></p>
+                                    <span class="interruptor"></span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="barra-salvar" data-barra-salvar>
+                                <div class="barra-textos">
+                                  <div class="barra-pendente">
+                                    <p class="barra-titulo" data-barra-titulo>
+                                      1 alteração não salva
+                                    </p>
+                                    <p class="barra-sub" data-barra-sub>Instagram entra na lista</p>
+                                  </div>
+                                  <div class="barra-sucesso">
+                                    <span class="barra-check"
+                                      ><svg><use href="#i-check" /></svg
+                                    ></span>
+                                    3 apps bloqueados
+                                  </div>
+                                </div>
+                                <span class="barra-salvar-botao" data-salvar>Salvar</span>
+                              </div>
+                              <div class="abas">
+                                <div class="abas-itens">
+                                  <span class="aba"
+                                    ><i
+                                      ><svg><use href="#i-casa" /></svg></i
+                                    >Início</span
+                                  >
+                                  <span class="aba ativa"
+                                    ><i
+                                      ><svg><use href="#i-escudo" /></svg></i
+                                    >Bloqueios</span
+                                  >
+                                  <span class="aba"
+                                    ><i
+                                      ><svg><use href="#i-ajustes" /></svg></i
+                                    >Ajustes</span
+                                  >
+                                </div>
+                                <i class="gesto"></i>
+                              </div>
+                            </div>
+                            <i class="toque" data-toque></i>
+                          </div>
+
+                          <div class="cena" data-cena="caminho">
+                            <div class="app app-android">
+                              <div class="android-fundo">
+                                <div class="status status-claro">
+                                  <span>9:41</span>
+                                  <span class="status-icones">
+                                    <svg class="i-wifi"><use href="#i-wifi" /></svg>
+                                    <svg class="i-sinal"><use href="#i-sinal" /></svg>
+                                    <svg class="i-bateria"><use href="#i-bateria" /></svg>
+                                  </span>
+                                </div>
+                                <div class="android-relogio">
+                                  <p class="android-hora">9:41</p>
+                                  <p class="android-data">sábado, 11 de outubro</p>
+                                </div>
+                                <div class="android-grade">
+                                  <span class="android-app" data-abrir
+                                    ><i class="icone-app ig">I</i>Instagram</span
+                                  >
+                                  <span class="android-app"
+                                    ><i class="icone-app tt">T</i>TikTok</span
+                                  >
+                                  <span class="android-app"
+                                    ><i class="icone-app yt">Y</i>YouTube</span
+                                  >
+                                  <span class="android-app"><i class="icone-app x">X</i>X</span>
+                                  <span class="android-app"
+                                    ><i class="icone-app wa">W</i>WhatsApp</span
+                                  >
+                                  <span class="android-app"
+                                    ><i class="icone-app fb">f</i>Facebook</span
+                                  >
+                                  <span class="android-app"
+                                    ><i class="icone-app rd">R</i>Reddit</span
+                                  >
+                                  <span class="android-app"
+                                    ><i class="icone-app nf">N</i>Netflix</span
+                                  >
+                                </div>
+                                <i class="android-busca"></i>
+                                <i class="gesto gesto-claro"></i>
+                              </div>
+                              <i class="android-abrindo" data-abrindo></i>
+                              <div class="bloqueio" data-bloqueio>
+                                <img
+                                  class="bloqueio-marca"
+                                  src="assets/icone.webp"
+                                  width="72"
+                                  height="72"
+                                  alt=""
+                                />
+                                <p class="bloqueio-titulo">Instagram está bloqueado.</p>
+                                <p class="bloqueio-frase" data-frase>
+                                  Cada minuto fora dessa tela é um minuto seu de novo.
+                                </p>
+                                <span class="bloqueio-fechar" data-fechar>Fechar</span>
+                              </div>
+                            </div>
+                            <i class="toque" data-toque></i>
+                          </div>
+
+                          <div class="cena" data-cena="espera">
+                            <div class="app app-espera">
+                              <div class="status">
+                                <span>9:41</span>
+                                <span class="status-icones">
+                                  <svg class="i-wifi"><use href="#i-wifi" /></svg>
+                                  <svg class="i-sinal"><use href="#i-sinal" /></svg>
+                                  <svg class="i-bateria"><use href="#i-bateria" /></svg>
+                                </span>
+                              </div>
+                              <div class="espera-topo">
+                                <span class="pilula-ambar"
+                                  ><svg><use href="#i-ampulheta" /></svg>Espera em andamento</span
+                                >
+                                <p class="app-titulo">Desativando o modo restrito</p>
+                                <p class="app-sub">
+                                  Quando o tempo acabar, a lista de apps volta a ser editável.
+                                </p>
+                              </div>
+                              <div class="espera-bloco">
+                                <div class="espera-cartao">
+                                  <div class="anel">
+                                    <svg viewBox="0 0 196 196">
+                                      <circle class="anel-trilho" cx="98" cy="98" r="88" />
+                                      <circle
+                                        class="anel-arco"
+                                        cx="98"
+                                        cy="98"
+                                        r="88"
+                                        stroke-dasharray="214 553"
+                                        data-arco
+                                      />
+                                    </svg>
+                                    <div class="anel-texto">
+                                      <p class="anel-numero" data-relogio>18:24</p>
+                                      <p class="anel-rotulo">restantes</p>
+                                    </div>
+                                  </div>
+                                  <p class="espera-faltam" data-faltam>
+                                    Faltam 18 min 24 s de 30 min
+                                  </p>
+                                </div>
+                              </div>
+                              <ul class="espera-fatos">
+                                <li>
+                                  <svg><use href="#i-relogio" /></svg>A contagem segue com o app
+                                  fechado.
+                                </li>
+                                <li>
+                                  <svg><use href="#i-energia" /></svg>Desligar o celular pausa a
+                                  contagem — ela volta de onde parou.
+                                </li>
+                                <li>
+                                  <svg><use href="#i-check" /></svg>Ao zerar, o modo restrito
+                                  desliga sozinho.
+                                </li>
+                              </ul>
+                              <div class="espaco"></div>
+                              <div class="espera-acoes">
+                                <span class="botao-app">Desistir da espera</span>
+                                <p class="espera-nota">
+                                  Desistir é grátis e imediato. O modo restrito continua ligado.
+                                </p>
+                              </div>
+                              <i class="gesto gesto-solto"></i>
+                            </div>
+                          </div>
+
+                          <div class="cena" data-cena="horarios">
+                            <div class="horarios-base" data-base-horarios></div>
+                            <i class="veu" data-veu></i>
+                            <div class="folha" data-folha>
+                              <i class="folha-alca"></i>
+                              <div class="folha-corpo">
+                                <div class="folha-cabeca">
+                                  <i class="icone-app ig">I</i>
+                                  <div>
+                                    <p class="folha-titulo">Horários livres</p>
+                                    <p class="folha-app">Instagram</p>
+                                  </div>
+                                </div>
+                                <p class="folha-texto">
+                                  Nesses horários o Instagram abre sem bloqueio. Fora deles,
+                                  continua bloqueado.
+                                </p>
+                                <div class="folha-faixas">
+                                  <p class="folha-vazio">
+                                    Nenhum horário livre: o Instagram fica bloqueado o tempo todo.
+                                  </p>
+                                  <p class="folha-faixa">
+                                    <svg><use href="#i-relogio" /></svg>Seg a sex · 12:00–13:00
+                                  </p>
+                                </div>
+                                <div class="folha-form">
+                                  <div class="form-caixa">
+                                    <p class="form-rotulo">Dias</p>
+                                    <div class="dias">
+                                      <span class="dia" data-dia>S</span>
+                                      <span class="dia" data-dia>T</span>
+                                      <span class="dia" data-dia>Q</span>
+                                      <span class="dia" data-dia>Q</span>
+                                      <span class="dia" data-dia>S</span>
+                                      <span class="dia">S</span>
+                                      <span class="dia">D</span>
+                                    </div>
+                                    <div class="horas">
+                                      <div class="hora-campo">
+                                        <p>Das</p>
+                                        <div class="hora-passos">
+                                          <span class="passo-hora"
+                                            ><svg><use href="#i-menos" /></svg
+                                          ></span>
+                                          <b>12:00</b>
+                                          <span class="passo-hora"
+                                            ><svg><use href="#i-mais" /></svg
+                                          ></span>
+                                        </div>
+                                      </div>
+                                      <div class="hora-campo">
+                                        <p>Até</p>
+                                        <div class="hora-passos">
+                                          <span class="passo-hora"
+                                            ><svg><use href="#i-menos" /></svg
+                                          ></span>
+                                          <b data-ate>12:30</b>
+                                          <span class="passo-hora" data-mais
+                                            ><svg><use href="#i-mais" /></svg
+                                          ></span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div class="form-botoes">
+                                      <span class="form-cancelar">Cancelar</span>
+                                      <span class="form-adicionar" data-adicionar>Adicionar</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              <i class="gesto"></i>
+                            </div>
+                            <i class="toque" data-toque></i>
+                          </div>
+
+                          <div class="cena" data-cena="tempo"></div>
+                          <i class="tela-reflexo" data-reflexo></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <ol class="historia-progresso" aria-hidden="true">
+              <li data-progresso><i></i></li>
+              <li data-progresso><i></i></li>
+              <li data-progresso><i></i></li>
+              <li data-progresso><i></i></li>
+              <li data-progresso><i></i></li>
+            </ol>
+          </div>
+
+          <ol class="historia-passos">
+            <li class="passo" data-passo="bloqueios" data-tom="marca">
+              <div class="passo-texto">
+                <p class="rotulo"><span>01</span><i></i><span>Bloqueios</span></p>
+                <h3 class="passo-titulo">Escolha o que rouba seu <em>tempo.</em></h3>
+                <p class="passo-corpo">
+                  Marque os apps, toque em salvar e pronto: o bloqueio vale na hora e continua com o
+                  AceleraLock fechado. Telefone e apps de emergência nunca entram na lista.
+                </p>
+              </div>
+            </li>
+            <li class="passo" data-passo="caminho" data-tom="marca">
+              <div class="passo-texto">
+                <p class="rotulo"><span>02</span><i></i><span>No caminho</span></p>
+                <h3 class="passo-titulo">Bateu a vontade? Ele fica no <em>caminho.</em></h3>
+                <p class="passo-corpo">
+                  Abriu um app da lista, a tela do AceleraLock aparece por cima, na hora. Sem sermão
+                  e sem contar tentativas: uma frase, sorteada entre mil, e um botão para sair.
+                </p>
+                <button class="botao botao-fantasma botao-pequeno" type="button" data-tentar>
+                  <svg class="icone" aria-hidden="true"><use href="#i-play" /></svg>
+                  Tentar abrir o Instagram
+                </button>
+                <p class="so-leitor" aria-live="polite" data-frase-anunciada></p>
+              </div>
+            </li>
+            <li class="passo" data-passo="espera" data-tom="ambar">
+              <div class="passo-texto">
+                <p class="rotulo rotulo-ambar"><span>03</span><i></i><span>Espera</span></p>
+                <h3 class="passo-titulo">Mudar de ideia pede <em class="ambar">30 minutos.</em></h3>
+                <p class="passo-corpo">
+                  Com o modo restrito ligado, a lista fica travada. Para destravar, são 30 minutos
+                  de espera — tempo de sobra para a vontade passar. A contagem segue com o app
+                  fechado, e mexer no relógio do celular não encurta nada. Desistir é grátis.
+                </p>
+              </div>
+            </li>
+            <li class="passo" data-passo="horarios" data-tom="marca">
+              <div class="passo-texto">
+                <p class="rotulo"><span>04</span><i></i><span>Horários livres</span></p>
+                <h3 class="passo-titulo">Almoço liberado. O resto, <em>não.</em></h3>
+                <p class="passo-corpo">
+                  Crie faixas de horário por app, nos dias que você escolher. Fora delas, o bloqueio
+                  continua. Só valem com data e fuso automáticos e com o modo restrito desligado —
+                  sem atalho pelo relógio.
+                </p>
+              </div>
+            </li>
+            <li class="passo passo-longo" data-passo="tempo" data-tom="marca">
+              <div class="passo-texto">
+                <p class="rotulo"><span>05</span><i></i><span>Tempo de tela</span></p>
+                <h3 class="passo-titulo">Veja o que mudou. De <em>verdade.</em></h3>
+                <p class="passo-corpo">
+                  O tempo de tela é medido no próprio aparelho, dia após dia, e comparado com a
+                  estimativa que você fez no começo. Dia sem leitura aparece como sem leitura —
+                  nunca como zero.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="video" id="video" aria-labelledby="titulo-video">
+        <header class="envoltorio video-cabeca" data-revelar>
+          <p class="rotulo"><span>O lançamento</span></p>
+          <h2 class="titulo-secao" id="titulo-video">
+            49 segundos. <span class="quebra">O app <em>inteiro.</em></span>
+          </h2>
+          <p class="secao-sub">
+            O filme de lançamento mostra cada tela do AceleraLock em ação. Dá o play com som.
+          </p>
+        </header>
+        <div class="video-moldura" data-video>
+          <div class="video-quadro">
+            <video
+              width="1920"
+              height="1080"
+              preload="none"
+              playsinline
+              poster="video/poster.webp"
+              data-video-elemento
+            >
+              <source src="video/aceleralock-lancamento-16x9.mp4" type="video/mp4" />
+            </video>
+            <button class="video-play" type="button" data-video-play>
+              <span class="video-play-icone"
+                ><svg aria-hidden="true"><use href="#i-play" /></svg
+              ></span>
+              <span class="video-play-texto">
+                <span data-video-rotulo>Assistir com som</span>
+                <small>0:49</small>
+              </span>
+            </button>
+            <p class="video-erro" data-video-erro hidden>O vídeo de lançamento chega em breve.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="principios ilha-clara" aria-labelledby="titulo-principios">
+        <div class="envoltorio">
+          <header class="principios-cabeca" data-revelar>
+            <p class="rotulo"><span>Princípios</span></p>
+            <h2 class="titulo-secao" id="titulo-principios">Fricção, não <em>prisão.</em></h2>
+            <p class="secao-sub">
+              O AceleraLock não tenta te trancar. Ele deixa o impulso caro e a desistência de graça
+              — e é honesto sobre os próprios limites.
+            </p>
+          </header>
+
+          <div class="bento">
+            <article class="bento-card bento-desistir" data-revelar>
+              <div class="bento-visual" aria-hidden="true">
+                <span class="pilula-ambar"
+                  ><svg><use href="#i-ampulheta" /></svg>Espera em andamento</span
+                >
+                <span class="botao-app">Desistir da espera</span>
+                <span class="bento-nota">Desistir é grátis e imediato.</span>
+              </div>
+              <h3>Desistir é sempre grátis.</h3>
+              <p>
+                Toda espera é cronometrada e termina sozinha. Mudou de ideia de novo? Um toque e ela
+                acaba — o modo restrito continua ligado.
+              </p>
+            </article>
+
+            <article class="bento-card bento-relogio" data-revelar>
+              <div class="bento-visual" aria-hidden="true">
+                <span class="relogio-parede">
+                  <i class="ponteiro-hora"></i>
+                  <i class="ponteiro-minuto"></i>
+                </span>
+                <span class="relogio-honesto">
+                  <svg viewBox="0 0 196 196">
+                    <circle class="anel-trilho" cx="98" cy="98" r="88" />
+                    <circle class="anel-arco" cx="98" cy="98" r="88" stroke-dasharray="214 553" />
+                  </svg>
+                  <b>18:24</b>
+                </span>
+              </div>
+              <h3>Mexer no relógio não adianta.</h3>
+              <p>
+                A espera conta o tempo interno do sistema, não a hora da tela. Adiantar o relógio
+                não encurta um segundo; desligar o celular só pausa a contagem.
+              </p>
+            </article>
+
+            <article class="bento-card bento-frase" data-revelar>
+              <div class="bento-visual">
+                <p class="frase-sorteada" aria-live="polite" data-frase-bento>
+                  Você acabou de devolver a próxima hora pra você.
+                </p>
+                <button class="botao-texto" type="button" data-sortear>Sortear outra frase</button>
+              </div>
+              <h3>Uma frase, nunca um sermão.</h3>
+              <p>
+                A tela de bloqueio sorteia uma entre mil frases. Nada de culpa, nada de contar
+                tentativas.
+              </p>
+            </article>
+
+            <article class="bento-card bento-sites" data-revelar>
+              <div class="bento-visual" aria-hidden="true">
+                <span class="site"
+                  ><i
+                    ><svg><use href="#i-globo" /></svg></i
+                  ><span>instagram.com<small>e subdomínios</small></span></span
+                >
+                <span class="site"
+                  ><i
+                    ><svg><use href="#i-globo" /></svg></i
+                  ><span>reddit.com<small>e subdomínios</small></span></span
+                >
+              </div>
+              <h3>Sites também.</h3>
+              <p>
+                Bloqueie um domínio e tudo o que estiver dentro dele: instagram.com leva junto
+                m.instagram.com.
+              </p>
+            </article>
+
+            <article class="bento-card bento-essenciais" data-revelar>
+              <div class="bento-visual" aria-hidden="true">
+                <span class="essencial">
+                  <svg><use href="#i-telefone" /></svg>
+                  <i
+                    ><svg><use href="#i-check" /></svg
+                  ></i>
+                </span>
+              </div>
+              <h3>O essencial nunca para.</h3>
+              <p>Telefone e apps de emergência ficam fora de qualquer bloqueio. Sempre.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="privacidade" id="privacidade" aria-labelledby="titulo-privacidade">
+        <div class="envoltorio privacidade-grade">
+          <div class="privacidade-texto" data-revelar>
+            <p class="rotulo"><span>Privacidade</span></p>
+            <h2 class="titulo-secao" id="titulo-privacidade">Nada sai do seu <em>celular.</em></h2>
+            <p class="secao-sub">
+              Não existe servidor do AceleraLock. A lista de bloqueio, as esperas e o histórico de
+              tempo de tela ficam no armazenamento do próprio aparelho — e somem quando você
+              desinstala.
+            </p>
+            <ul class="lista-sem">
+              <li>
+                <svg aria-hidden="true"><use href="#i-usuario-x" /></svg>Sem conta, e-mail ou login
+              </li>
+              <li>
+                <svg aria-hidden="true"><use href="#i-nuvem-riscada" /></svg>Sem servidor nem nuvem
+              </li>
+              <li>
+                <svg aria-hidden="true"><use href="#i-escudo" /></svg>Sem anúncio, analytics ou
+                rastreador
+              </li>
+              <li>
+                <svg aria-hidden="true"><use href="#i-celular" /></svg>Sabe qual app está aberto,
+                nunca o que tem dentro
+              </li>
+            </ul>
+            <a class="link-seta" href="https://aceleralock.marujo.dev/#privacidade">
+              Ler a política de privacidade
+              <svg aria-hidden="true"><use href="#i-seta-direita" /></svg>
+            </a>
+            <p class="privacidade-nota">
+              Esta página segue a mesma regra: sem cookies, sem rastreadores, nada carregado de
+              terceiros.
+            </p>
+          </div>
+          <div class="orbita" aria-hidden="true">
+            <i class="orbita-anel orbita-anel-1"></i>
+            <i class="orbita-anel orbita-anel-2"></i>
+            <i class="orbita-anel orbita-anel-3"></i>
+            <span class="orbita-giro orbita-giro-1"><i></i></span>
+            <span class="orbita-giro orbita-giro-2"><i></i></span>
+            <span class="orbita-giro orbita-giro-3"><i></i></span>
+            <span class="orbita-centro"
+              ><img src="assets/icone.webp" width="96" height="96" alt=""
+            /></span>
+            <span class="orbita-nuvem"
+              ><svg><use href="#i-nuvem-riscada" /></svg
+            ></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="perguntas ilha-clara" id="perguntas" aria-labelledby="titulo-perguntas">
+        <div class="envoltorio perguntas-grade">
+          <header data-revelar>
+            <p class="rotulo"><span>Perguntas</span></p>
+            <h2 class="titulo-secao" id="titulo-perguntas">Perguntas <em>honestas.</em></h2>
+            <p class="secao-sub">
+              Inclusive as que outro app de bloqueio preferiria que você não fizesse.
+            </p>
+          </header>
+          <div class="perguntas-lista" data-revelar>
+            <details>
+              <summary>Quanto custa?</summary>
+              <p>
+                Nada. O AceleraLock é gratuito, sem assinatura, sem compra dentro do app e sem
+                anúncio. O código é aberto, sob licença MIT.
+              </p>
+            </details>
+            <details>
+              <summary>Preciso criar conta?</summary>
+              <p>
+                Não. Não existe conta, login nem servidor. Você abre o app, escolhe o que bloquear e
+                pronto — tudo fica no seu celular.
+              </p>
+            </details>
+            <details>
+              <summary>Funciona no iPhone?</summary>
+              <p>
+                Por enquanto o teste é no Android. A versão para iPhone, que usa o Tempo de Uso da
+                Apple, está em desenvolvimento.
+              </p>
+            </details>
+            <details>
+              <summary>Que permissões ele pede?</summary>
+              <p>
+                Acesso ao uso, para saber qual app está aberto (nunca o que acontece dentro dele), e
+                sobrepor outros apps, para mostrar a tela de bloqueio. O bloqueio de sites usa a
+                acessibilidade só para ler a barra de endereço do navegador. Cada permissão é
+                explicada antes de ser pedida.
+              </p>
+            </details>
+            <details>
+              <summary>E se eu reiniciar o celular?</summary>
+              <p>
+                A proteção volta sozinha. Uma espera em andamento congela enquanto o celular está
+                desligado e continua de onde parou — reiniciar nunca encurta a espera.
+              </p>
+            </details>
+            <details>
+              <summary>Dá para burlar?</summary>
+              <p>
+                Dá, e isso é de propósito: desinstalar sempre funciona. App que impede a própria
+                remoção vira malware aos olhos de quem instalou. O AceleraLock não é uma prisão, é
+                atrito — o impulso dura segundos, e a espera dura 30 minutos.
+              </p>
+            </details>
+            <details>
+              <summary>Quem faz o AceleraLock?</summary>
+              <p>É um projeto de código aberto da comunidade AceleraDev — o app e esta página.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section class="chamada" id="teste" aria-labelledby="titulo-chamada">
+        <div class="chamada-fundo" aria-hidden="true">
+          <i class="brilho brilho-tinta"></i>
+          <i class="pontos"></i>
+        </div>
+        <div class="envoltorio chamada-grade">
+          <div class="chamada-aparelho">
+            <div class="aparelho aparelho-chamada" data-aparelho="chamada" aria-hidden="true">
+              <div class="aparelho-sombra"></div>
+              <div class="aparelho-palco">
+                <div class="aparelho-entrada">
+                  <div class="aparelho-corpo">
+                    <div class="aparelho-camadas">
+                      <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+                    </div>
+                    <div class="aparelho-verso">
+                      <i class="verso-camera"></i>
+                      <img src="assets/icone.webp" width="96" height="96" alt="" />
+                    </div>
+                    <div class="aparelho-frente">
+                      <i class="aparelho-botao aparelho-botao-1"></i>
+                      <i class="aparelho-botao aparelho-botao-2"></i>
+                      <div class="tela">
+                        <div class="app app-boas-vindas">
+                          <div class="status status-claro">
+                            <span>9:41</span>
+                            <span class="status-icones">
+                              <svg class="i-wifi"><use href="#i-wifi" /></svg>
+                              <svg class="i-sinal"><use href="#i-sinal" /></svg>
+                              <svg class="i-bateria"><use href="#i-bateria" /></svg>
+                            </span>
+                          </div>
+                          <div class="boas-topo">
+                            <img src="assets/icone.webp" width="88" height="88" alt="" />
+                            <div class="boas-textos">
+                              <p class="boas-marca">AceleraLock</p>
+                              <p class="boas-titulo">Faça o impulso esperar.</p>
+                              <p class="boas-texto">
+                                Escolha os apps que roubam seu tempo. Quando bater a vontade de
+                                abrir, o AceleraLock fica no caminho.
+                              </p>
+                            </div>
+                          </div>
+                          <ul class="boas-lista">
+                            <li>
+                              <i
+                                ><svg class="turquesa"><use href="#i-escudo" /></svg></i
+                              >Bloqueia os apps e sites que você escolher
+                            </li>
+                            <li>
+                              <i
+                                ><svg class="ambar"><use href="#i-ampulheta" /></svg></i
+                              >Mudar de ideia pode pedir 30 min de espera
+                            </li>
+                            <li>
+                              <i
+                                ><svg><use href="#i-celular" /></svg></i
+                              >Tudo fica no seu celular. Sem conta.
+                            </li>
+                          </ul>
+                          <div class="espaco"></div>
+                          <div class="boas-acoes">
+                            <span class="boas-comecar">Começar</span>
+                            <span class="boas-sair">Sair do app</span>
+                          </div>
+                          <i class="gesto gesto-claro gesto-solto"></i>
+                        </div>
+                        <i class="tela-reflexo" data-reflexo></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="chamada-texto" data-revelar>
+            <p class="rotulo"><span>Lista de espera aberta</span></p>
+            <h2 class="titulo-secao" id="titulo-chamada">
+              Seu próximo impulso vai ter que <em>esperar.</em>
+            </h2>
+            <p class="secao-sub">
+              O teste fechado no Android está com a lista de espera aberta. Gratuito, sem conta e
+              sem anúncio.
+            </p>
+            <div class="heroi-acoes">
+              <a
+                class="botao botao-marca"
+                href="https://aceleralock.marujo.dev/teste#lista-de-espera"
+              >
+                Entrar na lista do teste
+                <svg class="icone" aria-hidden="true"><use href="#i-seta-direita" /></svg>
+              </a>
+              <a class="botao botao-fantasma" href="#como-funciona">Ver como funciona</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="rodape">
+      <div class="envoltorio">
+        <div class="rodape-topo">
+          <div class="rodape-marca">
+            <a class="marca" href="#inicio">
+              <img src="assets/icone.webp" width="32" height="32" alt="" />
+              <span>Acelera<em>Lock</em></span>
+            </a>
+            <p>Fricção deliberada entre você e o app que está comendo o seu dia.</p>
+          </div>
+          <nav class="rodape-links" aria-label="Rodapé">
+            <a href="https://aceleralock.marujo.dev/#privacidade">Política de Privacidade</a>
+            <a href="https://aceleralock.marujo.dev/#termos">Termos de Uso</a>
+            <a href="https://aceleralock.marujo.dev/teste">Lista de espera</a>
+          </nav>
+        </div>
+        <div class="powered">
+          <img
+            src="assets/aceleradev.svg"
+            width="88"
+            height="88"
+            alt="Logo da comunidade AceleraDev"
+          />
+          <div>
+            <p class="powered-rotulo">Powered by</p>
+            <p class="powered-nome">AceleraDev</p>
+            <p class="powered-texto">
+              O AceleraLock e esta página são um projeto da comunidade AceleraDev.
+            </p>
+          </div>
+        </div>
+        <div class="rodape-fim">
+          <p>
+            © 2026 AceleraLock · Código aberto sob licença MIT · Esta página não usa cookies nem
+            rastreadores.
+          </p>
+          <p class="feito-por">
+            Made by
+            <a href="https://github.com/lucasmarujo">
+              <svg aria-hidden="true"><use href="#i-github" /></svg>
+              lucasmarujo<span class="so-leitor"> no GitHub</span>
+            </a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
