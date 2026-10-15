@@ -3034,6 +3034,7 @@ svg {
 .historia {
   position: relative;
   padding-top: 40px;
+  overflow-x: clip;
 }
 
 .historia-cabeca {
@@ -3688,6 +3689,7 @@ svg {
 
 .privacidade {
   padding: clamp(110px, 14vw, 180px) 0;
+  overflow-x: clip;
 }
 
 .privacidade-grade {

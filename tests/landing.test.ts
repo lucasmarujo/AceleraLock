@@ -266,6 +266,27 @@ test('regressao: link para politica, termos e lista de espera nao depende de ond
   }
 });
 
+/**
+ * No celular, decoracao que passa da largura da tela alarga a pagina inteira (o
+ * navegador estica a viewport de layout ate caber) e o dedo arrasta pro lado — o
+ * `overflow-x: clip` do body nao impede isso. Cada secao com brilho ou orbita maior
+ * que a tela corta o proprio vazamento. `clip`, e nao `hidden`: `hidden` criaria um
+ * container de rolagem e o celular da historia deixaria de ficar preso na tela.
+ */
+test('regressao: secao com decoracao maior que a tela corta o vazamento horizontal', () => {
+  const css = lerLanding('estilo.css');
+  for (const secao of ['heroi', 'historia', 'privacidade', 'chamada']) {
+    const regra = css.match(new RegExp(`\\n\\.${secao} \\{([^}]*)\\}`));
+    assert.ok(regra, `regra .${secao} nao encontrada`);
+    assert.match(regra[1], /overflow(?:-x)?: clip;/, `.${secao} precisa de overflow-x: clip`);
+    assert.doesNotMatch(
+      regra[1],
+      /overflow(?:-x)?: hidden;/,
+      `.${secao} com hidden quebra o sticky`
+    );
+  }
+});
+
 test('regressao: todo arquivo que a pagina referencia existe em web/landing', () => {
   const html = lerLanding('index.html');
   const css = lerLanding('estilo.css');
